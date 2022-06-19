@@ -32,7 +32,6 @@ exports.LocalLoginDAO = async(username) => {
         SQL         = "SELECT DISTINCT * FROM USERS WHERE USERNAME = ? OR EMAIL = ?";
         SQL_BIND    = mysql.format(SQL, [username, username]);
         const r1    = await query(SQL_BIND);
-        console.log(r1);
         if (r1.length > 0) {
             return DB_RESP(200, r1);
         } else {

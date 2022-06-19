@@ -3,20 +3,20 @@ const PORT          = process.env.SV_PORT || 8080;
 const ip            = require("ip");
 const IMAGE_PATH    = "assets/image";
 
-const RespCustomCode = (resp, code, data) => {
-    resp.statusCode = 200;
+const RespCustomCode = (resp, data, description, code) => {
+    resp.statusCode = code || 200;
     resp.json({
-        "code": code,
-        "msg": data
+        "data": data,
+        "description": description
     });
 }
 
 const CatchErr = (resp, e, func_name) => {
     console.log(`======================== ${func_name} ==========================`);
     if (!!e.message) {
-        RespCustomCode(resp, 900, e.message);
+        RespCustomCode(resp, undefined, e.message, 501);
     } else if (!!e.sqlMessage) {
-        RespCustomCode(resp, 900, e.sqlMessage);
+        RespCustomCode(resp, undefined, e.sqlMessage, 501);
     }
 }
 
@@ -35,12 +35,8 @@ exports.DB_RESP         = DB_RESP;
 exports.RespCustomCode  = RespCustomCode;
 exports.CatchErr        = CatchErr;
 
-exports.SuccessResp = (resp, data) => {
-    if (data === undefined) {
-        RespCustomCode(resp, 200, "Thành công");
-    } else {
-        RespCustomCode(resp, 200, data);
-    }
+exports.SuccessResp = (resp, data, description = "Thành công") => {
+    RespCustomCode(resp, data, description, 200);
 }
 
 exports.CREATE_TRANSPORTER = () => {
@@ -55,20 +51,7 @@ exports.CREATE_TRANSPORTER = () => {
 
 exports.Authenticate = async (req, resp, next) => {
     if (req.isAuthenticated()) next();
-    else RespCustomCode(resp, 403, "Vui lòng đăng nhập!");
-    // try {
-    //    if (!req.headers.authorization) {
-    //     resp.json({
-    //         code: 403,
-    //         msg: "No credentials sent!"
-    //     });
-    //    } else {
-    //     console.log(req.headers.authorization, "Token");
-    //     next();
-    //    }
-    // } catch (e) {
-    //     CatchErr(resp, e, "CheckSessionID - UtilsFunction.js")
-    // }
+    else RespCustomCode(resp, undefined, "Vui lòng đăng nhập!", 401);
 }
 
 exports.HOST_PORT       = PORT;

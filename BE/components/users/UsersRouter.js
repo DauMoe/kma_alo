@@ -1,12 +1,12 @@
-const { NewLocalUser, AuthenticateError, LocalAuthenticate } = require("./UsersController");
-
 const express = require("express");
-const passport = require("passport");
 const { Authenticate } = require("../../Utils/UtilsFunction");
+const { NewLocalUser, CheckRequiredLoginField, AuthenticateSuccess} = require("./UsersController");
 const UsersRouter = express.Router();
+require("../Passport/PassportJsonInit");
+require("./../Passport/PassportJsonInit");
+const {PassportJsonAuthenticate} = require("../Passport/PassportJsonInit");
 
-UsersRouter.get("/local_login_fail", AuthenticateError);
 UsersRouter.post("/local_signup", Authenticate, NewLocalUser);
-UsersRouter.post("/local_login", passport.authenticate('local', {failureRedirect: '/users/local_login_fail'}), LocalAuthenticate);
+UsersRouter.post("/local_login", CheckRequiredLoginField, PassportJsonAuthenticate, AuthenticateSuccess);
 
 module.exports = UsersRouter;
