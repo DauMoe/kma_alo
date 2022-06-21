@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const { GetString } = require("../../Utils/GetValue");
-const { CatchErr, SuccessResp, RespCustomCode, CREATE_TRANSPORTER, SALT_ROUND } = require("../../Utils/UtilsFunction");
+const { CatchErr, SuccessResp, RespCustomCode, CREATE_TRANSPORTER, SALT_ROUND, JWT_SECRET_KEY} = require("../../Utils/UtilsFunction");
 const { NewLocalUserDAO, LocalLoginDAO } = require("./UsersDAO");
 const jwt = require("jsonwebtoken");
 
@@ -56,7 +56,7 @@ exports.AuthenticateSuccess = async(req, resp) => {
         uid     : userInfo.UID,
         email   : userInfo.EMAIL,
         username: userInfo.USERNAME
-    }, 'kme_alo', { expiresIn: 60 * 60 });
+    }, JWT_SECRET_KEY, { expiresIn: 60 * 60 });
     SuccessResp(resp, {
         token   : token,
         username: userInfo.USERNAME    === null ? "" : userInfo.USERNAME,

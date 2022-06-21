@@ -28,3 +28,14 @@ exports.GetAllPrivateChatID = async(req, resp) => {
         CatchErr(resp, e, FUNC_NAME);
     }
 };
+
+exports.CreateNewPrivateChat = async(req, resp) => {
+    const FUNC_NAME = "CreateNewPrivateChat" + FILE_NAME;
+    const reqData   = req.body;
+    try {
+        const toUid     = GetNumber(reqData, "uid");
+        const fromUid   = req.app.locals.uid;
+    } catch(e) {
+        CatchErr(resp, e, FUNC_NAME);
+    }
+}
