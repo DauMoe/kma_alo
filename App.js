@@ -7,7 +7,7 @@ import NewsFeedScreen from "./components/NewsFeedScreen";
 const App = function(props) {
   const [CurrentTab, setTab]  = useState(0);
   const [routes, setRoutes]   = useState([
-    {key: "news_feed", title: "Feed", focusedIcon: 'heart', unfocusedIcon: 'heart-outline'},
+    {key: "news_feed", title: "Feed", focusedIcon: 'plus', unfocusedIcon: 'heart-outline'},
     {key: "chat", title: "Chat", focusedIcon: 'heart', unfocusedIcon: 'heart-outline'},
     {key: "profile", title: "Profile", focusedIcon: 'heart', unfocusedIcon: 'heart-outline'},
   ]);
@@ -19,9 +19,6 @@ const App = function(props) {
   });
 
   return(
-    // <LoadingScreen/>
-    // <LoginScreen/>
-    // <NewsFeedScreen/>
     <BottomNavigation
       shifting={true}
       navigationState={{ index: CurrentTab, routes: routes }}

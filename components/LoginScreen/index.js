@@ -44,9 +44,9 @@ const LoginLabel = styled.Text`
 `;
 
 const LoginScreen = function(props) {
-    const {width, height} = Dimensions.get("window");
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const {width, height}           = Dimensions.get("window");
+    const [username, setUsername]   = useState("");
+    const [password, setPassword]   = useState("");
 
     return(
         <LoginScreenWrapper behavior={Platform.OS === "ios" ? "padding" : "height"} height={height}>

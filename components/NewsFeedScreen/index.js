@@ -1,10 +1,12 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, Dimensions } from "react-native";
+import SingleNews from "./SingleNews";
 
 const NewsFeedScreen = function(props) {
+    const { width, height } = Dimensions.get("window");
     return(
         <View>
-            <Text>Hi</Text>
+            <SingleNews width={width} height={height}/>
         </View>
     );
 }
