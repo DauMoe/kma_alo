@@ -3,29 +3,24 @@
  */
 
 import React from 'react';
-import { DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
+import { configureFonts, DefaultTheme, Provider as PaperProvider } from 'react-native-paper';
 import {AppRegistry} from 'react-native';
 import App from './App';
 import {name as appName} from './app.json';
+import FontConfig from './components/CustomFont';
 
 
 const theme = {
     ...DefaultTheme,
-    roundness: 2,
-    version: 3,
+    roundness   : 2,
+    version     : 3,
     colors: {
-      ...DefaultTheme.colors,
-      primary: '#3498db',
-      secondary: '#f1c40f',
-      tertiary: '#a1b2c3'
+        ...DefaultTheme.colors,
+        primary   : '#FF8585',
+        secondary : '#f1c40f',
+        tertiary  : '#a1b2c3'
     },
-    fonts: {
-        ...DefaultTheme.fonts,
-        medium: {fontFamily: 'NunitoBold'},
-        regular:{fontFamily: 'NunitoMedium'},
-        light:{fontFamily: 'NunitoRegular'},
-        thin:{fontFamily: 'NunitoLight'}
-    }
+    fonts: configureFonts(FontConfig)
 };
 
 export default function Main() {
