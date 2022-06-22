@@ -1,13 +1,27 @@
 import React from "react";
-import { View, Text, Dimensions } from "react-native";
+import { View, ScrollView, Dimensions } from "react-native";
+import CommentsScreen from "../CommentsScreen";
 import SingleNews from "./SingleNews";
+import styled from 'styled-components/native';
+
+const NewsFeedWrapper = styled(View)`
+    height: ${props => props.height + "px"};
+    position: relative;
+`;
 
 const NewsFeedScreen = function(props) {
     const { width, height } = Dimensions.get("window");
     return(
-        <View>
-            <SingleNews width={width} height={height}/>
-        </View>
+        <NewsFeedWrapper height={height}>
+            <ScrollView>
+                <SingleNews/>
+                <SingleNews/>
+                <SingleNews/>
+                <SingleNews/>
+                <SingleNews/>
+            </ScrollView>
+            <CommentsScreen OpenCommentScreen={true}/>
+        </NewsFeedWrapper>
     );
 }
 

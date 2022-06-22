@@ -7,8 +7,8 @@ import NewsFeedScreen from "./components/NewsFeedScreen";
 const App = function(props) {
   const [CurrentTab, setTab]  = useState(0);
   const [routes, setRoutes]   = useState([
-    {key: "news_feed", title: "Feed", focusedIcon: 'plus', unfocusedIcon: 'heart-outline'},
-    {key: "chat", title: "Chat", focusedIcon: 'heart', unfocusedIcon: 'heart-outline'},
+    {key: "news_feed", title: "Feed", focusedIcon: 'newspaper-variant', unfocusedIcon: 'newspaper-variant-outline'},
+    {key: "chat", title: "Chat", focusedIcon: 'heart', unfocusedIcon: 'emessage-reply'},
     {key: "profile", title: "Profile", focusedIcon: 'heart', unfocusedIcon: 'heart-outline'},
   ]);
 

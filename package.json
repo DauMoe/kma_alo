@@ -16,6 +16,7 @@
     "react-native-paper-grid": "^0.1.12",
     "react-native-svg": "^12.3.0",
     "react-native-svg-transformer": "^1.0.0",
+    "react-native-swipe-up-down": "^1.2.0",
     "react-native-vector-icons": "^9.1.0",
     "styled-components": "^5.3.5"
   },
