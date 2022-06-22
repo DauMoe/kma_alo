@@ -1,10 +1,12 @@
 import axios from "axios";
 
+const DEFAULT_BASE_URL = "http://192.168.110.90";
+
 const instance = axios.create({
     timeout: 1000 * 60
 });
 
-export const setBaseUrl = function(baseURL) {
+export const setBaseUrl = function(baseURL = DEFAULT_BASE_URL) {
     instance.defaults.baseURL = baseURL;
 }
 

@@ -2,8 +2,9 @@ import React, { useState } from "react";;
 import styled from "styled-components/native";
 import { View, Text, TextInput, KeyboardAvoidingView, TouchableWithoutFeedback, Platform, Dimensions } from "react-native";
 import { Button, AnimatedFAB } from "react-native-paper";
+import { MAIN_SCREEN } from "../ScreenName";
 
-const LoginScreenWrapper = styled.KeyboardAvoidingView`
+const LoginScreenWrapper = styled(KeyboardAvoidingView)`
     height: ${props => props.height + "px"};
     display: flex;
     align-items: center;
@@ -11,19 +12,19 @@ const LoginScreenWrapper = styled.KeyboardAvoidingView`
     background-color: white;
 `;
 
-const LoginFormWrapper = styled.View`
+const LoginFormWrapper = styled(View)`
     padding: 20px;
     width: ${props => (props.width - 30) + "px"};
 `;
 
-const LoginHeader = styled.Text`
+const LoginHeader = styled(Text)`
     color       : aliceblue;
     font-size   : 60px;
     font-family : "NunitoBlack";
     color       : black;
 `;
 
-const LoginTextInput = styled.TextInput`
+const LoginTextInput = styled(TextInput)`
     background-color: white;
     color           : black;
     position        : relative;
@@ -36,7 +37,7 @@ const LoginTextInput = styled.TextInput`
     }
 `;
 
-const LoginLabel = styled.Text`
+const LoginLabel = styled(Text)`
     font-size       : 18px;
     margin-bottom   : 5px;
     color           : black;
@@ -48,6 +49,7 @@ const LoginScreen = function(props) {
     const {width, height}           = Dimensions.get("window");
     const [username, setUsername]   = useState("");
     const [password, setPassword]   = useState("");
+    const [isLoading, setLoading]   = useState(false);
 
     return(
         <LoginScreenWrapper behavior={Platform.OS === "ios" ? "padding" : "height"} height={height}>
@@ -65,15 +67,9 @@ const LoginScreen = function(props) {
                 </View>
 
                 <View style={{marginTop: 20}}>
-                    <Button mode="contained" loading={true} onPress={_ => navigation.navigate("Main")}>Login</Button>
+                    <Button mode="contained" loading={isLoading} disabled={isLoading} onPress={_ => navigation.navigate(MAIN_SCREEN)}>Login</Button>
                 </View>
             </LoginFormWrapper>
-            {/* <AnimatedFAB
-                icon={'question'}
-                onPress={() => console.log('Pressed')}
-                visible={true}
-                iconMode={'static'} 
-            />*/}
         </LoginScreenWrapper>
     );
 };

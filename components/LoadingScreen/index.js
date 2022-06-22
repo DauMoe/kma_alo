@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Dimensions, View, Text } from "react-native";
+import { useSelector } from "react-redux";
 import styled from "styled-components/native";
 import LogoSvg from "./../Media/logo.svg";
+import { axiosConfig } from '../ReduxSaga/AxiosConfig';
+import { LOGIN_SCREEN } from '../ScreenName';
 
 const LoadingScreenWrapper = styled.View`
     height          : ${props => props.height + "px"};
@@ -19,7 +22,20 @@ const LoadingScreenDescription = styled.Text`
 `;
 
 const LoadingScreen = function(props) {
+    const { navigation }    = props;
     const { width, height } = Dimensions.get("window");
+    const authenticator     = useSelector(state => state.Authenticator);
+
+    useEffect(function() {
+        if (authenticator.token !== undefined) {
+            axiosConfig.get("/check_valid")
+                .then(r => {
+
+                });
+        } else {
+            navigation.navigate(LOGIN_SCREEN);
+        }
+    });
 
     return (
         <LoadingScreenWrapper height={height}>
