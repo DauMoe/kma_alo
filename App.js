@@ -6,15 +6,9 @@ import MainScreen from './components/MainScreen/index';
 import { FAB } from "react-native-paper";
 import { LOADING_SCREEN, LOGIN_SCREEN, MAIN_SCREEN } from "./components/ScreenName";
 import styled from 'styled-components/native';
+import SetIPModal from "./components/SetIPModal";
 
 const Stack = createNativeStackNavigator();
-
-const SetIPButton = styled(FAB)`
-  position: absolute;
-  bottom: 80px;
-  right: 20px;
-  background-color: white;
-`;
 
 const App = function(props) {
   const ChangeBaseUrl = function() {
@@ -41,7 +35,7 @@ const App = function(props) {
             component={MainScreen}
           />
       </Stack.Navigator>
-      <SetIPButton small color="gray" icon="server" onPress={ChangeBaseUrl}/>
+      <SetIPModal/>
     </>
   );
 }

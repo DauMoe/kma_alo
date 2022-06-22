@@ -3,6 +3,7 @@ import styled from "styled-components/native";
 import { View, Text, TextInput, KeyboardAvoidingView, TouchableWithoutFeedback, Platform, Dimensions } from "react-native";
 import { Button, AnimatedFAB } from "react-native-paper";
 import { MAIN_SCREEN } from "../ScreenName";
+import {axiosConfig} from "../ReduxSaga/AxiosConfig";
 
 const LoginScreenWrapper = styled(KeyboardAvoidingView)`
     height: ${props => props.height + "px"};
@@ -44,6 +45,15 @@ const LoginLabel = styled(Text)`
     font-family     : "NunitoSemiBold";
 `;
 
+const Authenticate = function(navigation) {
+    const x = axiosConfig();
+    x.post("/login")
+        .then(r => {
+            console.log(r)
+        })
+        .catch(e => console.log(e));
+}
+
 const LoginScreen = function(props) {
     const { navigation }            = props;
     const {width, height}           = Dimensions.get("window");
@@ -67,7 +77,7 @@ const LoginScreen = function(props) {
                 </View>
 
                 <View style={{marginTop: 20}}>
-                    <Button mode="contained" loading={isLoading} disabled={isLoading} onPress={_ => navigation.navigate(MAIN_SCREEN)}>Login</Button>
+                    <Button mode="contained" loading={isLoading} disabled={isLoading} onPress={_ => Authenticate(navigation)}>Login</Button>
                 </View>
             </LoginFormWrapper>
         </LoginScreenWrapper>
