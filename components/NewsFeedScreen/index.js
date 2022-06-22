@@ -13,7 +13,7 @@ const NewsFeedScreen = function(props) {
     const { width, height } = Dimensions.get("window");
     return(
         <NewsFeedWrapper height={height}>
-            <ScrollView>
+            <ScrollView  style={{backgroundColor: "black"}}>
                 <SingleNews/>
                 <SingleNews/>
                 <SingleNews/>

@@ -44,6 +44,7 @@ const LoginLabel = styled.Text`
 `;
 
 const LoginScreen = function(props) {
+    const { navigation }            = props;
     const {width, height}           = Dimensions.get("window");
     const [username, setUsername]   = useState("");
     const [password, setPassword]   = useState("");
@@ -64,7 +65,7 @@ const LoginScreen = function(props) {
                 </View>
 
                 <View style={{marginTop: 20}}>
-                    <Button mode="contained" loading={true}>Login</Button>
+                    <Button mode="contained" loading={true} onPress={_ => navigation.navigate("Main")}>Login</Button>
                 </View>
             </LoginFormWrapper>
             {/* <AnimatedFAB

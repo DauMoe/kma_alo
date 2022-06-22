@@ -1,0 +1,3 @@
+export const LOADING_COMMENT        = "LOADING_COMMENT";
+export const LOAD_COMMENT_SUCCESS   = "LOAD_COMMENT_OK";
+export const LOAD_COMMENT_FAIL      = "LOAD_COMMENT_FAIL";

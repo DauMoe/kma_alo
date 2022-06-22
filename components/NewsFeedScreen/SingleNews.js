@@ -1,9 +1,7 @@
 import React from "react";
 import { View, Text, Image } from "react-native";
 import { Avatar, Button } from "react-native-paper";
-import { Col, Row, Grid } from "react-native-paper-grid";
 import styled from "styled-components/native";
-import CommentsScreen from '../CommentsScreen/index';
 
 const NewsWrapper = styled(View)`
     padding         : 10px;
