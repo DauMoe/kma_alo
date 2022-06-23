@@ -19,9 +19,9 @@ const theme = {
     version     : 3,
     colors: {
         ...DefaultTheme.colors,
-        primary   : '#FF8585',
-        secondary : '#f1c40f',
-        tertiary  : '#a1b2c3'
+        primary   : '#58B7E9',
+        secondary : '#000',
+        tertiary  : '#fff'
     },
     fonts: configureFonts(FontConfig)
 };

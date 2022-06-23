@@ -5,16 +5,11 @@ import LoginScreen from './components/LoginScreen/index';
 import MainScreen from './components/MainScreen/index';
 import { FAB } from "react-native-paper";
 import { LOADING_SCREEN, LOGIN_SCREEN, MAIN_SCREEN } from "./components/ScreenName";
-import styled from 'styled-components/native';
 import SetIPModal from "./components/SetIPModal";
 
 const Stack = createNativeStackNavigator();
 
 const App = function(props) {
-  const ChangeBaseUrl = function() {
-    console.log("Change base url");
-  };
-
   return(
     <>
       <Stack.Navigator 

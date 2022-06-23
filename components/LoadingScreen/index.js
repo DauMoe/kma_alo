@@ -35,6 +35,10 @@ const LoadingScreen = function(props) {
         } else {
             navigation.navigate(LOGIN_SCREEN);
         }
+        /**
+         * @todo:
+         *  - Get all chat => compare with local DB and see if last timestamp is proximate => (YES) not update || (NO) get all again
+         */
     });
 
     return (
