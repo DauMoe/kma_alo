@@ -4,8 +4,9 @@ import LoadingScreen from "./components/LoadingScreen";
 import LoginScreen from './components/LoginScreen/index';
 import MainScreen from './components/MainScreen/index';
 import { FAB } from "react-native-paper";
-import { LOADING_SCREEN, LOGIN_SCREEN, MAIN_SCREEN } from "./components/ScreenName";
+import { FORGET_PASSWORD_SCREEN, LOADING_SCREEN, LOGIN_SCREEN, MAIN_SCREEN } from "./components/ScreenName";
 import SetIPModal from "./components/SetIPModal";
+import ForgetPasswordScreen from "./components/ForgetPasswordScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +25,10 @@ const App = function(props) {
           <Stack.Screen
             name={LOGIN_SCREEN}
             component={LoginScreen}
+          />
+          <Stack.Screen
+            name={FORGET_PASSWORD_SCREEN}
+            component={ForgetPasswordScreen}
           />
           <Stack.Screen
             name={MAIN_SCREEN}

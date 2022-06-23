@@ -24,18 +24,18 @@ const LoginTextInput = styled(TextInput)`
 
 const SetIPModal = function(props) {
     const [visible, setVisible] = useState(false);
-    const [hostIP, setHostIP]   = useState("");
+    const [hostIP, setHostIP]   = useState(null);
     const IPReg                 = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/gi;
 
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
     const containerStyle = {backgroundColor: 'white', padding: 20};
 
-    const SetBaseUrl = function() {
+    const SetBaseUrlinModal = function() {
         if (!IPReg.test(hostIP)) {
             ToastAndroid.show("Your address is not an IP address!", ToastAndroid.SHORT);
         } else {
-            ToastAndroid.show("Set IP ok", ToastAndroid.SHORT);
+            ToastAndroid.show(`Now, calling to IP: ${hostIP}`, ToastAndroid.SHORT);
             setBaseUrl(hostIP);
             setVisible(false);
         }
@@ -45,8 +45,15 @@ const SetIPModal = function(props) {
     <>
         <Portal>
             <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={containerStyle}>
-                <LoginTextInput autoFocus placeholder='Host URL' value={hostIP} onChangeText={setHostIP}/>
-                <Button uppercase={false} color="white" style={{backgroundColor: "#FF4444", marginTop: 20, borderRadius: 30}} icon="content-save" onPress={SetBaseUrl}>Set host url</Button>
+                <LoginTextInput autoFocus placeholderTextColor="#cacaca" placeholder='Host URL' value={hostIP} onChangeText={setHostIP}/>
+                <Button
+                    icon="content-save"
+                    uppercase={false} 
+                    color="white" 
+                    style={{backgroundColor: "#58B7E9", borderRadius: 10, marginTop: 20}} 
+                    onPress={SetBaseUrlinModal}>
+                        Set host
+                </Button>
             </Modal>
         </Portal>
         <SetIPButton small color="gray" icon="server" onPress={showModal}/>

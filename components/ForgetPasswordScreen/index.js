@@ -1,10 +1,7 @@
 import React, { useState } from "react";;
 import styled from "styled-components/native";
 import { View, Text, TextInput, KeyboardAvoidingView, TouchableWithoutFeedback, Platform, Dimensions, ToastAndroid, ImageBackground } from "react-native";
-import { Button, AnimatedFAB } from "react-native-paper";
-import { FORGET_PASSWORD_SCREEN, MAIN_SCREEN } from "../ScreenName";
-import {axiosConfig} from "../ReduxSaga/AxiosConfig";
-import AsyncStorageNpm from "@react-native-async-storage/async-storage";
+import { Button } from "react-native-paper";
 import BgImage from "./../Media/login_background.svg";
 import { TextInput as TextInputRNPaper } from "react-native-paper";
 
@@ -22,7 +19,7 @@ const LoginBgImage = styled(BgImage)`
 `;
 
 const LoginFormWrapper = styled(View)`
-    padding         : 20px 30px 15px 30px;
+    padding         : 10px 30px 30px 30px;
     width           : ${props => (props.width - 26) + "px"};
     background-color: white;
     border-radius   : 30px;
@@ -36,69 +33,40 @@ const LoginHeader = styled(Text)`
     color       : #329FD9;
     font-size   : 48px;
     font-family : "NunitoBlack";
-    text-align: center;
+    text-align  : center;
 `;
 
 const LoginDescription = styled(Text)`
-    color: #4ACAF9;
-    text-align: center;
-    font-family: "NunitoMedium";
+    color       : #4ACAF9;
+    text-align  : center;
+    font-family : "NunitoMedium";
 `;
 
-const LoginTextInput = styled(TextInput)`
-    background-color: white;
-    color           : #3F3F3F;
-    position        : relative;
-    font-family     : "NunitoBold";
-    padding         : 4px 10px;
-    font-size: 18px;
-    border: none;
-    border-bottom-width: 1.5px;
-    border-bottom-color: #8C8B8B;
-    border-radius   : 10px;
-`;
-
-const LoginLabel = styled(Text)`
-    font-size       : 18px;
-    margin-bottom   : 5px;
-    color           : black;
-    font-family     : "NunitoSemiBold";
-`;
-
-const ForgetPassword = styled(Text)`
-    font-family     : "NunitoMediumItalic";
-    color: #37B4F3;
-    text-decoration: underline;
-    text-align: right;
-`;
-
-const CreateNewAccount = styled(Text)`
+const GoBackLoginScreen = styled(Text)`
     font-family     : "NunitoSemiBold";
     color: #37B4F3;
     text-align: center;
     font-size: 15px;
+    text-decoration: underline;
 `;
 
-const LoginScreen = function(props) {
+const ForgetPasswordScreen = function(props) {
     const { navigation }            = props;
     const {width, height}           = Dimensions.get("window");
-    const [username, setUsername]   = useState("");
-    const [password, setPassword]   = useState("");
+    const [email, setEmail]         = useState("");
     const [isLoading, setLoading]   = useState(false);
 
-    const GotoForgetpasswordScreen = function() {
-        navigation.push(FORGET_PASSWORD_SCREEN);
-    }
-
-    const GotoCreateAccountScreen = function() {
-        console.log("Forget password");
-    }
-
-    const Authenticate = function() {
-        setLoading(true);
-        setTimeout(function() {
-            setLoading(false);
-        }, 2000);
+    const SendForgetPasswordtoEmail = function() {
+        const emailReg = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/gi;
+        if (!emailReg.test(email)) {
+            ToastAndroid.show("Invalid email", ToastAndroid.SHORT);
+        } else {
+            setLoading(true);
+            ToastAndroid.show("Please check your email", ToastAndroid.SHORT);
+            setTimeout(function() {
+                setLoading(false);
+            }, 2000);
+        }
         // axiosConfig().post("/login")
         //     .then(r => {
         //         console.log(r)
@@ -125,40 +93,22 @@ const LoginScreen = function(props) {
                 <LoginBgImage height={height} width={width}/>
                 <LoginFormWrapper width={width}>
                     <LoginHeaderWrapper>
-                        <LoginHeader>HALO</LoginHeader>
-                        <LoginDescription>Let's in!</LoginDescription>
+                        <LoginHeader>Hmm</LoginHeader>
+                        <LoginDescription>Do you remember your email?</LoginDescription>
                     </LoginHeaderWrapper>
                     
                     <View>
                         <TextInputRNPaper 
                             autoFocus
-                            label={"Username or email"} 
+                            label={"Your email"} 
                             mode="flat"
-                            value={username}
-                            onChangeText={setUsername}
-                            left={<TextInputRNPaper.Icon name="account-outline"/>}
+                            value={email}
+                            onChangeText={setEmail}
+                            left={<TextInputRNPaper.Icon name="email-outline"/>}
                             style={{
                                 backgroundColor: "white"
                             }}
                             />
-                    </View>
-
-                    <View style={{marginTop: 20}}>
-                        <TextInputRNPaper 
-                            label={"Password"}
-                            mode="flat"
-                            value={password}
-                            onChangeText={setPassword}
-                            secureTextEntry
-                            left={<TextInputRNPaper.Icon name="lock-outline"/>}
-                            style={{
-                                backgroundColor: "white"
-                            }}
-                            />
-                    </View>
-
-                    <View style={{marginTop: 5}}>
-                        <ForgetPassword onPress={GotoForgetpasswordScreen}>Forget password?</ForgetPassword>
                     </View>
 
                     <View style={{marginTop: 20}}>
@@ -168,14 +118,13 @@ const LoginScreen = function(props) {
                             style={{backgroundColor: "#58B7E9", borderRadius: 10}} 
                             loading={isLoading} 
                             disabled={isLoading} 
-                            onPress={Authenticate}>
-                                Login
+                            onPress={SendForgetPasswordtoEmail}>
+                                Send
                         </Button>
                     </View>
 
-                    <View style={{marginTop: 18}}>
-                        <Text style={{color: "#888888", textAlign: "center", marginBottom: 10}}>or</Text>
-                        <CreateNewAccount onPress={GotoCreateAccountScreen}>Create new account</CreateNewAccount>
+                    <View style={{marginTop: 30}}>
+                        <GoBackLoginScreen onPress={_ => navigation.goBack()}>Go back</GoBackLoginScreen>
                     </View>
                 </LoginFormWrapper>
             </LoginScreenWrapper>
@@ -183,4 +132,4 @@ const LoginScreen = function(props) {
     );
 };
 
-export default LoginScreen;
+export default ForgetPasswordScreen;
