@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const DEFAULT_BASE_URL = "http://192.168.110.90";
+const DEFAULT_BASE_URL = "http://192.168.1.36:8080";
 
 const instance = axios.create({
     timeout: 1000 * 2,

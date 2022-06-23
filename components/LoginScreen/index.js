@@ -1,12 +1,13 @@
 import React, { useState } from "react";;
 import styled from "styled-components/native";
 import { View, Text, TextInput, KeyboardAvoidingView, TouchableWithoutFeedback, Platform, Dimensions, ToastAndroid, ImageBackground } from "react-native";
-import { Button, AnimatedFAB } from "react-native-paper";
+import { Button, AnimatedFAB, HelperText } from "react-native-paper";
 import { FORGET_PASSWORD_SCREEN, MAIN_SCREEN } from "../ScreenName";
-import {axiosConfig} from "../ReduxSaga/AxiosConfig";
+import {axiosConfig, setToken} from "../ReduxSaga/AxiosConfig";
 import AsyncStorageNpm from "@react-native-async-storage/async-storage";
 import BgImage from "./../Media/login_background.svg";
 import { TextInput as TextInputRNPaper } from "react-native-paper";
+import { LOCAL_LOGIN } from './../API_Definition';
 
 const LoginScreenWrapper = styled(View)`
     height          : ${props => props.height + "px"};
@@ -83,7 +84,9 @@ const LoginScreen = function(props) {
     const { navigation }            = props;
     const {width, height}           = Dimensions.get("window");
     const [username, setUsername]   = useState("");
+    const [userErr, setUserErr]     = useState("");
     const [password, setPassword]   = useState("");
+    const [passErr, setPassErr]     = useState("");
     const [isLoading, setLoading]   = useState(false);
 
     const GotoForgetpasswordScreen = function() {
@@ -95,28 +98,51 @@ const LoginScreen = function(props) {
     }
 
     const Authenticate = function() {
+        if (username === "") {
+            setUserErr("Enter your username or email");
+            return;
+        } else {
+            setUserErr("");
+        }
+        if (password === "") {
+            setPassErr("Password is required");
+            return;
+        } else {
+            setPassErr("");
+        }
+        const data = {
+            username: username,
+            password: password
+        };
         setLoading(true);
-        setTimeout(function() {
-            setLoading(false);
-        }, 2000);
-        // axiosConfig().post("/login")
-        //     .then(r => {
-        //         console.log(r)
-        //         //Login ok
-        //         AsyncStorageNpm.setItem("token", "", function(err) {
-        //             if (err) {
-        //                 console.error("Login-1 (Token return but can't save to async store): ", err);
-        //                 ToastAndroid.show("Sorry, please try again later (code: Login-1)", ToastAndroid.SHORT);
-        //             }
-        //         });
-        //     })
-        //     .catch(e => {
-        //         console.error("Login-2: ", e);
-        //         ToastAndroid.show("Sorry, please try again later (code: Login-2)", ToastAndroid.SHORT);
-        //     })
-        //     .finally(function() {
-        //         setLoading(false);
-        //     });
+        axiosConfig().post(LOCAL_LOGIN, data)
+            .then(r => {
+                const token = r.data.data.token;
+                setToken(token);
+                AsyncStorageNpm.setItem("token", "", function(err) {
+                    if (err) {
+                        console.error("Login-1 (Token return but can't save to async store): ", err);
+                        ToastAndroid.show("Sorry, please try again later (code: Login-1)", ToastAndroid.SHORT);
+                    } else {
+                        navigation.navigate(MAIN_SCREEN);
+                    }
+                });
+            })
+            .catch(e => {
+                console.error("Login-2: ", e.response.data.description);
+                const { status, data } = e.response;
+                console.log(status);
+                if (status === 401) {
+                    setUserErr(data.description);
+                    setPassErr("");
+                } else {
+                    setUserErr("");
+                    setPassErr(data.description);
+                }
+            })
+            .finally(function() {
+                setLoading(false);
+            });
     }
 
     return(
@@ -141,6 +167,7 @@ const LoginScreen = function(props) {
                                 backgroundColor: "white"
                             }}
                             />
+                        <HelperText type="error" visible={userErr.length > 0}>{userErr}</HelperText>
                     </View>
 
                     <View style={{marginTop: 20}}>
@@ -155,6 +182,7 @@ const LoginScreen = function(props) {
                                 backgroundColor: "white"
                             }}
                             />
+                        <HelperText type="error" visible={passErr.length > 0}>{passErr}</HelperText>
                     </View>
 
                     <View style={{marginTop: 5}}>

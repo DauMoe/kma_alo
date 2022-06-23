@@ -1,0 +1,1 @@
+export const LOCAL_LOGIN = "/users/local_login";
