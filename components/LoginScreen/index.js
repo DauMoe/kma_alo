@@ -87,6 +87,7 @@ const LoginScreen = function(props) {
     const [userErr, setUserErr]     = useState("");
     const [password, setPassword]   = useState("");
     const [passErr, setPassErr]     = useState("");
+    const [showPass, setPlainPass]  = useState(false);
     const [isLoading, setLoading]   = useState(false);
 
     const GotoForgetpasswordScreen = function() {
@@ -176,8 +177,9 @@ const LoginScreen = function(props) {
                             mode="flat"
                             value={password}
                             onChangeText={setPassword}
-                            secureTextEntry
+                            secureTextEntry={!showPass}
                             left={<TextInputRNPaper.Icon name="lock-outline"/>}
+                            right={<TextInputRNPaper.Icon name={showPass ? "eye" : "eye-off"} onPress={_ => setPlainPass(!showPass)}/>}
                             style={{
                                 backgroundColor: "white"
                             }}
