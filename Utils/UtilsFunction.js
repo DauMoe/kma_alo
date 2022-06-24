@@ -14,11 +14,13 @@ const RespCustomCode = (resp, data, description, code) => {
 }
 
 const CatchErr = (resp, e, func_name) => {
-    console.log(`======================== ${func_name} ==========================`);
+    console.log(`==== ${func_name}: ${e}`);
     if (!!e.message) {
         RespCustomCode(resp, undefined, e.message, 501);
     } else if (!!e.sqlMessage) {
         RespCustomCode(resp, undefined, e.sqlMessage, 501);
+    } else {
+        RespCustomCode(resp, undefined, e, 501);
     }
 }
 
@@ -37,11 +39,12 @@ exports.DB_RESP         = DB_RESP;
 exports.RespCustomCode  = RespCustomCode;
 exports.CatchErr        = CatchErr;
 
-exports.SuccessResp = (resp, data, description = "Thành công") => {
+exports.SuccessResp = (resp, data, description = "Success") => {
     RespCustomCode(resp, data, description, 200);
 }
 
 exports.CREATE_TRANSPORTER = () => {
+    console.log(process.env.EMAIL, process.env.PASSWORD);
     return nodemailer.createTransport({
         service: "gmail",
         auth: {
@@ -54,17 +57,17 @@ exports.CREATE_TRANSPORTER = () => {
 exports.Authenticate = async (req, resp, next) => {
     try {
         if (!req.headers.authorization) {
-            RespCustomCode(resp, undefined, "Vui lòng xác thực để tiếp tục!", 403);
+            RespCustomCode(resp, undefined, "Login required!", 403);
         } else {
             const authorizationHeader = req.headers.authorization;
             if (authorizationHeader.indexOf("Bearer") === -1) {
-                RespCustomCode(resp, undefined, "Token không hợp lệ!", 401);
+                RespCustomCode(resp, undefined, "Token format invalid!", 401);
             } else {
                 const token = authorizationHeader.split(" ")[1];
                 jwt.verify(token, JWT_SECRET_KEY, function(err, decoded) {
                     if (err) {
-                        console.log("=== Authenticate - UtilsFunction.js ===: ", e);
-                        RespCustomCode(resp, undefined, "Token hết hạn hoặc không hợp lệ!", 401);
+                        console.log("=== Authenticate - UtilsFunction.js ===: ", err.message);
+                        RespCustomCode(resp, undefined, "Token invalid!", 401);
                     } else {
                         req.app.locals.uid      = decoded.uid;
                         req.app.locals.email    = decoded.email;
@@ -75,12 +78,12 @@ exports.Authenticate = async (req, resp, next) => {
             }
         }
     } catch (e) {
-        RespCustomCode(resp, undefined, e, 500);
+        RespCustomCode(resp, undefined, e.message, 500);
     }
 }
 
 exports.HOST_PORT       = PORT;
-exports.HOST_ADDRESS    = `${ip.address()}:${PORT}/`;
+exports.HOST_ADDRESS    = `http:\/\/${ip.address()}:${PORT}/`;
 exports.IMAGE_PATH      = IMAGE_PATH;
 exports.SALT_ROUND      = 5;
 exports.JWT_SECRET_KEY  = JWT_SECRET_KEY;

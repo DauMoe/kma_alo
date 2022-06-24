@@ -1,8 +1,10 @@
 const express       = require("express");
 const app           = express();
 const cors          = require("cors");
+const dotenv        = require("dotenv").config();
+const path          = require("path");
 const { HOST_PORT, HOST_ADDRESS } = require("./Utils/UtilsFunction");
-const UsersRouter = require("./components/users/UsersRouter");
+const UsersRouter = require("./components/Users/UsersRouter");
 const passport = require("passport");
 const expressSession = require("express-session");
 const flash = require("connect-flash");
@@ -14,9 +16,10 @@ app.use(expressSession({saveUninitialized: false, secret: "daumoe", cookie: {max
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session({saveUninitialized: false, secret: "daumoe", cookie: {maxAge: MAX_AGE_SESSION, secure: true}, resave: false}));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use("/users", UsersRouter);
 
 app.listen(HOST_PORT, function() {
-    console.log(`Server is running at: http://${HOST_ADDRESS}`);
+    console.log(`Host IP: '${HOST_ADDRESS}'`);
 })

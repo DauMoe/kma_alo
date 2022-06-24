@@ -14,6 +14,6 @@ exports.GetAllPrivateChatIDDAO = async(uid) => {
         return DB_RESP(200, r1);
     } catch (e) {
         DB_ERR(FUNC_NAME, SQL_BIND, e.message);
-        return DB_RESP(900, e.message);
+        return DB_RESP(503, e.message);
     }
 }
