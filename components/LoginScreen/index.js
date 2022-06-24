@@ -1,13 +1,12 @@
-import React, { useState } from "react";;
+import React, { useEffect, useRef, useState } from "react";;
 import styled from "styled-components/native";
-import { View, Text, TextInput, KeyboardAvoidingView, TouchableWithoutFeedback, Platform, Dimensions, ToastAndroid, ImageBackground } from "react-native";
-import { Button, AnimatedFAB, HelperText } from "react-native-paper";
+import { View, Text, TextInput, KeyboardAvoidingView, Dimensions } from "react-native";
+import { Button, HelperText } from "react-native-paper";
 import { FORGET_PASSWORD_SCREEN, MAIN_SCREEN } from "../ScreenName";
-import {axiosConfig, setToken} from "../ReduxSaga/AxiosConfig";
-import AsyncStorageNpm from "@react-native-async-storage/async-storage";
 import BgImage from "./../Media/login_background.svg";
 import { TextInput as TextInputRNPaper } from "react-native-paper";
-import { LOCAL_LOGIN } from './../API_Definition';
+import { useDispatch, useSelector } from "react-redux";
+import { LocalLoginAction } from "../ReduxSaga/Authenticator/Actions";
 
 const LoginScreenWrapper = styled(View)`
     height          : ${props => props.height + "px"};
@@ -83,13 +82,16 @@ const CreateNewAccount = styled(Text)`
 const LoginScreen = function(props) {
     const { navigation }            = props;
     const {width, height}           = Dimensions.get("window");
-    const [username, setUsername]   = useState("");
+    const [username, setUsername]   = useState("dad");
     const [userErr, setUserErr]     = useState("");
-    const [password, setPassword]   = useState("");
+    const [password, setPassword]   = useState("sdsad");
     const [passErr, setPassErr]     = useState("");
     const [showPass, setPlainPass]  = useState(false);
-    const [isLoading, setLoading]   = useState(false);
+    const authenticator             = useSelector(state => state.Authenticator);
+    const dispatch                  = useDispatch();
+    const isMounted                 = useRef();
 
+    console.log(authenticator);
     const GotoForgetpasswordScreen = function() {
         navigation.push(FORGET_PASSWORD_SCREEN);
     }
@@ -111,40 +113,20 @@ const LoginScreen = function(props) {
         } else {
             setPassErr("");
         }
-        const data = {
-            username: username,
-            password: password
-        };
-        setLoading(true);
-        axiosConfig().post(LOCAL_LOGIN, data)
-            .then(r => {
-                const token = r.data.data.token;
-                setToken(token);
-                AsyncStorageNpm.setItem("token", "", function(err) {
-                    if (err) {
-                        console.error("Login-1 (Token return but can't save to async store): ", err);
-                        ToastAndroid.show("Sorry, please try again later (code: Login-1)", ToastAndroid.SHORT);
-                    } else {
-                        navigation.navigate(MAIN_SCREEN);
-                    }
-                });
-            })
-            .catch(e => {
-                console.error("Login-2: ", e.response.data.description);
-                const { status, data } = e.response;
-                console.log(status);
-                if (status === 401) {
-                    setUserErr(data.description);
-                    setPassErr("");
-                } else {
-                    setUserErr("");
-                    setPassErr(data.description);
-                }
-            })
-            .finally(function() {
-                setLoading(false);
-            });
+
+        dispatch(LocalLoginAction(username, password));
     }
+
+    useEffect(function() {
+        if (!isMounted.current) {
+            //didMount
+            isMounted.current = true;
+        } else {
+            //didUpdate
+            if (authenticator.loaded && authenticator.token) navigation.navigate(MAIN_SCREEN)
+
+        }
+    });
 
     return(
         <KeyboardAvoidingView behavior="height">
@@ -158,7 +140,7 @@ const LoginScreen = function(props) {
                     
                     <View>
                         <TextInputRNPaper 
-                            autoFocus
+                            autoFocus={false}
                             label={"Username or email"} 
                             mode="flat"
                             value={username}
@@ -168,7 +150,7 @@ const LoginScreen = function(props) {
                                 backgroundColor: "white"
                             }}
                             />
-                        <HelperText type="error" visible={userErr.length > 0}>{userErr}</HelperText>
+                        <HelperText type="error" visible={authenticator.error_code === 401}>{authenticator.error_msg}</HelperText>
                     </View>
 
                     <View style={{marginTop: 20}}>
@@ -184,7 +166,7 @@ const LoginScreen = function(props) {
                                 backgroundColor: "white"
                             }}
                             />
-                        <HelperText type="error" visible={passErr.length > 0}>{passErr}</HelperText>
+                        <HelperText type="error" visible={authenticator.error_code !== 401}>{authenticator.error_msg}</HelperText>
                     </View>
 
                     <View style={{marginTop: 5}}>
@@ -196,8 +178,8 @@ const LoginScreen = function(props) {
                             uppercase={false} 
                             color="white" 
                             style={{backgroundColor: "#58B7E9", borderRadius: 10}} 
-                            loading={isLoading} 
-                            disabled={isLoading} 
+                            loading={!authenticator.loaded} 
+                            disabled={!authenticator.loaded} 
                             onPress={Authenticate}>
                                 Login
                         </Button>

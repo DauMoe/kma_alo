@@ -1,21 +1,18 @@
-import { applyMiddleware, combineReducers, createStore } from "redux";
-import Comments from "./Comments/Reducers";
-import Authenticator from './Authenticator/Reducers';
-import { SIGNED_IN_SUCESS } from "./Authenticator/Actions";
-import { setToken } from "./AxiosConfig";
+import { applyMiddleware, combineReducers, createStore, compose } from "redux";
+import Comments, { initState as initStateComments } from "./Comments/Reducers";
+import Authenticator, { initState as initStateAuthen} from './Authenticator/Reducers';
+import createSagaMiddleware from "redux-saga";
+import rootSaga from "./RootSaga";
+
+const sagaMiddleware    = createSagaMiddleware();
+const middlewares       = [sagaMiddleware];
 
 const rootReducer = combineReducers({
     Comments, Authenticator
 });
 
-const saveToken = store => next => action => {
-    const { type, data } = action;
-    if (type === SIGNED_IN_SUCESS) {
-        setToken(data.token);
-    }
-    return next(action);
-};
+const store = createStore(rootReducer, applyMiddleware(...middlewares));
 
-const store = createStore(rootReducer, applyMiddleware(saveToken));
+sagaMiddleware.run(rootSaga);
 
 export default store;

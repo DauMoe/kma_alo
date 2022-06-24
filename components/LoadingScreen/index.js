@@ -27,11 +27,8 @@ const LoadingScreen = function(props) {
     const authenticator     = useSelector(state => state.Authenticator);
 
     useEffect(function() {
-        if (authenticator.token !== undefined) {
-            axiosConfig.get("/check_valid")
-                .then(r => {
-
-                });
+        if (authenticator.token) {
+            axiosConfig("/check_valid_token", "get", undefined);
         } else {
             navigation.navigate(LOGIN_SCREEN);
         }

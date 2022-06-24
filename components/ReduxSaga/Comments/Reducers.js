@@ -1,6 +1,6 @@
 import { LOADING_COMMENT, LOAD_COMMENT_FAIL, LOAD_COMMENT_SUCCESS } from './Actions';
 
-const initState = {
+export const initState = {
     loaded  : true,
     error   : false,
     error_msg: undefined,
