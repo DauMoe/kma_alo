@@ -1,8 +1,8 @@
 import { all } from "redux-saga/effects";
-import LocalLoginSaga from "./Authenticator/Saga";
+import { CheckAllLocalDataSaga, LocalLoginSaga } from "./Authenticator/Saga";
 
 function* rootSaga() {
-    yield all([LocalLoginSaga()]);
+    yield all([LocalLoginSaga(), CheckAllLocalDataSaga()]);
 }
 
 export default rootSaga;

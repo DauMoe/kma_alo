@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";;
 import styled from "styled-components/native";
 import { View, Text, TextInput, KeyboardAvoidingView, Dimensions } from "react-native";
 import { Button, HelperText } from "react-native-paper";
-import { FORGET_PASSWORD_SCREEN, MAIN_SCREEN } from "../ScreenName";
+import { FORGET_PASSWORD_SCREEN, MAIN_SCREEN } from "../Definition";
 import BgImage from "./../Media/login_background.svg";
 import { TextInput as TextInputRNPaper } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
@@ -124,7 +124,6 @@ const LoginScreen = function(props) {
         } else {
             //didUpdate
             if (authenticator.loaded && authenticator.token) navigation.navigate(MAIN_SCREEN)
-
         }
     });
 

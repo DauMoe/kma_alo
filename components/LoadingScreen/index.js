@@ -1,10 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Dimensions, View, Text } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components/native";
 import LogoSvg from "./../Media/logo.svg";
 import { axiosConfig } from '../ReduxSaga/AxiosConfig';
-import { LOGIN_SCREEN } from '../ScreenName';
+import { LOGIN_SCREEN, MAIN_SCREEN } from '../Definition';
+import { _db } from "../Utils";
+import { CheckAllLocalData } from "../ReduxSaga/CheckLocalData/Actions";
 
 const LoadingScreenWrapper = styled.View`
     height          : ${props => props.height + "px"};
@@ -25,18 +27,22 @@ const LoadingScreen = function(props) {
     const { navigation }    = props;
     const { width, height } = Dimensions.get("window");
     const authenticator     = useSelector(state => state.Authenticator);
+    const isMounted         = useRef();
+    const dispatch          = useDispatch();
 
     useEffect(function() {
-        if (authenticator.token) {
-            axiosConfig("/check_valid_token", "get", undefined);
+        if (!isMounted.current) {
+            dispatch(CheckAllLocalData());
+            isMounted.current = true;
         } else {
-            navigation.navigate(LOGIN_SCREEN);
+            if (authenticator.token) {
+                //Check valid => (YES) Navigate to MAIN SCREEN => (NO) Navigate to LOGIN SCREEN
+                navigation.navigate(MAIN_SCREEN);
+            } else {
+                navigation.navigate(LOGIN_SCREEN);
+            }
         }
-        /**
-         * @todo:
-         *  - Get all chat => compare with local DB and see if last timestamp is proximate => (YES) not update || (NO) get all again
-         */
-    });
+    }, []);
 
     return (
         <LoadingScreenWrapper height={height}>

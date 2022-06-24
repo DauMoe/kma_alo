@@ -1,6 +1,8 @@
 import axios from "axios";
+import { TOKEN_TABLE, TOKEN_TB_VALUE } from "../Definition";
+import { _db } from '../Utils';
 
-const DEFAULT_BASE_URL = "http://192.168.1.36:8080";
+export const DEFAULT_BASE_URL = "http://192.168.1.36:8080";
 
 const instance = axios.create({
     timeout: 1000 * 1,
@@ -12,7 +14,30 @@ export const setBaseUrl = function(baseURL) {
 }
 
 export const setToken = function(token) {
+    console.info("TOKEN: ", token);
     instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    const SQL = `INSERT INTO ${TOKEN_TABLE} (${TOKEN_TB_VALUE}) VALUES (?)`;
+    // _db.transaction(function(tx) {
+    //     tx.executeSql(
+    //         SQL, [token], function(tx1, result) {
+    //             console.log("ok");
+    //             console.log(result);
+    //         }
+    //     );
+    // });
+};
+
+export const clearToken = function(token) {
+    instance.defaults.headers.common['Authorization'] = undefined;
+    const SQL = `DELETE FROM ${TOKEN_TABLE} (${TOKEN_TB_VALUE}) VALUES (?)`;
+    _db.transaction(function(tx) {
+        tx.executeSql(
+            SQL, [token], function(tx1, result) {
+                console.log("delete");
+                console.log(result);
+            }
+        );
+    });
 };
 
 export const axiosConfig = function(endpoint, method, config) {
