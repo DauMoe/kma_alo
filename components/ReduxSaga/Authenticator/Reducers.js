@@ -2,12 +2,13 @@ import { clearToken, DEFAULT_BASE_URL, setToken } from "../AxiosConfig";
 import { HOST_IS_EXIST, HOST_IS_NOT_EXIST, SIGNED_IN_FAIL, SIGNED_IN_SUCESS, SIGNED_OUT_SUCESS, SINGING_IN, TOKEN_IS_EXIST, TOKEN_IS_NOT_EXIST } from "./ActionTypes";
 
 export const initState = {
-    url         : DEFAULT_BASE_URL,
+    baseUrl     : DEFAULT_BASE_URL,
     loaded      : true,
     error       : false,
     error_code  : undefined,
     error_msg   : undefined,
-    token       : undefined
+    token       : undefined,
+    first_check : true
 };
 
 const Authenticator = function(state = initState, action) {
@@ -35,7 +36,6 @@ const Authenticator = function(state = initState, action) {
             }
         case SIGNED_IN_FAIL:
             console.log("FAIL: ", data);
-            setToken("Test");
             const { err } = data;
             if (err.code === "ECONNABORTED") {
                 return {
@@ -43,7 +43,7 @@ const Authenticator = function(state = initState, action) {
                     loaded      : true,
                     error       : true,
                     error_code  : 402,
-                    error_msg   : "Can't connect to server",
+                    error_msg   : `Can't connect to server (${state.baseUrl})`,
                     token       : undefined
                 }    
             }
@@ -68,24 +68,24 @@ const Authenticator = function(state = initState, action) {
         case TOKEN_IS_NOT_EXIST:
             return {
                 ...state,
-                token: undefined
+                token: undefined,
+                first_check: false
             }
         case TOKEN_IS_EXIST:
-            console.info("TOKEN EXIST: ", data);
             return {
                 ...state,
-                token: data.token
+                token: data.token,
+                first_check: false
             }
         case HOST_IS_EXIST:
-            console.info("HOST EXIST: ", data);
             return {
                 ...state,
-                url: data.url
+                baseUrl: data.baseUrl
             }
         case HOST_IS_NOT_EXIST:
             return {
                 ...state,
-                url: DEFAULT_BASE_URL
+                baseUrl: DEFAULT_BASE_URL
             }
         default:
             return state;

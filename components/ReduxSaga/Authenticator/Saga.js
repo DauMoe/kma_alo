@@ -44,9 +44,6 @@ function* CheckAllLocalData() {
         
         if (TokenDataLength === 0) {
             yield put(TokenIsNotExist());
-            yield put(TokenIsExist({
-                token: "ffff"
-            }));
         } else {
             yield put(TokenIsExist({
                 token: "ffff"

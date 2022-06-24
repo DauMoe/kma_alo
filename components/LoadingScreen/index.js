@@ -6,7 +6,7 @@ import LogoSvg from "./../Media/logo.svg";
 import { axiosConfig } from '../ReduxSaga/AxiosConfig';
 import { LOGIN_SCREEN, MAIN_SCREEN } from '../Definition';
 import { _db } from "../Utils";
-import { CheckAllLocalData } from "../ReduxSaga/CheckLocalData/Actions";
+import { CheckAllLocalData } from "../ReduxSaga/Authenticator/Actions";
 
 const LoadingScreenWrapper = styled.View`
     height          : ${props => props.height + "px"};
@@ -27,13 +27,12 @@ const LoadingScreen = function(props) {
     const { navigation }    = props;
     const { width, height } = Dimensions.get("window");
     const authenticator     = useSelector(state => state.Authenticator);
-    const isMounted         = useRef();
     const dispatch          = useDispatch();
 
     useEffect(function() {
-        if (!isMounted.current) {
+        console.log("HMM");
+        if (authenticator.first_check) {
             dispatch(CheckAllLocalData());
-            isMounted.current = true;
         } else {
             if (authenticator.token) {
                 //Check valid => (YES) Navigate to MAIN SCREEN => (NO) Navigate to LOGIN SCREEN
@@ -42,7 +41,7 @@ const LoadingScreen = function(props) {
                 navigation.navigate(LOGIN_SCREEN);
             }
         }
-    }, []);
+    }, [authenticator.first_check]);
 
     return (
         <LoadingScreenWrapper height={height}>
