@@ -56,7 +56,7 @@ exports.AuthenticateSuccess = async(req, resp) => {
         uid     : userInfo.UID,
         email   : userInfo.EMAIL,
         username: userInfo.USERNAME
-    }, JWT_SECRET_KEY, { expiresIn: 60 * 60 * 60 });
+    }, JWT_SECRET_KEY, { expiresIn: 60 * 60 * 60000 });
     SuccessResp(resp, {
         token   : token,
         username: userInfo.USERNAME    === null ? "" : userInfo.USERNAME,

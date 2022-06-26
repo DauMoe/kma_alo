@@ -57,7 +57,7 @@ exports.CREATE_TRANSPORTER = () => {
 exports.Authenticate = async (req, resp, next) => {
     try {
         if (!req.headers.authorization) {
-            RespCustomCode(resp, undefined, "Login required!", 403);
+            RespCustomCode(resp, undefined, "Login required!", 401);
         } else {
             const authorizationHeader = req.headers.authorization;
             if (authorizationHeader.indexOf("Bearer") === -1) {

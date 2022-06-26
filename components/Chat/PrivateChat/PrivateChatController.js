@@ -1,6 +1,6 @@
 const { GetNumber } = require("../../../Utils/GetValue");
 const { CatchErr, RespCustomCode, SuccessResp } = require("../../../Utils/UtilsFunction");
-const { GetAllPrivateChatIDDAO } = require("./PrivateChatDAO");
+const { GetAllPrivateChatIDDAO, CreateNewPrivateChatDAO } = require("./PrivateChatDAO");
 
 const FILE_NAME = " - PrivateChatController.js";
 
@@ -35,6 +35,12 @@ exports.CreateNewPrivateChat = async(req, resp) => {
     try {
         const toUid     = GetNumber(reqData, "uid");
         const fromUid   = req.app.locals.uid;
+        const result    = await CreateNewPrivateChatDAO(fromUid, toUid);
+        if (result.code === 200) {
+            SuccessResp(resp);
+        } else {
+            RespCustomCode(resp, result.code, result.msg);
+        }
     } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
     }

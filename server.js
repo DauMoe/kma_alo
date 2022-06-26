@@ -8,6 +8,7 @@ const UsersRouter = require("./components/Users/UsersRouter");
 const passport = require("passport");
 const expressSession = require("express-session");
 const flash = require("connect-flash");
+const PrivateChatRouter = require("./components/Chat/PrivateChat/PrivateChatRouter");
 const MAX_AGE_SESSION = 1000 * 60 * 60 * 1;
 
 app.use(cors());
@@ -19,6 +20,7 @@ app.use(passport.session({saveUninitialized: false, secret: "daumoe", cookie: {m
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use("/users", UsersRouter);
+app.use("/private_chat", PrivateChatRouter);
 
 app.listen(HOST_PORT, function() {
     console.log(`Host IP: '${HOST_ADDRESS}'`);
