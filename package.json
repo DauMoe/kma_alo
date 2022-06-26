@@ -19,6 +19,7 @@
     "ip": "^1.1.8",
     "jsonwebtoken": "^8.5.1",
     "mysql": "^2.18.1",
+    "mysql2": "^2.3.3",
     "nodemailer": "^6.7.5",
     "passport": "^0.6.0",
     "passport-json": "^1.2.0",
