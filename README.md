@@ -13,3 +13,6 @@
 
 # Incoming (fee apply)
  - [ ] Change password
+
+# Server:
+ - `ssh -i f.pem azureuser@20.89.56.87`
