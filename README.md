@@ -16,3 +16,6 @@
 
 # Server:
  - `ssh -i f.pem azureuser@20.89.56.87`
+
+# DB diagram
+![DB diagram](./DB%20Design.png)
