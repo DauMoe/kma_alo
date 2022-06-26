@@ -15,13 +15,13 @@ exports.NewLocalUserDAO = async (first_name, last_name, username, mobile, email,
         if (r1.length > 0) {
             return DB_RESP(400, "Email or username existed");
         } else {
-            // SQL                 = "INSERT INTO USERS (FIRST_NAME, LAST_NAME, USERNAME, MOBILE, EMAIL, PASSWORD, EMAIL_CONFIRMED) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            // SQL_BIND            = mysql.format(SQL, [first_name, last_name, username, mobile, email, password, 0]);
-            // const {insertId}    = await query(SQL_BIND);
-            // SQL                 = "UPDATE USERS SET VERIFY_EMAIL_ID = ? WHERE UID = ?";
+            SQL                 = "INSERT INTO USERS (FIRST_NAME, LAST_NAME, USERNAME, MOBILE, EMAIL, PASSWORD, EMAIL_CONFIRMED) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            SQL_BIND            = mysql.format(SQL, [first_name, last_name, username, mobile, email, password, 0]);
+            const {insertId}    = await query(SQL_BIND);
+            SQL                 = "UPDATE USERS SET VERIFY_EMAIL_ID = ? WHERE UID = ?";
             const cf_id         = uuidv4();
-            // SQL_BIND            = mysql.format(SQL, [insertId, cf_id]);
-            // await query(SQL_BIND);
+            SQL_BIND            = mysql.format(SQL, [insertId, cf_id]);
+            await query(SQL_BIND);
             return DB_RESP(200, cf_id);
         }
     } catch (e) {
@@ -56,6 +56,20 @@ exports.GetUserInfoDAO = async(uid) => {
         SQL_BIND    = mysql.format(SQL, [uid]);
         const r1    = await query(SQL_BIND);
         return DB_RESP(200, r1);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
+
+exports.ActiveAccountDAO = async(uuid) => {
+    const FUNC_NAME = `ActiveAccountDAO${FILE_NAME}`;
+    let SQL, SQL_BIND;
+    try {
+        SQL         = "UPDATE USERS SET EMAIL_CONFIRMED = 1 WHERE VERIFY_EMAIL_ID = ?";
+        SQL_BIND    = mysql.format(SQL, [uuid]);
+        await query(SQL_BIND);
+        return DB_RESP(200, "Success");
     } catch (e) {
         DB_ERR(FUNC_NAME, SQL_BIND, e.message);
         return DB_RESP(503, e.message);

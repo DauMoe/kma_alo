@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
-const { GetString } = require("../../Utils/GetValue");
+const { GetString, GetNumber } = require("../../Utils/GetValue");
 const { CatchErr, SuccessResp, RespCustomCode, CREATE_TRANSPORTER, SALT_ROUND, JWT_SECRET_KEY, HOST_ADDRESS} = require("../../Utils/UtilsFunction");
-const { NewLocalUserDAO, LocalLoginDAO, GetUserInfoDAO } = require("./UsersDAO");
+const { NewLocalUserDAO, LocalLoginDAO, GetUserInfoDAO, ActiveAccountDAO } = require("./UsersDAO");
 const jwt = require("jsonwebtoken");
 
 const FILE_NAME = " - UsersController.js";
@@ -91,7 +91,17 @@ exports.GetUserInfo = async(req, resp) => {
 }
 
 exports.VerifyAccount = async(req, resp) => {
-    resp.send(`
-        <img style="text-align: center" src="${HOST_ADDRESS}create_account.svg" width="100%" height="100%"/>
-    `);
+    try {
+        const uuid      = GetString(req.params, "uuid");
+        const result    = await ActiveAccountDAO(uuid);
+        if (result.code === 200) {
+            resp.send(`
+                <img style="text-align: center" src="${HOST_ADDRESS}create_account.svg" width="100%" height="100%"/>
+            `);
+        } else {
+            resp.send(`<h3>${result}</h3>`);
+        }
+    } catch(e) {
+        resp.send("<h1>Missing params!</h1>");
+    }
 }

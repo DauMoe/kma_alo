@@ -9,6 +9,6 @@ const {PassportJsonAuthenticate} = require("../Passport/PassportJsonInit");
 UsersRouter.post("/local_signup", Authenticate, NewLocalUser);
 UsersRouter.post("/local_login", CheckRequiredLoginField, PassportJsonAuthenticate, AuthenticateSuccess);
 UsersRouter.get("/info", Authenticate, GetUserInfo);
-UsersRouter.get("/verify", VerifyAccount);
+UsersRouter.get("/verify/:uuid", VerifyAccount);
 
 module.exports = UsersRouter;
