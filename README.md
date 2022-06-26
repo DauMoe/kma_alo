@@ -11,4 +11,9 @@
  - [RN Paper Custom font](https://callstack.github.io/react-native-paper/fonts.html)
 
 ## TODO:  
- - [ ] Use local DB stores host IP
+ - [x] Use local DB stores host IP
+### TODO Jun 26 2022
+ - [ ] Create chat UI
+ - [ ] Create Profile UI
+ - [ ] Create search friend UI
+ - [ ] Create comments UI
