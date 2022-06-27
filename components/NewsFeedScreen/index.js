@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, ScrollView, Dimensions } from "react-native";
-import CommentsScreen from "../CommentsScreen";
 import SingleNews from "./SingleNews";
 import styled from 'styled-components/native';
+import CommentsScreen from "./CommentScreen";
 
 const NewsFeedWrapper = styled(View)`
     height: ${props => props.height + "px"};
@@ -11,16 +11,24 @@ const NewsFeedWrapper = styled(View)`
 
 const NewsFeedScreen = function(props) {
     const { width, height } = Dimensions.get("window");
+    const [openComment, setOpen] = useState(false);
+
+    const openCommentScreen = function(show) {
+        setOpen(show);
+    }
+
     return(
         <NewsFeedWrapper height={height}>
-            <ScrollView  style={{backgroundColor: "black"}}>
-                <SingleNews/>
-                <SingleNews/>
-                <SingleNews/>
-                <SingleNews/>
-                <SingleNews/>
+            <ScrollView style={{backgroundColor: "black"}}>
+                <SingleNews showComment={openCommentScreen}/>
+                <SingleNews showComment={openCommentScreen}/>
+                <SingleNews showComment={openCommentScreen}/>
+                <SingleNews showComment={openCommentScreen}/>
+                <SingleNews showComment={openCommentScreen}/>
+                <SingleNews showComment={openCommentScreen}/>
+                <SingleNews showComment={openCommentScreen}/>
             </ScrollView>
-            <CommentsScreen OpenCommentScreen={true}/>
+            <CommentsScreen show={openComment}/>
         </NewsFeedWrapper>
     );
 }

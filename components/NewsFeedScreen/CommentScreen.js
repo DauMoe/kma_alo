@@ -1,42 +1,32 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, Dimensions } from "react-native";
 import SwipeUpDown from "react-native-swipe-up-down";
+import { useSelector } from "react-redux";
 import styled from "styled-components/native";
-
-const CommentsWrapper = styled(View)`
-    height: ${props => props.height + "px"};
-    width: ${props => props.width + "px"};
-    background-color: gray;
-    position: absolute;
-    bottom: 0;
-    z-index: 10;
-`;
-
-const HandleSwipeDown = function() {
-    console.log("Down");
-}
 
 const Comments = function() {
     return(
-        <View><Text>fff</Text></View>
-    )
-};
+        <View></View>
+    );
+}
 
 const CommentsScreen = function(props) {
-    const { OpenCommentScreen } = props;
+    const { navigation, show } = props;
     const { width, height } = Dimensions.get("screen");
+    const { loaded, err, error_msg, data } = useSelector(state => state.Comments);
     const swipeUpDownRef = useRef();
     useEffect(function() {
-        if (OpenCommentScreen) swipeUpDownRef.current.showFull();
-    }, []);
+        if (show) swipeUpDownRef.current.showFull();
+    });
     return(
         <SwipeUpDown
-            itemFull={<Comments />}
+            itemFull={<Comments/>}
             swipeHeight={height}
             ref={swipeUpDownRef}
             extraMarginTop={0}
             disableSwipeIcon
-            style={{backgroundColor: "green"}}
+            animation="easeInEaseOut"
+            style={{backgroundColor: "#ABABAB"}}
         />
     );
 }

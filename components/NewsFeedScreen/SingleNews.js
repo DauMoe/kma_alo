@@ -1,7 +1,9 @@
 import React from "react";
 import { View, Text, Image } from "react-native";
 import { Avatar, Button } from "react-native-paper";
+import { useDispatch } from "react-redux";
 import styled from "styled-components/native";
+import { GetComments } from "../ReduxSaga/Comments/ActionFunctions";
 
 const NewsWrapper = styled(View)`
     padding         : 10px;
@@ -75,7 +77,14 @@ const CommentButton = styled(Button)`
 `; 
 
 const SingleNews = function(props) {
-    const { width, height } = props;
+    const { width, height, showComment } = props;
+    const dispatch          = useDispatch();
+
+    const LoadComments = function(postId) {
+        dispatch(GetComments(postId));
+        showComment(true);
+    }
+
     return(
         <NewsWrapper>
             <NewsHeader>
@@ -100,7 +109,7 @@ const SingleNews = function(props) {
 
             <NewsInteractive>
                 <ReactionButton onPress={e => console.log("Like")} onLongPress={e => console.log("Hold to choose")} uppercase={false} icon='thumb-up'>Like</ReactionButton>
-                <CommentButton uppercase={false} icon='message-reply'>Comment</CommentButton>
+                <CommentButton onPress={_ => LoadComments(1)} uppercase={false} icon='message-reply'>Comment</CommentButton>
             </NewsInteractive>
         </NewsWrapper>
     );

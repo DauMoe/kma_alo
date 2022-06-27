@@ -16,7 +16,7 @@ const App = function(props) {
         screenOptions={{
           headerShown: false
         }}
-        initialRouteName={LOADING_SCREEN}>
+        initialRouteName={MAIN_SCREEN}>
           <Stack.Screen
             name={LOADING_SCREEN}
             component={LoadingScreen}
