@@ -68,16 +68,16 @@ const LoginLabel = styled(Text)`
 
 const ForgetPassword = styled(Text)`
     font-family     : "NunitoMediumItalic";
-    color: #37B4F3;
-    text-decoration: underline;
-    text-align: right;
+    color           : #37B4F3;
+    text-decoration : underline;
+    text-align      : right;
 `;
 
 const CreateNewAccount = styled(Text)`
     font-family     : "NunitoSemiBold";
-    color: #37B4F3;
-    text-align: center;
-    font-size: 15px;
+    color           : #37B4F3;
+    text-align      : center;
+    font-size       : 15px;
 `;
 
 const LoginScreen = function(props) {

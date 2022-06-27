@@ -1,12 +1,44 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, Dimensions } from "react-native";
+import { Avatar } from "react-native-paper";
 import SwipeUpDown from "react-native-swipe-up-down";
 import { useSelector } from "react-redux";
 import styled from "styled-components/native";
 
+const CommentsWrapper = styled(View)`
+    padding: 20px;
+`;
+
+const CommentWrapper = styled(View)`
+    display: flex;
+    flex-direction: row;
+`;
+
+const AvatarWrapper = styled(View)`
+
+`;
+
+const ContentWrapper = styled(View)`
+    border-radius: 15px;
+    background-color: #5D5D5D;
+
+`;
+
+
 const Comments = function() {
     return(
-        <View></View>
+        <CommentsWrapper>
+
+            <CommentWrapper>
+                <AvatarWrapper>
+                    <Avatar.Text size={50} label="AB" style={{marginRight: 10}}/>
+                </AvatarWrapper>
+                <ContentWrapper>
+                    <Text>ffffffffff</Text>
+                </ContentWrapper>
+            </CommentWrapper>
+
+        </CommentsWrapper>
     );
 }
 
