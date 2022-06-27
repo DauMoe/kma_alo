@@ -4,6 +4,8 @@ import { Modal, Portal, Text, Button, Provider, FAB } from 'react-native-paper';
 import styled from 'styled-components/native';
 import { setBaseUrl } from './../ReduxSaga/AxiosConfig';
 import { useState } from 'react';
+import { _db } from '../Utils';
+import { HOST_TABLE, HOST_TB_VALUE } from '../Definition';
 
 const SetIPButton = styled(FAB)`
   position          : absolute;
@@ -25,14 +27,15 @@ const LoginTextInput = styled(TextInput)`
 const SetIPModal = function(props) {
     const [visible, setVisible] = useState(false);
     const [hostIP, setHostIP]   = useState(null);
-    const IPReg                 = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/gi;
+    // const IPReg                 = /b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):\d{1,5}\b/
 
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
     const containerStyle = {backgroundColor: 'white', padding: 20};
 
     const SetBaseUrlinModal = function() {
-        if (!IPReg.test(hostIP)) {
+        // if (!IPReg.test(hostIP)) {
+        if (false) {
             ToastAndroid.show("Your address is not an IP address!", ToastAndroid.SHORT);
         } else {
             ToastAndroid.show(`Now, calling to IP: ${hostIP}`, ToastAndroid.SHORT);

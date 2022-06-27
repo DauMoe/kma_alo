@@ -1,10 +1,10 @@
 import { takeEvery, call, takeLatest, put, all } from "redux-saga/effects";
 import { LOCAL_LOGIN } from "../../API_Definition";
 import { axiosConfig } from "../AxiosConfig";
-import { SINGING_IN } from "./ActionTypes";
+import { CHECK_ALL_LOCAL_DATA, SINGING_IN } from "./ActionTypes";
 import { HostExist, HostIsNotExist, LocalAuthenFail, LocalAuthenSuccess, TokenIsExist, TokenIsNotExist } from './Actions';
-import { CHECK_ALL_LOCAL_DATA } from "../CheckLocalData/ActionTypes";
 import { CheckLocalHost, CheckLocalToken } from "../../Utils";
+import { HOST_TB_VALUE } from "../../Definition";
 
 function* LocalLogin({data}) {
     const { username, password } = data;
@@ -15,11 +15,11 @@ function* LocalLogin({data}) {
     try {
         const LocalLoginCall    = call(axiosConfig, LOCAL_LOGIN, "post", reqBody);
         const [LocalLoginData]  = yield all([LocalLoginCall]);
-        console.log(LocalLoginData);
         yield put(LocalAuthenSuccess({
             token: "ffffff"
         }));
     } catch(e) {
+        console.error("SAGA LocalLogin: ", e.message);
         yield put(LocalAuthenFail(e));
     }
 }
@@ -39,7 +39,8 @@ function* CheckAllLocalData() {
         if (HostDataLength === 0) {
             yield put(HostIsNotExist());
         } else {
-            yield put(HostExist("http://192.168.1.1"));
+            const BaseURL = HostData.rows.item(0)[`${HOST_TB_VALUE}`];
+            yield put(HostExist(BaseURL));
         }
         
         if (TokenDataLength === 0) {

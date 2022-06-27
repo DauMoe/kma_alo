@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components/native";
 import LogoSvg from "./../Media/logo.svg";
 import { axiosConfig } from '../ReduxSaga/AxiosConfig';
-import { LOGIN_SCREEN, MAIN_SCREEN } from '../Definition';
+import { HOST_TABLE, LOGIN_SCREEN, MAIN_SCREEN } from '../Definition';
 import { _db } from "../Utils";
 import { CheckAllLocalData } from "../ReduxSaga/Authenticator/Actions";
 
@@ -30,7 +30,6 @@ const LoadingScreen = function(props) {
     const dispatch          = useDispatch();
 
     useEffect(function() {
-        console.log("HMM");
         if (authenticator.first_check) {
             dispatch(CheckAllLocalData());
         } else {

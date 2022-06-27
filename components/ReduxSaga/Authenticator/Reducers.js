@@ -35,9 +35,10 @@ const Authenticator = function(state = initState, action) {
                 token       : data.token
             }
         case SIGNED_IN_FAIL:
-            console.log("FAIL: ", data);
+            // console.log("FAIL: ", JSON.stringify(data));
             const { err } = data;
-            if (err.code === "ECONNABORTED") {
+            console.log("TATUS: ", err.status);
+            if (!err.status) {
                 return {
                     ...state,
                     loaded      : true,

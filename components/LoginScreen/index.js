@@ -2,11 +2,12 @@ import React, { useEffect, useRef, useState } from "react";;
 import styled from "styled-components/native";
 import { View, Text, TextInput, KeyboardAvoidingView, Dimensions } from "react-native";
 import { Button, HelperText } from "react-native-paper";
-import { FORGET_PASSWORD_SCREEN, MAIN_SCREEN } from "../Definition";
+import { FORGET_PASSWORD_SCREEN, HOST_TABLE, MAIN_SCREEN } from "../Definition";
 import BgImage from "./../Media/login_background.svg";
 import { TextInput as TextInputRNPaper } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { LocalLoginAction } from "../ReduxSaga/Authenticator/Actions";
+import { _db } from "../Utils";
 
 const LoginScreenWrapper = styled(View)`
     height          : ${props => props.height + "px"};
@@ -91,7 +92,6 @@ const LoginScreen = function(props) {
     const dispatch                  = useDispatch();
     const isMounted                 = useRef();
 
-    console.log(authenticator);
     const GotoForgetpasswordScreen = function() {
         navigation.push(FORGET_PASSWORD_SCREEN);
     }
