@@ -3,9 +3,10 @@ import React from "react";
 import LoadingScreen from "./components/LoadingScreen";
 import LoginScreen from './components/LoginScreen/index';
 import MainScreen from './components/MainScreen/index';
-import { FORGET_PASSWORD_SCREEN, LOADING_SCREEN, LOGIN_SCREEN, MAIN_SCREEN } from "./components/Definition";
+import {CHAT_SCREEN, FORGET_PASSWORD_SCREEN, LOADING_SCREEN, LOGIN_SCREEN, MAIN_SCREEN} from "./components/Definition";
 import SetIPModal from "./components/SetIPModal";
 import ForgetPasswordScreen from "./components/ForgetPasswordScreen";
+import ChatScreen from "./components/ChatScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -16,7 +17,7 @@ const App = function(props) {
         screenOptions={{
           headerShown: false
         }}
-        initialRouteName={MAIN_SCREEN}>
+        initialRouteName={CHAT_SCREEN}>
           <Stack.Screen
             name={LOADING_SCREEN}
             component={LoadingScreen}
@@ -32,6 +33,10 @@ const App = function(props) {
           <Stack.Screen
             name={MAIN_SCREEN}
             component={MainScreen}
+          />
+          <Stack.Screen
+              name={CHAT_SCREEN}
+              component={ChatScreen}
           />
       </Stack.Navigator>
       <SetIPModal/>

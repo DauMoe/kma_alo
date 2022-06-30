@@ -3,6 +3,7 @@ import { BottomNavigation } from "react-native-paper";
 import LoginScreen from "../LoginScreen";
 import NewsFeedScreen from '../NewsFeedScreen/index';
 import LoadingScreen from '../LoadingScreen/index';
+import ChatScreen from '../ChatScreen/index';
 
 const MainScreen = function(props) {
     const { navigation }        = props;
@@ -17,7 +18,7 @@ const MainScreen = function(props) {
     const renderScene = BottomNavigation.SceneMap({
       news_feed: NewsFeedScreen,
       friends: LoginScreen,
-      chat: LoginScreen,
+      chat: ChatScreen,
       profile: LoadingScreen
     });
   
