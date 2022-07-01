@@ -3,10 +3,18 @@ import React from "react";
 import LoadingScreen from "./components/LoadingScreen";
 import LoginScreen from './components/LoginScreen/index';
 import MainScreen from './components/MainScreen/index';
-import {CHAT_SCREEN, FORGET_PASSWORD_SCREEN, LOADING_SCREEN, LOGIN_SCREEN, MAIN_SCREEN} from "./components/Definition";
+import {
+    CHAT_SCREEN,
+    FORGET_PASSWORD_SCREEN,
+    LIST_CHATS_SCREEN,
+    LOADING_SCREEN,
+    LOGIN_SCREEN,
+    MAIN_SCREEN
+} from "./components/Definition";
 import SetIPModal from "./components/SetIPModal";
 import ForgetPasswordScreen from "./components/ForgetPasswordScreen";
 import ChatScreen from "./components/ChatScreen";
+import ListChatsScreen from "./components/ChatScreen/ListChatsScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -17,7 +25,7 @@ const App = function(props) {
         screenOptions={{
           headerShown: false
         }}
-        initialRouteName={CHAT_SCREEN}>
+        initialRouteName={LIST_CHATS_SCREEN}>
           <Stack.Screen
             name={LOADING_SCREEN}
             component={LoadingScreen}
@@ -37,6 +45,10 @@ const App = function(props) {
           <Stack.Screen
               name={CHAT_SCREEN}
               component={ChatScreen}
+          />
+          <Stack.Screen
+              name={LIST_CHATS_SCREEN}
+              component={ListChatsScreen}
           />
       </Stack.Navigator>
       <SetIPModal/>
