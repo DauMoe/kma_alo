@@ -17,5 +17,8 @@
 # Server:
  - `ssh -i f.pem azureuser@20.89.56.87`
 
+# Command
+- Import DB from file with CMD: `mysql -u username -p database_name < file.sql`
+- SCP file: `scp -i x.pem -r C:\kma_alo\BE\components azureuser@20.89.56.87:/home/azureuser/kma_alo/components`
 # DB diagram
 ![DB diagram](./DB%20Design.png)

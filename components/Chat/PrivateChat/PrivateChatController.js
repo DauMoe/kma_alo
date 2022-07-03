@@ -8,16 +8,21 @@ exports.GetAllPrivateChatID = async(req, resp) => {
     const FUNC_NAME = "GetAllPrivateChatID" + FILE_NAME;
     const reqData = req.params;
     try {
-        const uid           = GetNumber(reqData, "uid");
+        const uid           = req.app.locals.uid;
         const result        = await GetAllPrivateChatIDDAO(uid);
         const respResult    = [];
         if (result.code === 200) {
             for (const i of result.msg) {
                 respResult.push({
-                    private_chat_id : i.PRIVATE_CHAT_EVENT_ID   === null ? "" : i.PRIVATE_CHAT_EVENT_ID,
+                    first_name      : i.FIRST_NAME              === null ? "" : i.FIRST_NAME,
+                    last_name       : i.LAST_NAME               === null ? "" : i.LAST_NAME,
+                    emit_event_id   : i.EMIT_EVENT_ID           === null ? "" : i.EMIT_EVENT_ID,
+                    listen_event_id : i.LISTEN_EVENT_ID         === null ? "" : i.LISTEN_EVENT_ID,
                     username        : i.USERNAME                === null ? "" : i.USERNAME,
                     uid             : i.UID                     === null ? -1 : i.UID,
-                    avatar          : i.AVATAR_LINK             === null ? "" : i.AVATAR_LINK
+                    avatar          : i.AVATAR_LINK             === null ? "" : i.AVATAR_LINK,
+                    avatar_text     : `${i.FIRST_NAME[0]} ${i.LAST_NAME[0]}`,
+                    type            : "PRIVATE_CHAT"
                 });
             }
             SuccessResp(resp, respResult);

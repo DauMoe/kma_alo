@@ -1,7 +1,7 @@
 const { query } = require("../../../Utils/DB_connection");
 const mysql = require("mysql");
 const { DB_RESP, DB_ERR } = require("../../../Utils/UtilsFunction");
-const {v4: uuidv4} = require("uuid");
+const { v4: uuidv4, v1: uuidv3 } = require("uuid");
 
 const FILE_NAME = " - PrivateChatDAO.js";
 
@@ -15,7 +15,7 @@ exports.GetAllPrivateChatIDDAO = async(uid) => {
         if (r1.length === 0) {
             return DB_RESP(400, "User ID is not exist");
         }
-        SQL         = "SELECT * FROM PRIVATE_CHAT a, USERS b WHERE (a.UID_ONE = ? AND a.UID_ONE = b.UID) OR (a.UID_TWO = ? AND a.UID_TWO = b.UID)";
+        SQL         = "SELECT * FROM PRIVATE_CHAT a, USERS b WHERE (a.UID_ONE = ? AND a.UID_TWO = b.UID) OR (a.UID_TWO = ? AND a.UID_ONE = b.UID)";
         SQL_BIND    = mysql.format(SQL, [uid, uid]);
         const r2    = await query(SQL_BIND);
         return DB_RESP(200, r2);
@@ -30,6 +30,7 @@ exports.CreateNewPrivateChatDAO = async(fromUID, toUID) => {
     let SQL, SQL_BIND;
     try {
         //Check UID valid?
+        if (fromUID === toUID) return DB_RESP(400, "You can't chat with yourself, right?");
         SQL         = "SELECT * FROM USERS WHERE UID = ? OR UID = ?";
         SQL_BIND    = mysql.format(SQL, [fromUID, toUID]);
         const r1    = await query(SQL_BIND);
@@ -43,11 +44,10 @@ exports.CreateNewPrivateChatDAO = async(fromUID, toUID) => {
         const r2    = await query(SQL_BIND);
         if (r2.length > 0) {
             return DB_RESP(401, "You already have a chat with this person");
-        } 
-
+        }
         //Insert new chat to DB
-        SQL         = "INSERT INTO PRIVATE_CHAT (PRIVATE_CHAT_EVENT_ID, UID_ONE, UID_TWO) VALUES (? , ?, ?)";
-        SQL_BIND    = mysql.format(SQL, [uuidv4(), fromUID, toUID]);
+        SQL         = "INSERT INTO PRIVATE_CHAT (EMIT_EVENT_ID, LISTEN_EVENT_ID, UID_ONE, UID_TWO) VALUES (?, ? , ?, ?)";
+        SQL_BIND    = mysql.format(SQL, [uuidv4(), uuidv3(), fromUID, toUID]);
         await query(SQL_BIND);
         return DB_RESP(200);
     } catch(e) {

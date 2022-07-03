@@ -1,27 +1,40 @@
 const express       = require("express");
 const app           = express();
+const httpServer    = require("http").Server(app);
 const cors          = require("cors");
-const dotenv        = require("dotenv").config();
 const path          = require("path");
+const passport      = require("passport");
+const io            = require("socket.io")(httpServer);
 const { HOST_PORT, HOST_ADDRESS } = require("./Utils/UtilsFunction");
+const { PrivateChatSocket, RoomChatSocket } = require("./components/Chat/ChatSocket");
 const UsersRouter = require("./components/Users/UsersRouter");
-const passport = require("passport");
-const expressSession = require("express-session");
-const flash = require("connect-flash");
 const PrivateChatRouter = require("./components/Chat/PrivateChat/PrivateChatRouter");
-const MAX_AGE_SESSION = 1000 * 60 * 60 * 1;
+
+require("dotenv").config();
+
+const RootNSP = io.of("/");
+RootNSP.use(function(socket, next) {
+    next(new Error("Cannot connect to this namespace"));
+});
+
+PrivateChatSocket(io);
+RoomChatSocket(io);
+
+// const expressSession = require("express-session");
+// const flash = require("connect-flash");
+// const MAX_AGE_SESSION = 1000 * 60 * 60 * 1;
 
 app.use(cors());
 app.use(express.json());
-app.use(expressSession({saveUninitialized: false, secret: "daumoe", cookie: {maxAge: MAX_AGE_SESSION, secure: true}, resave: false}));
-app.use(flash());
+// app.use(expressSession({saveUninitialized: false, secret: "daumoe", cookie: {maxAge: MAX_AGE_SESSION, secure: true}, resave: false}));
+// app.use(flash());
 app.use(passport.initialize());
-app.use(passport.session({saveUninitialized: false, secret: "daumoe", cookie: {maxAge: MAX_AGE_SESSION, secure: true}, resave: false}));
+// app.use(passport.session({saveUninitialized: false, secret: "daumoe", cookie: {maxAge: MAX_AGE_SESSION, secure: true}, resave: false}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use("/users", UsersRouter);
 app.use("/private_chat", PrivateChatRouter);
 
-app.listen(HOST_PORT, function() {
+httpServer.listen(HOST_PORT, function() {
     console.log(`Host IP: '${HOST_ADDRESS}'`);
 })

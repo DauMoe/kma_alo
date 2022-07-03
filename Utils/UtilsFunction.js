@@ -82,8 +82,33 @@ exports.Authenticate = async (req, resp, next) => {
     }
 }
 
+exports.SocketAuthenticate = function(socket, next) {
+    const authoHeader = socket.handshake.headers;
+    if (authoHeader.token && authoHeader.token.indexOf("Bearer") > -1) {        
+        const token = authoHeader.token.split(" ")[1];
+        jwt.verify(token, JWT_SECRET_KEY, function(err, decoded) {
+            if (err) {
+                console.log("=== SocketAuthenticate - UtilsFunction.js ===: ", err.message);
+                next(new Error("Token invalid!"));
+            } else {
+                next();
+            }
+        });
+    } else {
+        next(new Error("Invalid token"));
+    }
+};
+
 exports.HOST_PORT       = PORT;
 exports.HOST_ADDRESS    = `http:\/\/${ip.address()}:${PORT}/`;
 exports.IMAGE_PATH      = IMAGE_PATH;
 exports.SALT_ROUND      = 5;
 exports.JWT_SECRET_KEY  = JWT_SECRET_KEY;
+exports.ChatEventKey    = {
+    SENDED  : "SENDED",
+    RECEIVED: "RECEIVED",
+    READED  : "READED",
+    CONN    : 'connect',
+    CONN_ERR: 'connect_error',
+    OPEN_CHAT_EMIT: 'new_private_chat'
+};
