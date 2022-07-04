@@ -20,5 +20,9 @@
 # Command
 - Import DB from file with CMD: `mysql -u username -p database_name < file.sql`
 - SCP file: `scp -i x.pem -r C:\kma_alo\BE\components azureuser@20.89.56.87:/home/azureuser/kma_alo/components`
+
+# Hint code
+- [Room Socket.io](https://stackoverflow.com/questions/13143945/dynamic-namespaces-socket-io)
+- [Create Chat](https://stackoverflow.com/questions/24100218/socket-io-send-packet-to-sender-only)
 # DB diagram
 ![DB diagram](./DB%20Design.png)

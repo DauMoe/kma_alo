@@ -30,19 +30,28 @@ exports.PrivateChatSocket = function(io) {
          * - listen_event_id: client listen id <=> emit server id
          * */
 
-        socket.on(ChatEventKey.OPEN_CHAT_EMIT, function (data) {
-            console.log(data);
-            if (typeof(data) === "object") {
-                const { emit_event_id, listen_event_id } = data;
-                console.log(emit_event_id, listen_event_id)
-                socket.on(emit_event_id, function(msg) {
-                    console.log(msg);
-                    socket.emit(listen_event_id, msg);
-                });
-            } else {
-                console.error("Request data is invalid")
-            }
+        socket.on("private_chat", function(socketID, msg) {
+            console.log(socket.id, msg);
+           socket.to(socketID).emit("private_chat", {id: socket.id, msg: msg});
         });
+
+        // socket.on("emit_hehe", function(data) {
+        //     socket.broadcast.emit("listen_hehe", data);
+        // });
+        //
+        // socket.on(ChatEventKey.OPEN_CHAT_EMIT, function (data) {
+        //     console.log("Open listener: ", data);
+        //     if (typeof(data) === "object") {
+        //         const { emit_event_id, listen_event_id } = data;
+        //         console.log(emit_event_id, listen_event_id)
+        //         socket.on(emit_event_id, function(msg) {
+        //             console.log(msg);
+        //             socket.broadcast.emit(listen_event_id, msg);
+        //         });
+        //     } else {
+        //         console.error("Request data is invalid")
+        //     }
+        // });
     });
 }
 
