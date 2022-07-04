@@ -14,7 +14,7 @@ import {
 import SetIPModal from "./components/SetIPModal";
 import ForgetPasswordScreen from "./components/ForgetPasswordScreen";
 import ChatScreen from "./components/ChatScreen";
-import ListChatsScreen from "./components/ChatScreen/ListChatsScreen";
+import Legacy_ListChatsScreen from "./components/ChatScreen/ListChatsScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -48,7 +48,7 @@ const App = function(props) {
           />
           <Stack.Screen
               name={LIST_CHATS_SCREEN}
-              component={ListChatsScreen}
+              component={Legacy_ListChatsScreen}
           />
       </Stack.Navigator>
       <SetIPModal/>

@@ -2,8 +2,10 @@ import axios from "axios";
 import { HOST_TABLE, HOST_TB_CREATE_AT, HOST_TB_VALUE, TOKEN_TABLE, TOKEN_TB_VALUE } from "../Definition";
 import { _db } from '../Utils';
 
-export const DEFAULT_BASE_URL       = "http://192.168.1.36:8080";
-export const DEFAULT_PRODUCTION_URL = "http://20.89.56.87:8000";
+const PRODUCTION_URL                = "http://20.89.56.87:8000";
+const TEST_URL                      = "http://192.168.1.36:8080";
+const OTHER_URL                     = "http://192.168.110.65:8080";
+export const DEFAULT_BASE_URL       = OTHER_URL;
 
 export const setToken = function(token) {
     console.info("TOKEN: ", token);
@@ -42,7 +44,7 @@ export const setBaseUrl = function(baseURL) {
 export const axiosConfig = function(endpoint, method, config) {
     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIsImVtYWlsIjoiaG9hbmduZUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImRhdW1vZSIsImlhdCI6MTY1NjI1NjA5NywiZXhwIjoxODcyMjU2MDk3fQ.cotV9sFZeH5p3w-iu25mE2FGxw2id0VOfEwWCVmNQy4";
     const instance = axios.create({
-        baseURL: DEFAULT_PRODUCTION_URL
+        baseURL: DEFAULT_BASE_URL
     });
     instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     switch(method.toUpperCase()) {

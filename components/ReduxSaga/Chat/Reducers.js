@@ -33,7 +33,7 @@ const Chats = function(state = initState, action) {
                 ...state,
                 loaded: true,
                 error: true,
-                error_msg: "",
+                error_msg: data.message,
                 data: []
             }
         default:

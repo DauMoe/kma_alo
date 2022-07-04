@@ -9,41 +9,52 @@ import LinearGradient from "react-native-linear-gradient";
 import {DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 
 const Theme = {
-    primaryColor: "#FFFFFF",
-    secondaryColor: "#DCDCDC",
-    primaryTextColor: "#333333",
-    secondaryTextColor: "#878787"
+    primaryColor: "rgba(0, 108, 115, 1)",
+    secondaryColor: "",
+    primaryTextColor: "#FFFFFF",
+    secondaryTextColor: "#CACACA"
 }
 
 const ChatHeadWrapper = styled(View)`
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 5px 0;
-    background-color: transparent;
-    justify-content: space-between;
+    padding: 20px 0 20px 0;
+    background-color: ${Theme.primaryColor};
+`;
+
+const ChatHeadInfo = styled(View)`
+    flex: 1;
 `;
 
 const ChatHeadUsername = styled(Text)`
     font-family: "NunitoExtraBold";
-    font-size: 22px;
+    font-size: 18px;
     color: ${Theme.primaryTextColor}
 `;
 
+const ChatHeadStatus = styled(Text)`
+    font-size: 12px;
+    color: gray;
+    font-family: "NunitoBold";
+  color: ${Theme.secondaryTextColor}
+`;
+
+const ChatHeadOption = styled(View)`
+  align-self: flex-end;
+`;
+
 const ChatScreenWrapper = styled(View)`
-  padding: 0 10px;
-  background-color: ${Theme.primaryColor};
+  padding: 10px 5px;
+  background-color: transparent;
   position: relative;
   flex: 1;
-  border-top-left-radius: 30px;
-  border-top-right-radius: 30px;
 `;
 
 const ChatMessageWrapper = styled(View)`
   margin-top: ${props => props.isSameSender ? "2px" : "20px"};
   display: flex;
   flex-direction: row;
-  align-items: flex-end;
   align-self: ${props => props.sender ? "flex-end" : "flex-start"};
 `;
 
@@ -53,7 +64,6 @@ const ChatMessage = styled(TouchableHighlight)`
   font-size: 16px;
   font-family: "NunitoRegular";
   border-radius: 15px;
-  border-bottom-right-radius: 0px;
 `;
 
 const InputMessageWrapper = styled(View)`
@@ -111,21 +121,23 @@ const ChatScreen = function(props) {
             sender  : true,
             state   : MessageState.SENDING
         };
-        // setMsg("");
+        setMsg("");
         setConversation(prevState => [...prevState, newMessage]);
-        socket.emit("emit_private_chat", {
-            room_name: listen_event_id,
-            content: msg
-        });
+        socket.emit(emit_event_id, {uid: uid, msg: msg});
     }
 
     const ChatHeadSection = function() {
         return(
             <ChatHeadWrapper>
-                <IconButton icon="chevron-left" size={35} onPress={() => navigation.goBack()} color={Theme.primaryTextColor}/>
-                <ChatHeadUsername>{chatInfo.first_name} {chatInfo.last_name}</ChatHeadUsername>
-                <Avatar.Text size={30} label={chatInfo.avatar_text} style={{marginRight: 10}}/>
-
+                <IconButton icon="keyboard-backspace" size={25} onPress={() => navigation.goBack()} color={Theme.primaryTextColor}/>
+                <Avatar.Text size={40} label="DM" style={{marginRight: 10}}/>
+                <ChatHeadInfo>
+                    <ChatHeadUsername>Daumoe</ChatHeadUsername>
+                    <ChatHeadStatus>Active now</ChatHeadStatus>
+                </ChatHeadInfo>
+                <ChatHeadOption>
+                    <IconButton icon="dots-vertical" color={Theme.primaryTextColor}/>
+                </ChatHeadOption>
             </ChatHeadWrapper>
         );
     }
@@ -133,15 +145,25 @@ const ChatScreen = function(props) {
     const ChatSection = function() {
         return(
             <ChatScreenWrapper>
+                <LinearGradient
+                    style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        bottom: 0,
+                        right: 0
+                    }}
+                    colors={["rgba(80, 219, 228, 0.9)", "rgba(80, 219, 228, 0.9)", "rgba(80, 219, 228, 0.9)"]}
+                />
                 <ScrollView>
                     {Array.isArray(Conversation) && Conversation.map(function(v, index) {
                         return (
                             <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.uid === Conversation[index-1].uid)}>
                                 {!v.sender ? <Avatar.Text size={35} label={v.avatar_text} style={{marginRight: 10}}/> : undefined}
-                                <ChatMessage sender={v.sender} onLongPress={() => console.log("Long press")}>
+                                <ChatMessage onLongPress={() => console.log("Long press")}>
                                     <Text style={{color: "white"}}>{v.msg}</Text>
                                 </ChatMessage>
-                                {v.sender && <IconButton icon="check-circle-outline" size={15} color={"gray"} style={{margin: 0}}/>}
+                                {v.sender && <IconButton icon="check-circle-outline" size={15} color={"gray"}/>}
                             </ChatMessageWrapper>
                         )
                     })}
@@ -168,17 +190,15 @@ const ChatScreen = function(props) {
     }
 
     useEffect(function () {
-        console.log("Room name: ", listen_event_id);
+        console.log("CHAT: ", {emit_event_id, listen_event_id});
 
         const newSocket = io(`${DEFAULT_BASE_URL}/private`, {
             extraHeaders: {
                 Authorization: `Bearer ${token}`
             }
         });
-        newSocket.emit("join_chat", {
-            room_name: listen_event_id
-        });
-        newSocket.on("listen_private_chat", HandleChatSocket);
+        newSocket.emit("new_private_chat", {emit_event_id, listen_event_id});
+        newSocket.on(listen_event_id, HandleChatSocket);
         setSocket(newSocket);
         return function() {
             newSocket.close();
