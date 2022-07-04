@@ -11,11 +11,31 @@
  - [RN Paper FAB](https://callstack.github.io/react-native-paper/animated-fab.html)
  - [RN Paper Bottom Navigation](https://callstack.github.io/react-native-paper/bottom-navigation.html)
  - [RN Paper Custom font](https://callstack.github.io/react-native-paper/fonts.html)
-
-## TODO:  
+ 
+## TODO Jun 26 2022:
  - [x] Use local DB stores host IP
-### TODO Jun 26 2022
  - [ ] Create chat UI
  - [ ] Create Profile UI
  - [ ] Create search friend UI
  - [ ] Create comments UI
+## Socket idea:  
+ - Use `rooms` to make private chat
+ - Example:
+   - `const PrivateChatNSP = io.of("/private");
+PrivateChatNSP.on(ChatEventKey.CONN, function(socket) {
+     const ListUsers = [];
+     for(const [id, socket] of PrivateChatNSP.sockets) {
+     ListUsers.push({
+     userID: id
+     });
+     }
+     socket.emit("users", ListUsers);
+     socket.on("private_chat", function({msg, to}) {
+     console.log(socket);
+     socket.to(to).emit("private_chat", {
+     msg,
+     from: socket.id,
+     from_uid: socket.handshake.query.userID
+     })
+     });
+     });`
