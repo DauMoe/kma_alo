@@ -7,13 +7,13 @@ import {GetListChats} from "../ReduxSaga/Chat/Actions";
 import {CHAT_SCREEN} from "../Definition";
 
 const Theme = {
-    primaryColor: "#FFFFFF",
-    secondaryColor: "#DCDCDC",
-    primaryTextColor: "#333333",
-    secondaryTextColor: "#878787"
+    primaryColor: "#000",
+    secondaryColor: "",
+    primaryTextColor: "#FFFFFF"
 }
 
 const ChatHeadSectionWrapper = styled(View)`
+  background-color: ${Theme.primaryColor};
   color: ${Theme.primaryTextColor};
   display: flex;
   flex-direction: row;
@@ -22,14 +22,12 @@ const ChatHeadSectionWrapper = styled(View)`
 `;
 
 const ChatHeadUsername = styled(Text)`
-  font-family: "NunitoExtraBold";
-  font-size: 28px;
+  font-family: "NunitoBold";
+  font-size: 22px;
   color: ${Theme.primaryTextColor}
 `;
 
-const SearchChatSectionWrapper = styled(View)`
-  width: 100px
-`;
+const SearchChatSectionWrapper = styled(View)``;
 
 const SearchChatInput = styled(TextInput)`
   border-radius: 999999999px;
@@ -42,8 +40,25 @@ const ListChatSectionWrapper = styled(ScrollView)`
 
 `;
 
+const ChatHeadSection = function() {
+    return(
+        <ChatHeadSectionWrapper>
+            <Avatar.Text size={35} label={"DM"} style={{marginRight: 10}}/>
+            <ChatHeadUsername>Chats</ChatHeadUsername>
+        </ChatHeadSectionWrapper>
+    );
+}
+
+const SearchChatSection = function() {
+    return(
+        <SearchChatSectionWrapper>
+            <SearchChatInput placeholder={"Search chat"}/>
+        </SearchChatSectionWrapper>
+    );
+}
+
 const PreviewChatWrapper = styled(View)`
-    padding: 20px 10px 0 10px;
+    padding: 15px 10px 0 10px;
     background-color: transparent;
     display: flex;
     flex-direction: row;
@@ -56,13 +71,11 @@ const PreviewChatContent = styled(View)`
 
 const ChatUsername = styled(Text)`
   font-family: "NunitoBold";
-  font-size: 18px;
-  color: ${Theme.primaryTextColor};
+  font-size: 18px
 `;
 
 const PreviewMessage = styled(Text)`
   font-family: "NunitoRegular";
-  color: ${Theme.secondaryTextColor};
 `;
 
 const ListChatSection = function({data, navigation}) {
@@ -80,7 +93,7 @@ const ListChatSection = function({data, navigation}) {
                     <TouchableOpacity onPress={() => GotoChatScreen(chat)} key={"__chat_no_" + index}>
                         <PreviewChatWrapper>
                             {
-                                chat.avatar === "" && <Avatar.Text size={50} label={chat.avatar_text} style={{marginRight: 15}}/>
+                                chat.avatar === "" && <Avatar.Text size={50} label={chat.avatar_text} style={{marginRight: 10}}/>
                             }
                             <PreviewChatContent>
                                 <ChatUsername>{chat.first_name} {chat.last_name}</ChatUsername>
@@ -103,24 +116,6 @@ const Legacy_ListChatsScreen = function(props) {
     const dispatch                              = useDispatch();
     const { loaded, error, error_msg, data }    = useSelector(state => state.Chats);
 
-    const ChatHeadSection = function() {
-        return(
-            <View style={{
-                backgroundColor: Theme.primaryColor,
-                borderBottomLeftRadius: 20,
-                borderBottomRightRadius: 20,
-                paddingBottom: 10
-            }}>
-                <ChatHeadSectionWrapper>
-                    <ChatHeadUsername>Message</ChatHeadUsername>
-                </ChatHeadSectionWrapper>
-                <SearchChatSectionWrapper>
-                    <SearchChatInput placeholder={"Search chat"}/>
-                </SearchChatSectionWrapper>
-            </View>
-        );
-    }
-
     useEffect(function() {
         dispatch(GetListChats());
     }, []);
@@ -135,6 +130,7 @@ const Legacy_ListChatsScreen = function(props) {
         return(
             <>
                 <ChatHeadSection/>
+                <SearchChatSection/>
                 <ListChatSection data={data.data.data} navigation={navigation}/>
             </>
         );
