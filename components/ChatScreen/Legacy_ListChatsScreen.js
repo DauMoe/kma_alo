@@ -5,6 +5,7 @@ import {Avatar, IconButton, TextInput as TextInputRNP} from "react-native-paper"
 import {useDispatch, useSelector} from "react-redux";
 import {GetListChats} from "../ReduxSaga/Chat/Actions";
 import {CHAT_SCREEN} from "../Definition";
+import {err} from "react-native-svg/lib/typescript/xml";
 
 const Theme = {
     primaryColor: "#000",
@@ -126,13 +127,19 @@ const Legacy_ListChatsScreen = function(props) {
         );
     }
 
-    if (loaded) {
+    if (loaded && !error) {
         return(
             <>
                 <ChatHeadSection/>
                 <SearchChatSection/>
                 <ListChatSection data={data.data.data} navigation={navigation}/>
             </>
+        );
+    }
+
+    if (error) {
+        return(
+            <View>{error_msg}</View>
         );
     }
 }

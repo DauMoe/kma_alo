@@ -25,8 +25,8 @@ const ChatHeadWrapper = styled(View)`
 `;
 
 const ChatHeadUsername = styled(Text)`
-    font-family: "NunitoBold";
-    font-size: 25px;
+    font-family: "NunitoExtraBold";
+    font-size: 22px;
     color: ${Theme.primaryTextColor}
 `;
 
@@ -49,11 +49,12 @@ const ChatMessageWrapper = styled(View)`
 
 const ChatMessage = styled(TouchableHighlight)`
   padding: 8px 10px;
-  background-color: blueviolet;
+  background-color: ${props => props.sender ? "blueviolet" : "#b6b6b6"};
   font-size: 16px;
   font-family: "NunitoRegular";
   border-radius: 15px;
-  border-bottom-right-radius: 0px;
+  border-bottom-right-radius: ${props => props.sender ? "0px" : "15px"};
+  border-top-left-radius: ${props => props.sender ? "15px" : "0px"};
 `;
 
 const InputMessageWrapper = styled(View)`
@@ -72,6 +73,11 @@ const InputMessage = styled(TextInput)`
   background-color: #B2B2B2;
 `;
 
+const AvatarMessageUser = styled(Avatar.Text)`
+  opacity: ${props => props.visible ? 1 : 0};
+  margin-right: 10px;
+`;
+
 const MessageState = {
     SENDING : "SENDING",
     SENT    : "SENT",
@@ -88,16 +94,12 @@ const ChatScreen = function(props) {
     const [socket, setSocket]       = useState(null);
     const [msg, setMsg]             = useState("??? WTF bro");
     const [Conversation, setConversation] = useState([]);
-    const { avatar, avatar_text, emit_event_id, first_name, last_name, listen_event_id, type, uid, username } = chatInfo;
+    const { avatar, avatar_text, room_chat_id, first_name, last_name, type, uid, username } = chatInfo;
 
     const HandleChatSocket = function(receiveData) {
-        console.log("R: ", receiveData);
-        const senderUid = receiveData.uid;
-        const receiveMsg = receiveData.msg;
         const newMessage = {
-            ...chatInfo,
-            msg     : receiveMsg,
-            sender  : senderUid === uid
+            ...receiveData,
+            sender: false
         };
         setConversation(prevState => [...prevState, newMessage]);
     }
@@ -111,17 +113,17 @@ const ChatScreen = function(props) {
             sender  : true,
             state   : MessageState.SENDING
         };
-        // setMsg("");
+        setMsg("");
         setConversation(prevState => [...prevState, newMessage]);
-        socket.emit(emit_event_id, {uid: uid, msg: msg});
+        socket.emit("emit_private_chat", room_chat_id, msg, chatInfo);
     }
 
     const ChatHeadSection = function() {
         return(
             <ChatHeadWrapper>
                 <IconButton icon="chevron-left" size={35} onPress={() => navigation.goBack()} color={Theme.primaryTextColor}/>
-                <ChatHeadUsername>Daumoe</ChatHeadUsername>
-                <Avatar.Text size={40} label="DM" style={{marginRight: 10}}/>
+                <ChatHeadUsername>{chatInfo.first_name} {chatInfo.last_name}</ChatHeadUsername>
+                <Avatar.Text size={30} label={chatInfo.avatar_text} style={{marginRight: 10}}/>
 
             </ChatHeadWrapper>
         );
@@ -134,11 +136,12 @@ const ChatScreen = function(props) {
                     {Array.isArray(Conversation) && Conversation.map(function(v, index) {
                         return (
                             <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.uid === Conversation[index-1].uid)}>
-                                {!v.sender ? <Avatar.Text size={35} label={v.avatar_text} style={{marginRight: 10}}/> : undefined}
+                                <AvatarMessageUser size={35} label={v.avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.uid !== Conversation[index-1].uid))}/>
                                 <ChatMessage sender={v.sender} onLongPress={() => console.log("Long press")}>
                                     <Text style={{color: "white"}}>{v.msg}</Text>
                                 </ChatMessage>
-                                {v.sender && <IconButton icon="check-circle-outline" size={15} color={"gray"} style={{margin: 0}}/>}
+                                {v.sender && v.state === MessageState.SENDING && <IconButton icon="check-circle-outline" size={15} color={"gray"} style={{margin: 0}}/>}
+                                {v.sender && v.state === MessageState.SENT && <IconButton icon="checkbox-marked-circle" size={15} color={"gray"} style={{margin: 0}}/>}
                             </ChatMessageWrapper>
                         )
                     })}
@@ -165,15 +168,15 @@ const ChatScreen = function(props) {
     }
 
     useEffect(function () {
-        console.log("CHAT: ", {emit_event_id, listen_event_id});
+        console.log("Room name: ", room_chat_id);
 
         const newSocket = io(`${DEFAULT_BASE_URL}/private`, {
             extraHeaders: {
                 Authorization: `Bearer ${token}`
             }
         });
-        newSocket.emit("new_private_chat", {emit_event_id, listen_event_id});
-        newSocket.on(listen_event_id, HandleChatSocket);
+        newSocket.emit("join_chat", {room_name: room_chat_id});
+        newSocket.on("listen_private_chat", HandleChatSocket);
         setSocket(newSocket);
         return function() {
             newSocket.close();

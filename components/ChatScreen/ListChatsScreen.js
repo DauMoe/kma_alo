@@ -127,16 +127,22 @@ const Legacy_ListChatsScreen = function(props) {
 
     if (!loaded) {
         return(
-          <View style={{height: height, display: "flex", alignContent: "center", justifyContent: "center"}}><Text style={{color: "black"}}>Loading...</Text></View>
+            <View style={{height: height, display: "flex", alignContent: "center", alignItems: "center", justifyContent: "center"}}><Text style={{color: "black"}}>Loading...</Text></View>
         );
     }
 
-    if (loaded) {
+    if (loaded && !error) {
         return(
             <>
                 <ChatHeadSection/>
                 <ListChatSection data={data.data.data} navigation={navigation}/>
             </>
+        );
+    }
+
+    if (error) {
+        return(
+            <View style={{height: height, display: "flex", alignContent: "center", alignItems: "center", justifyContent: "center"}}><Text style={{color: "black"}}>{error_msg}</Text></View>
         );
     }
 }

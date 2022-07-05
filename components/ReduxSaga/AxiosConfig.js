@@ -4,7 +4,8 @@ import { _db } from '../Utils';
 
 const PRODUCTION_URL                = "http://20.89.56.87:8000";
 const TEST_URL                      = "http://192.168.1.36:8080";
-export const DEFAULT_BASE_URL       = PRODUCTION_URL;
+const OTHER_URL                     = "http://192.168.110.65:8080";
+export const DEFAULT_BASE_URL       = TEST_URL;
 
 export const setToken = function(token) {
     console.info("TOKEN: ", token);
