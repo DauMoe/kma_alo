@@ -24,5 +24,9 @@
 # Hint code
 - [Room Socket.io](https://stackoverflow.com/questions/13143945/dynamic-namespaces-socket-io)
 - [Create Chat](https://stackoverflow.com/questions/24100218/socket-io-send-packet-to-sender-only)
+
+# Tip 
+- [Disable lower case check on Mariadb Ubuntu](https://stackoverflow.com/questions/55025847/how-to-set-lower-case-table-names-1-on-ubuntu-18-04-mariadb-mysql-5-7)
+
 # DB diagram
 ![DB diagram](./DB%20Design.png)

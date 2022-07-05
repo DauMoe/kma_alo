@@ -9,8 +9,8 @@ const { HOST_PORT, HOST_ADDRESS } = require("./Utils/UtilsFunction");
 const { PrivateChatSocket, RoomChatSocket } = require("./components/Chat/ChatSocket");
 const UsersRouter = require("./components/Users/UsersRouter");
 const PrivateChatRouter = require("./components/Chat/PrivateChat/PrivateChatRouter");
-
-require("dotenv").config();
+const dotenv = require("dotenv");
+dotenv.config();
 
 const RootNSP = io.of("/");
 RootNSP.use(function(socket, next) {

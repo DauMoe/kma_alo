@@ -21,43 +21,28 @@ exports.PrivateChatSocket = function(io) {
     //Disable authenticate (temp)
     // PrivateChatNSP.use(SocketAuthenticate);
 
-    PrivateChatNSP.on(ChatEventKey.CONN, function(socket) {
-        //Handle when having a connection
-        console.log("A client connected");
-        /**
-         * @PARAMS:
-         * - emit_event_id: client emit id <=> listen server id
-         * - listen_event_id: client listen id <=> emit server id
-         * */
+    PrivateChatNSP.adapter.on("create-room", function(room) {
+        console.log(`${room} is created!`);
+    });
 
-        socket.on("private_chat", function(socketID, msg) {
-            console.log(socket.id, msg);
-           socket.to(socketID).emit("private_chat", {id: socket.id, msg: msg});
+    PrivateChatNSP.adapter.on("join-room", function(room, id) {
+        console.log(`User ${id} join room ${room}`);
+    });
+
+    PrivateChatNSP.on("connection", function(socket) {
+        socket.on("join_chat", function({room_name}) {
+            socket.join(room_name);
+        })
+
+        socket.on("emit_private_chat", function(msg) {
+            const { room_name, content } = msg;
+            socket.to(room_name).emit("listen_private_chat", content);
         });
-
-        // socket.on("emit_hehe", function(data) {
-        //     socket.broadcast.emit("listen_hehe", data);
-        // });
-        //
-        // socket.on(ChatEventKey.OPEN_CHAT_EMIT, function (data) {
-        //     console.log("Open listener: ", data);
-        //     if (typeof(data) === "object") {
-        //         const { emit_event_id, listen_event_id } = data;
-        //         console.log(emit_event_id, listen_event_id)
-        //         socket.on(emit_event_id, function(msg) {
-        //             console.log(msg);
-        //             socket.broadcast.emit(listen_event_id, msg);
-        //         });
-        //     } else {
-        //         console.error("Request data is invalid")
-        //     }
-        // });
     });
 }
 
 exports.RoomChatSocket = function(io) {
     const RoomChatNSP = io.of("/room");
     RoomChatNSP.use(SocketAuthenticate);
-    RoomChatNSP.on(ChatEventKey.CONN, function(socket) {
-    });
+    RoomChatNSP.on(ChatEventKey.CONN, function(socket) {});
 }
