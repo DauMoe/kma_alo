@@ -16,8 +16,7 @@ exports.GetAllPrivateChatID = async(req, resp) => {
                 respResult.push({
                     first_name      : i.FIRST_NAME              === null ? "" : i.FIRST_NAME,
                     last_name       : i.LAST_NAME               === null ? "" : i.LAST_NAME,
-                    emit_event_id   : i.EMIT_EVENT_ID           === null ? "" : i.EMIT_EVENT_ID,
-                    listen_event_id : i.LISTEN_EVENT_ID         === null ? "" : i.LISTEN_EVENT_ID,
+                    room_chat_id    : i.ROOM_CHAT_ID            === null ? "" : i.ROOM_CHAT_ID,
                     username        : i.USERNAME                === null ? "" : i.USERNAME,
                     uid             : i.UID                     === null ? -1 : i.UID,
                     avatar          : i.AVATAR_LINK             === null ? "" : i.AVATAR_LINK,
