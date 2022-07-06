@@ -1,6 +1,6 @@
 const { GetNumber } = require("../../../Utils/GetValue");
 const { CatchErr, RespCustomCode, SuccessResp } = require("../../../Utils/UtilsFunction");
-const { GetAllPrivateChatIDDAO, CreateNewPrivateChatDAO } = require("./PrivateChatDAO");
+const { GetAllPrivateChatIDDAO, CreateNewPrivateChatDAO, SavePrivateMessageToDBDAO} = require("./PrivateChatDAO");
 
 const FILE_NAME = " - PrivateChatController.js";
 
@@ -20,7 +20,7 @@ exports.GetAllPrivateChatID = async(req, resp) => {
                     username        : i.USERNAME                === null ? "" : i.USERNAME,
                     uid             : i.UID                     === null ? -1 : i.UID,
                     avatar          : i.AVATAR_LINK             === null ? "" : i.AVATAR_LINK,
-                    avatar_text     : `${i.FIRST_NAME[0]} ${i.LAST_NAME[0]}`,
+                    avatar_text     : `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
                     type            : "PRIVATE_CHAT"
                 });
             }
@@ -47,5 +47,15 @@ exports.CreateNewPrivateChat = async(req, resp) => {
         }
     } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
+    }
+}
+
+exports.SavePrivateMessageToDB = async(room_name, sender_id, content) => {
+    const FUNC_NAME = "SavePrivateMessageToDB" + FILE_NAME;
+    try {
+        const result = await SavePrivateMessageToDBDAO(room_name, sender_id, content);
+        return result;
+    } catch (e) {
+        console.error(`${FUNC_NAME}: ${e.message}`);
     }
 }
