@@ -19,7 +19,7 @@ exports.GetAllPrivateChatIDDAO = async(uid) => {
         if (r1.length === 0) {
             return DB_RESP(400, "User ID is not exist");
         }
-        SQL         = "SELECT * FROM PRIVATE_CHAT a, USERS b, PRIVATE_CHAT_MESSAGE c WHERE ((a.UID_ONE = ? AND a.UID_TWO = b.UID) OR (a.UID_TWO = ? AND a.UID_ONE = b.UID)) AND c.ROOM_CHAT_ID = a.ROOM_CHAT_ID";
+        SQL         = `SELECT f.CONTENT, f.TYPE, f.CREATED_AT, f.PRIVATE_CHAT_MSG_ID, a.ROOM_CHAT_ID, a.UID_ONE, a.UID_TWO, b.USERNAME, b.AVATAR_LINK, b.FIRST_NAME, b.LAST_NAME FROM PRIVATE_CHAT a JOIN USERS b ON ((a.UID_ONE = ? AND a.UID_TWO = b.UID) OR (a.UID_TWO = ? AND a.UID_ONE = b.UID)) LEFT JOIN (select c.* from private_chat_message c join (select d.ROOM_CHAT_ID, max(d.CREATED_AT) last_time from private_chat_message d group by ROOM_CHAT_ID) t on t.ROOM_CHAT_ID = c.ROOM_CHAT_ID AND t.last_time = c.CREATED_AT) f ON f.ROOM_CHAT_ID = a.ROOM_CHAT_ID`;
         SQL_BIND    = mysql.format(SQL, [uid, uid]);
         const r2    = await query(SQL_BIND);
         return DB_RESP(200, r2);

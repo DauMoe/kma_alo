@@ -6,7 +6,6 @@ const FILE_NAME = " - PrivateChatController.js";
 
 exports.GetAllPrivateChatID = async(req, resp) => {
     const FUNC_NAME = "GetAllPrivateChatID" + FILE_NAME;
-    const reqData = req.params;
     try {
         const uid           = req.app.locals.uid;
         const result        = await GetAllPrivateChatIDDAO(uid);
@@ -14,14 +13,18 @@ exports.GetAllPrivateChatID = async(req, resp) => {
         if (result.code === 200) {
             for (const i of result.msg) {
                 respResult.push({
-                    first_name      : i.FIRST_NAME              === null ? "" : i.FIRST_NAME,
-                    last_name       : i.LAST_NAME               === null ? "" : i.LAST_NAME,
-                    room_chat_id    : i.ROOM_CHAT_ID            === null ? "" : i.ROOM_CHAT_ID,
-                    username        : i.USERNAME                === null ? "" : i.USERNAME,
-                    uid             : i.UID                     === null ? -1 : i.UID,
-                    avatar          : i.AVATAR_LINK             === null ? "" : i.AVATAR_LINK,
-                    avatar_text     : `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
-                    type            : "PRIVATE_CHAT"
+                    receiver_first_name : i.FIRST_NAME              === null ? "" : i.FIRST_NAME,
+                    receiver_last_name  : i.LAST_NAME               === null ? "" : i.LAST_NAME,
+                    room_chat_id        : i.ROOM_CHAT_ID            === null ? "" : i.ROOM_CHAT_ID,
+                    receiver_username   : i.USERNAME                === null ? "" : i.USERNAME,
+                    receiver_avatar     : i.AVATAR_LINK             === null ? "" : i.AVATAR_LINK,
+                    receiver_avatar_text: `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
+                    receiver_uid        : (i.UID_ONE !== null &&i.UID_ONE !== uid) ? i.UID_ONE : i.UID_TWO,
+                    last_send           : i.CREATED_AT              === null ? "" : i.CREATED_AT,
+                    last_message        : i.CONTENT                 === null ? "" : i.CONTENT,
+                    last_message_id     : i.PRIVATE_CHAT_MSG_ID     === null ? "" : i.PRIVATE_CHAT_MSG_ID,
+                    message_type        : i.TYPE                    === null ? "" : i.TYPE,
+                    sender_id           : (i.UID_ONE !== null &&i.UID_ONE === uid) ? i.UID_ONE : i.UID_TWO,
                 });
             }
             SuccessResp(resp, respResult);
