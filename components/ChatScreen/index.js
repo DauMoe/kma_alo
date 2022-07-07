@@ -94,7 +94,7 @@ const ChatScreen = function(props) {
     const [socket, setSocket]       = useState(null);
     const [msg, setMsg]             = useState("??? WTF bro");
     const [Conversation, setConversation] = useState([]);
-    const { avatar, avatar_text, room_chat_id, first_name, last_name, type, uid, username } = chatInfo;
+    const { receiver_avatar, receiver_avatar_text, room_chat_id, receiver_first_name, receiver_last_name, type, receiver_uid, receiver_username } = chatInfo;
 
     const HandleChatSocket = function(receiveData) {
         const newMessage = {
@@ -122,8 +122,8 @@ const ChatScreen = function(props) {
         return(
             <ChatHeadWrapper>
                 <IconButton icon="chevron-left" size={35} onPress={() => navigation.goBack()} color={Theme.primaryTextColor}/>
-                <ChatHeadUsername>{chatInfo.first_name} {chatInfo.last_name}</ChatHeadUsername>
-                <Avatar.Text size={30} label={chatInfo.avatar_text} style={{marginRight: 10}}/>
+                <ChatHeadUsername>{chatInfo.receiver_first_name} {chatInfo.receiver_last_name}</ChatHeadUsername>
+                <Avatar.Text size={30} label={chatInfo.receiver_avatar_text} style={{marginRight: 10}}/>
 
             </ChatHeadWrapper>
         );
@@ -136,7 +136,7 @@ const ChatScreen = function(props) {
                     {Array.isArray(Conversation) && Conversation.map(function(v, index) {
                         return (
                             <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.uid === Conversation[index-1].uid)}>
-                                <AvatarMessageUser size={35} label={v.avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.uid !== Conversation[index-1].uid))}/>
+                                <AvatarMessageUser size={35} label={v.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.uid !== Conversation[index-1].uid))}/>
                                 <ChatMessage sender={v.sender} onLongPress={() => console.log("Long press")}>
                                     <Text style={{color: "white"}}>{v.msg}</Text>
                                 </ChatMessage>

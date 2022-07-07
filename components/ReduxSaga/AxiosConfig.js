@@ -7,11 +7,6 @@ const TEST_URL                      = "http://192.168.1.36:8080";
 const OTHER_URL                     = "http://192.168.110.65:8080";
 export const DEFAULT_BASE_URL       = TEST_URL;
 
-export const setToken = function(token) {
-    console.info("TOKEN: ", token);
-    instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-};
-
 export const clearToken = function(token) {
     // instance.defaults.headers.common['Authorization'] = undefined;
     const SQL = `DELETE FROM ${TOKEN_TABLE} (${TOKEN_TB_VALUE}) VALUES (?)`;

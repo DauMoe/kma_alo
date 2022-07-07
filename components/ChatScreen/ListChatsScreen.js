@@ -5,6 +5,9 @@ import {Avatar, IconButton, TextInput as TextInputRNP} from "react-native-paper"
 import {useDispatch, useSelector} from "react-redux";
 import {GetListChats} from "../ReduxSaga/Chat/Actions";
 import {CHAT_SCREEN} from "../Definition";
+import Moment from 'react-moment';
+import 'moment-timezone';
+import moment from "moment";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -60,9 +63,20 @@ const ChatUsername = styled(Text)`
   color: ${Theme.primaryTextColor};
 `;
 
+const PreviewMessageWrapper = styled(View)`
+  display: flex;
+  flex-direction: row;
+  align-content: space-between;
+  padding-right: 5px;
+`;
+
 const PreviewMessage = styled(Text)`
   font-family: "NunitoRegular";
   color: ${Theme.secondaryTextColor};
+  flex: 1
+`;
+
+const MessageTime = styled(Text)`
 `;
 
 const ListChatSection = function({data, navigation}) {
@@ -76,21 +90,26 @@ const ListChatSection = function({data, navigation}) {
         <ListChatSectionWrapper>
 
             {Array.isArray(data) && data.map(function(chat, index) {
-                return(
-                    <TouchableOpacity onPress={() => GotoChatScreen(chat)} key={"__chat_no_" + index}>
-                        <PreviewChatWrapper>
-                            {
-                                chat.avatar === "" && <Avatar.Text size={50} label={chat.avatar_text} style={{marginRight: 15}}/>
-                            }
-                            <PreviewChatContent>
-                                <ChatUsername>{chat.first_name} {chat.last_name}</ChatUsername>
-                                <PreviewMessage>hey hey hey</PreviewMessage>
-                            </PreviewChatContent>
-                            {/*<IconButton icon="check-circle" size={15} color={"gray"}/>*/}
-                            <IconButton icon="check-circle-outline" size={15} color={"gray"}/>
-                        </PreviewChatWrapper>
-                    </TouchableOpacity>
-                )
+                if (true) {
+                    return(
+                        <TouchableOpacity onPress={() => GotoChatScreen(chat)} key={"__chat_no_" + index}>
+                            <PreviewChatWrapper>
+                                {
+                                    chat.receiver_avatar === "" && <Avatar.Text size={50} label={chat.receiver_avatar_text} style={{marginRight: 15}}/>
+                                }
+                                <PreviewChatContent>
+                                    <ChatUsername>{chat.receiver_first_name} {chat.receiver_last_name}</ChatUsername>
+                                    <PreviewMessageWrapper>
+                                        <PreviewMessage>{chat.last_message}</PreviewMessage>
+                                        <MessageTime>{moment(chat.last_send).isValid() && moment(chat.last_send).format("HH:MM")}</MessageTime>
+                                    </PreviewMessageWrapper>
+                                </PreviewChatContent>
+                                {/*<IconButton icon="check-circle" size={15} color={"gray"}/>*/}
+                                <IconButton icon="check-circle-outline" size={15} color={"gray"}/>
+                            </PreviewChatWrapper>
+                        </TouchableOpacity>
+                    )
+                }
             })}
 
         </ListChatSectionWrapper>

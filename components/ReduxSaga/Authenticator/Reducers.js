@@ -1,4 +1,4 @@
-import { clearToken, DEFAULT_BASE_URL, setToken } from "../AxiosConfig";
+import { clearToken, DEFAULT_BASE_URL } from "../AxiosConfig";
 import { HOST_IS_EXIST, HOST_IS_NOT_EXIST, SIGNED_IN_FAIL, SIGNED_IN_SUCESS, SIGNED_OUT_SUCESS, SINGING_IN, TOKEN_IS_EXIST, TOKEN_IS_NOT_EXIST } from "./ActionTypes";
 
 export const initState = {
@@ -24,8 +24,6 @@ const Authenticator = function(state = initState, action) {
                 token       : undefined
             }
         case SIGNED_IN_SUCESS:
-            console.log("OK: ", data);
-            setToken(data.token);
             return {
                 ...state,
                 loaded      : true,
