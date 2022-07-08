@@ -22,8 +22,8 @@ exports.PrivateChatSocket = function(io) {
             socket.join(room_name);
         })
 
-        socket.on("emit_private_chat", async function(room_name, msg, chatInfo) {
-            const result = await SavePrivateMessageToDB(room_name, chatInfo.uid, msg);
+        socket.on("emit_private_chat", async function(room_name, msg, receiver_id, chatInfo) {
+            const result = await SavePrivateMessageToDB(room_name, socket.senderInfo.uid, receiver_id, msg);
             if (result.code === 200) {
                 socket.to(room_name).emit("listen_private_chat", {
                     ...chatInfo,

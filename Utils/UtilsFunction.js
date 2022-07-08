@@ -84,8 +84,8 @@ exports.Authenticate = async (req, resp, next) => {
 
 exports.SocketAuthenticate = function(socket, next) {
     const authoHeader = socket.handshake.headers;
-    if (authoHeader.token && authoHeader.token.indexOf("Bearer") > -1) {        
-        const token = authoHeader.token.split(" ")[1];
+    if (authoHeader.authorization && authoHeader.authorization.indexOf("Bearer") > -1) {
+        const token = authoHeader.authorization.split(" ")[1];
         jwt.verify(token, JWT_SECRET_KEY, function(err, decoded) {
             if (err) {
                 console.log("=== SocketAuthenticate - UtilsFunction.js ===: ", err.message);

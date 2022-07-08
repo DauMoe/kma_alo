@@ -60,14 +60,28 @@ exports.CreateNewPrivateChatDAO = async(fromUID, toUID) => {
     }
 }
 
-exports.SavePrivateMessageToDBDAO = async(room_name, sender_id, content) => {
+exports.SavePrivateMessageToDBDAO = async(room_name, sender_id, receiver_id, content) => {
     const FUNC_NAME = "SavePrivateMessageToDBDAO" + FILE_NAME;
     let SQL, SQL_BIND;
     try {
-        SQL = "INSERT INTO PRIVATE_CHAT_MESSAGE (PRIVATE_CHAT_MSG_ID, CONTENT, TYPE, SENDER_ID, ROOM_CHAT_ID) VALUES (?, ?, ?, ?, ?)";
-        SQL_BIND = mysql.format(SQL, [uuidv4(), content, MessageType.TEXT, sender_id, room_name]);
+        SQL = "INSERT INTO PRIVATE_CHAT_MESSAGE (PRIVATE_CHAT_MSG_ID, CONTENT, TYPE, SENDER_ID, RECEIVER_ID, ROOM_CHAT_ID) VALUES (?, ?, ?, ?, ?, ?)";
+        SQL_BIND = mysql.format(SQL, [uuidv4(), content, MessageType.TEXT, sender_id, receiver_id, room_name]);
         await query(SQL_BIND);
         return DB_RESP(200);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
+
+exports.GetMessageHistoryDAO = async(uid, offset, limit, receiver_id) => {
+    const FUNC_NAME = "GetMessageHistoryDAO" + FILE_NAME;
+    let SQL, SQL_BIND;
+    try {
+        SQL = "SELECT * FROM PRIVATE_CHAT_MESSAGE a JOIN USERS b ON a.RECEIVER_ID = b.UID WHERE a.SENDER_ID = ? AND a.RECEIVER_ID = ? ORDER BY a.CREATED_AT DESC LIMIT ?,?";
+        SQL_BIND = mysql.format(SQL, [uid, receiver_id, offset, limit]);
+        const result = await query(SQL_BIND);
+        return DB_RESP(200, result);
     } catch (e) {
         DB_ERR(FUNC_NAME, SQL_BIND, e.message);
         return DB_RESP(503, e.message);
