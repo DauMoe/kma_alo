@@ -4,10 +4,11 @@ import LoginScreen from "../LoginScreen";
 import NewsFeedScreen from '../NewsFeedScreen/index';
 import LoadingScreen from '../LoadingScreen/index';
 import ChatScreen from '../ChatScreen/index';
+import FriendsScreen from "../FriendsScreen";
 
 const MainScreen = function(props) {
     const { navigation }        = props;
-    const [CurrentTab, setTab]  = useState(0);
+    const [CurrentTab, setTab]  = useState(1);
     const [routes, setRoutes]   = useState([
       {key: "news_feed", title: "Feed", focusedIcon: 'newspaper-variant', unfocusedIcon: 'newspaper-variant-outline'},
       {key: "friends", title: "Friends", focusedIcon: 'newspaper-variant', unfocusedIcon: 'newspaper-variant-outline'},
@@ -17,7 +18,7 @@ const MainScreen = function(props) {
   
     const renderScene = BottomNavigation.SceneMap({
       news_feed: NewsFeedScreen,
-      friends: LoginScreen,
+      friends: FriendsScreen,
       chat: ChatScreen,
       profile: LoadingScreen
     });

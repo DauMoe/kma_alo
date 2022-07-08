@@ -5,7 +5,8 @@ export const MAIN_SCREEN            = "MainScreen";
 export const FORGET_PASSWORD_SCREEN = "ForgetPasswordScreen"
 export const CREATE_ACCOUNT_SCREEN  = "CreateAccountScreen";
 export const CHAT_SCREEN            = "ChatScreen";
-export const LIST_CHATS_SCREEN      = "ListChatsScreen"
+export const LIST_CHATS_SCREEN      = "ListChatsScreen";
+export const FRIENDS_SCREEN         = "FriendsScreen";
 
 //Database definition
 export const DB_FILE_NAME           = "halo.db";

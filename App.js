@@ -5,7 +5,7 @@ import LoginScreen from './components/LoginScreen/index';
 import MainScreen from './components/MainScreen/index';
 import {
     CHAT_SCREEN,
-    FORGET_PASSWORD_SCREEN,
+    FORGET_PASSWORD_SCREEN, FRIENDS_SCREEN,
     LIST_CHATS_SCREEN,
     LOADING_SCREEN,
     LOGIN_SCREEN,
@@ -15,6 +15,7 @@ import SetIPModal from "./components/SetIPModal";
 import ForgetPasswordScreen from "./components/ForgetPasswordScreen";
 import ChatScreen from "./components/ChatScreen";
 import ListChatsScreen from "./components/ChatScreen/ListChatsScreen";
+import FriendsScreen from "./components/FriendsScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -50,8 +51,12 @@ const App = function(props) {
               name={LIST_CHATS_SCREEN}
               component={ListChatsScreen}
           />
+          <Stack.Screen
+              name={FRIENDS_SCREEN}
+              component={FriendsScreen}
+          />
       </Stack.Navigator>
-      <SetIPModal/>
+      {/*<SetIPModal/>*/}
     </>
   );
 }
