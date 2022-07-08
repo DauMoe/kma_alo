@@ -8,7 +8,7 @@ const CheckRequireField = function(socket, next) {
 exports.PrivateChatSocket = function(io) {
     const PrivateChatNSP = io.of("/private");
 
-    // PrivateChatNSP.use(SocketAuthenticate);
+    PrivateChatNSP.use(SocketAuthenticate);
     PrivateChatNSP.adapter.on("create-room", function(room) {
         console.log(`${room} is created!`);
     });

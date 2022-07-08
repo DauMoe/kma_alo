@@ -91,6 +91,7 @@ exports.SocketAuthenticate = function(socket, next) {
                 console.log("=== SocketAuthenticate - UtilsFunction.js ===: ", err.message);
                 next(new Error("Token invalid!"));
             } else {
+                socket.senderInfo = decoded;
                 next();
             }
         });

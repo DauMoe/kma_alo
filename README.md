@@ -31,5 +31,4 @@
 - [Disable lower case check on Mariadb Ubuntu](https://stackoverflow.com/questions/55025847/how-to-set-lower-case-table-names-1-on-ubuntu-18-04-mariadb-mysql-5-7)
 
 # TODO:  
-**Select the lastest chat message each room and map with user**  
-Line 22 - PrivateChatDAO.js: `SELECT * FROM PRIVATE_CHAT a JOIN USERS b ON (a.UID_ONE = 3 AND a.UID_TWO = b.UID) OR (a.UID_TWO = 3 AND a.UID_ONE = b.UID) LEFT JOIN (SELECT DISTINCT ROOM_CHAT_ID FROM PRIVATE_CHAT_MESSAGE ORDER BY CREATED_AT DESC) c ON c.ROOM_CHAT_ID = a.ROOM_CHAT_ID LIMIT 1`
+- Get Sender info from token in authenticate when sending message
