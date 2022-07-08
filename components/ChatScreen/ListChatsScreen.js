@@ -5,7 +5,6 @@ import {Avatar, IconButton, TextInput as TextInputRNP} from "react-native-paper"
 import {useDispatch, useSelector} from "react-redux";
 import {GetListChats} from "../ReduxSaga/Chat/Actions";
 import {CHAT_SCREEN} from "../Definition";
-import Moment from 'react-moment';
 import 'moment-timezone';
 import moment from "moment";
 

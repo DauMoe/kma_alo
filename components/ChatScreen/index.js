@@ -1,12 +1,13 @@
-import React, {Fragment, useEffect, useState} from "react";
+import React, {Fragment, useEffect, useRef, useState} from "react";
 import {View, Text, ScrollView, TextInput, TouchableHighlight, Dimensions} from "react-native";
 import styled from "styled-components/native";
 import {Avatar, Button, IconButton} from "react-native-paper";
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import io from "socket.io-client";
 import uuid from "react-native-uuid";
 import LinearGradient from "react-native-linear-gradient";
 import {DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
+import {GetChatHistory} from "../ReduxSaga/Chat/Actions";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -91,10 +92,22 @@ const ChatScreen = function(props) {
     const { chatInfo }              = route.params;
     const { width, height }         = Dimensions.get("window");
     const dispatch                  = useDispatch();
+    const limitMessage              = 20; //Load 20 message each time
     const [socket, setSocket]       = useState(null);
     const [msg, setMsg]             = useState("??? WTF bro");
     const [Conversation, setConversation] = useState([]);
+    const offset = useState(0);
+    const chats = useSelector(state => state.Chats);
     const { receiver_avatar, receiver_avatar_text, room_chat_id, receiver_first_name, receiver_last_name, type, receiver_uid, receiver_username } = chatInfo;
+
+    useEffect(() => {
+        console.log("======================\n", chats);
+        LoadChatHistory();
+    }, []);
+
+    const LoadChatHistory = function() {
+        dispatch(GetChatHistory(offset, limitMessage));
+    }
 
     const HandleChatSocket = function(receiveData) {
         const newMessage = {
@@ -115,7 +128,7 @@ const ChatScreen = function(props) {
         };
         setMsg("");
         setConversation(prevState => [...prevState, newMessage]);
-        socket.emit("emit_private_chat", room_chat_id, msg, chatInfo);
+        socket.emit("emit_private_chat", room_chat_id, msg, receiver_uid, chatInfo);
     }
 
     const ChatHeadSection = function() {
