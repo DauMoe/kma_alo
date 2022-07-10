@@ -29,6 +29,7 @@
 
 # Tip 
 - [Disable lower case check on Mariadb Ubuntu](https://stackoverflow.com/questions/55025847/how-to-set-lower-case-table-names-1-on-ubuntu-18-04-mariadb-mysql-5-7)
-
+- [Remove file when edit .gitignore](https://stackoverflow.com/questions/1139762/ignore-files-that-have-already-been-committed-to-a-git-repository)
 # TODO:  
-- Get Sender info from token in authenticate when sending message
+- [x] Get Sender info from token in authenticate when sending message
+- [ ] Finish profile update (information + avatar) info backend

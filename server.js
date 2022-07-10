@@ -5,12 +5,17 @@ const cors          = require("cors");
 const path          = require("path");
 const passport      = require("passport");
 const io            = require("socket.io")(httpServer);
+const fs            = require("fs");
 const { HOST_PORT, HOST_ADDRESS } = require("./Utils/UtilsFunction");
 const { PrivateChatSocket, RoomChatSocket } = require("./components/Chat/ChatSocket");
 const UsersRouter = require("./components/Users/UsersRouter");
 const PrivateChatRouter = require("./components/Chat/PrivateChat/PrivateChatRouter");
 const dotenv = require("dotenv");
 dotenv.config();
+
+if (!fs.existsSync("public/avatar")) {
+    fs.mkdirSync("public/avatar");
+}
 
 const RootNSP = io.of("/");
 RootNSP.use(function(socket, next) {

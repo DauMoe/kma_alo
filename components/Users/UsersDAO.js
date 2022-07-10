@@ -103,3 +103,17 @@ exports.UpdateUserInfoDAO = async(uid, first_name, last_name, username, email, m
         return DB_RESP(503, e.message);
     }
 }
+
+exports.UpdateAvatarDAO = async(uid, path) => {
+    const FUNC_NAME = `UpdateAvatarDAO${FILE_NAME}`;
+    let SQL, SQL_BIND = "";
+    try {
+        SQL             = "UPDATE USERS SET AVATAR_LINK = ? WHERE UID = ?";
+        SQL_BIND        = mysql.format(SQL, [path, uid]);
+        await query(SQL_BIND);
+        return DB_RESP(200);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}

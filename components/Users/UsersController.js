@@ -1,13 +1,22 @@
 const bcrypt = require("bcrypt");
 const { GetString, GetNumber } = require("../../Utils/GetValue");
 const { CatchErr, SuccessResp, RespCustomCode, CREATE_TRANSPORTER, SALT_ROUND, JWT_SECRET_KEY, HOST_ADDRESS} = require("../../Utils/UtilsFunction");
-const { NewLocalUserDAO, LocalLoginDAO, GetUserInfoDAO, ActiveAccountDAO, GetProfileInformationDAO, UpdateUserInfoDAO} = require("./UsersDAO");
+const { NewLocalUserDAO, LocalLoginDAO, GetUserInfoDAO, ActiveAccountDAO, GetProfileInformationDAO, UpdateUserInfoDAO,
+    UpdateAvatarDAO
+} = require("./UsersDAO");
 const jwt = require("jsonwebtoken");
+const path = require("path");
 const multer = require("multer");
-const avatarUpload = multer({
-    dest: "public/avatar",
-    fieldSize: 1000 * 2}
-).single("avatar");
+const url = require("url");
+const storage = multer.diskStorage({
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname))
+    },
+    destination: function (req, file, cb) {
+        cb(null, "public/avatar")
+    }
+})
+const avatarUpload =  multer({ storage: storage }).single("avatar");
 
 const FILE_NAME = " - UsersController.js";
 
@@ -155,16 +164,22 @@ exports.UpdateUserInfo = async(req, resp) => {
 exports.UpdateAvatar = function(req, resp) {
     const FUNC_NAME = "UpdateAvatar" + FILE_NAME;
     const uid       = req.app.locals.uid;
-    const reqData   = req.body;
     try {
-        avatarUpload(req, resp, function(err) {
+        avatarUpload(req, resp, async function(err) {
             if (err instanceof  multer.MulterError) {
-                console.log(err.message);
                 RespCustomCode(resp, undefined, "Have error when upload file", 500);
             } else if (err) {
                 RespCustomCode(resp, undefined, err, 400);
             } else {
-                console.log(req.file);
+                const pathFile = "/avatar/" + req.file.filename;
+                const result = await UpdateAvatarDAO(uid, pathFile);
+                if (result.code === 200) {
+                    SuccessResp(resp, {
+                        avatar_path: pathFile
+                    })
+                } else {
+                    RespCustomCode(resp, result.code, result.msg);
+                }
             }
         });
     } catch(e) {
