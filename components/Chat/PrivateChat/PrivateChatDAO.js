@@ -78,8 +78,8 @@ exports.GetMessageHistoryDAO = async(uid, offset, limit, receiver_id) => {
     const FUNC_NAME = "GetMessageHistoryDAO" + FILE_NAME;
     let SQL, SQL_BIND;
     try {
-        SQL = "SELECT * FROM PRIVATE_CHAT_MESSAGE a JOIN USERS b ON a.RECEIVER_ID = b.UID WHERE a.SENDER_ID = ? AND a.RECEIVER_ID = ? ORDER BY a.CREATED_AT DESC LIMIT ?,?";
-        SQL_BIND = mysql.format(SQL, [uid, receiver_id, offset, limit]);
+        SQL = "SELECT * FROM PRIVATE_CHAT_MESSAGE a JOIN USERS b ON a.RECEIVER_ID = b.UID WHERE (a.SENDER_ID = ? AND a.RECEIVER_ID = ?) OR (a.SENDER_ID = ? AND a.RECEIVER_ID = ?) ORDER BY a.CREATED_AT DESC LIMIT ?,?";
+        SQL_BIND = mysql.format(SQL, [uid, receiver_id, receiver_id, uid, offset, limit]);
         const result = await query(SQL_BIND);
         return DB_RESP(200, result);
     } catch (e) {

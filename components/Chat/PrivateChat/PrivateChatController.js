@@ -81,14 +81,18 @@ exports.GetMessageHistory = async(req, resp) => {
                     type                : i.TYPE                === null ? "" : i.TYPE,
                     created_at          : i.CREATED_AT          === null ? "" : i.CREATED_AT,
                     receiver_id         : i.RECEIVER_ID         === null ? "" : i.RECEIVER_ID,
+                    sender_id           : i.SENDER_ID           === null ? "" : i.SENDER_ID,
+                    sender              : i.SENDER_ID           === uid,
                     receiver_first_name : i.FIRST_NAME          === null ? "" : i.FIRST_NAME,
                     receiver_last_name  : i.LAST_NAME           === null ? "" : i.LAST_NAME,
                     receiver_avatar     : i.AVATAR              === null ? "" : i.AVATAR,
+                    receiver_avatar_text: `${i.FIRST_NAME[0]}${i.LAST_NAME}`,
+                    state               : "SENT",
                     receiver_avatar_text: `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`
                 });
             }
             SuccessResp(resp, {
-                chat_history: respResult,
+                chat_history: respResult.reverse(),
                 next_offset: offset + respResult.length,
                 limit: limit
             });
