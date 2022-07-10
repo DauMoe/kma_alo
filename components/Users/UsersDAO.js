@@ -75,3 +75,31 @@ exports.ActiveAccountDAO = async(uuid) => {
         return DB_RESP(503, e.message);
     }
 }
+
+exports.GetProfileInformationDAO = async(uid) => {
+    const FUNC_NAME = `GetProfileInformationDAO${FILE_NAME}`;
+    let SQL, SQL_BIND = "";
+    try {
+        SQL             = "SELECT * FROM USERS WHERE UID = ?";
+        SQL_BIND        = mysql.format(SQL, [uid]);
+        const result    = await query(SQL_BIND);
+        return DB_RESP(200, result);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
+
+exports.UpdateUserInfoDAO = async(uid, first_name, last_name, username, email, mobile, information) => {
+    const FUNC_NAME = `UpdateUserInfoDAO${FILE_NAME}`;
+    let SQL, SQL_BIND = "";
+    try {
+        SQL             = "UPDATE USERS SET FIRST_NAME = ?, LAST_NAME = ?, USERNAME = ?, MOBILE = ?, EMAIL = ?, INFORMATION = ? WHERE UID = ?";
+        SQL_BIND        = mysql.format(SQL, [first_name, last_name, username, mobile, email, information, uid]);
+        await query(SQL_BIND);
+        return DB_RESP(200);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}

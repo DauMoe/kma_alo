@@ -2,7 +2,7 @@
 - [x] Đăng nhập (đăng nhập bằng username và email)
 - [x] Đăng ký account (có xác thực mail)
 - [x] Xem toàn bộ các cuộc trò truyện
-- [ ] Private Chat
+- [x] Private Chat
 - [ ] Group chat
 - [ ] Video call
 - [ ] Xem danh sách bạn bè + gợi ý bạn bè từ danh bạ

@@ -1,10 +1,32 @@
 const bcrypt = require("bcrypt");
 const { GetString, GetNumber } = require("../../Utils/GetValue");
 const { CatchErr, SuccessResp, RespCustomCode, CREATE_TRANSPORTER, SALT_ROUND, JWT_SECRET_KEY, HOST_ADDRESS} = require("../../Utils/UtilsFunction");
-const { NewLocalUserDAO, LocalLoginDAO, GetUserInfoDAO, ActiveAccountDAO } = require("./UsersDAO");
+const { NewLocalUserDAO, LocalLoginDAO, GetUserInfoDAO, ActiveAccountDAO, GetProfileInformationDAO, UpdateUserInfoDAO} = require("./UsersDAO");
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const avatarUpload = multer({
+    dest: "public/avatar",
+    fieldSize: 1000 * 2}
+).single("avatar");
 
 const FILE_NAME = " - UsersController.js";
+
+
+exports.VerifyAccount = async(req, resp) => {
+    try {
+        const uuid      = GetString(req.params, "uuid");
+        const result    = await ActiveAccountDAO(uuid);
+        if (result.code === 200) {
+            resp.send(`
+                <img style="text-align: center" src="${HOST_ADDRESS}create_account.svg" width="100%" height="100%"/>
+            `);
+        } else {
+            resp.send(`<h3>${result}</h3>`);
+        }
+    } catch(e) {
+        resp.send("<h1>Missing params!</h1>");
+    }
+}
 
 exports.NewLocalUser = async (req, resp) => {
     const FUNC_NAME = "NewLocalUser" + FILE_NAME;
@@ -69,7 +91,6 @@ exports.GetUserInfo = async(req, resp) => {
     const uid = req.app.locals.uid;
     try {
         const result    = await GetUserInfoDAO(uid);
-        console.log(result);
         if (result.code === 200) {
             const data = result.msg[0];
             const UserData = {
@@ -79,7 +100,9 @@ exports.GetUserInfo = async(req, resp) => {
                 mobile          : data.MOBILE           === null ? "" : data.MOBILE,
                 email           : data.EMAIL            === null ? "" : data.EMAIL,
                 email_confirmed : data.EMAIL_CONFIRMED  === 1,
-                avatar_link     : data.AVATAR_LINK      === null ? "" : data.AVATAR_LINK
+                avatar_link     : data.AVATAR_LINK      === null ? "" : data.AVATAR_LINK,
+                avatar_text     : `${data.FIRST_NAME[0]}${data.LAST_NAME[0]}`,
+                information     : data.INFORMATION      === null ? "" : data.INFORMATION
             };
             SuccessResp(resp, {user_data: UserData});
         } else {
@@ -90,18 +113,61 @@ exports.GetUserInfo = async(req, resp) => {
     }
 }
 
-exports.VerifyAccount = async(req, resp) => {
+exports.UpdateUserInfo = async(req, resp) => {
+    const FUNC_NAME = "UpdateUserInfo" + FILE_NAME;
+    const uid       = req.app.locals.uid;
+    const reqData   = req.body;
     try {
-        const uuid      = GetString(req.params, "uuid");
-        const result    = await ActiveAccountDAO(uuid);
+        const first_name    = GetString(reqData, "first_name");
+        const last_name     = GetString(reqData, "last_name");
+        const username      = GetString(reqData, "username");
+        const email         = GetString(reqData, "email");
+        const mobile        = GetString(reqData, "mobile");
+        const information   = GetString(reqData, "information");
+        const result        = await UpdateUserInfoDAO(uid, first_name, last_name, username, email, mobile, information);
         if (result.code === 200) {
-            resp.send(`
-                <img style="text-align: center" src="${HOST_ADDRESS}create_account.svg" width="100%" height="100%"/>
-            `);
+            const result1 = await GetUserInfoDAO(uid);
+            if (result1.code === 200) {
+                const data = result1.msg[0];
+                const UserData = {
+                    first_name      : data.FIRST_NAME       === null ? "" : data.FIRST_NAME,
+                    last_name       : data.LAST_NAME        === null ? "" : data.LAST_NAME,
+                    username        : data.USERNAME         === null ? "" : data.USERNAME,
+                    mobile          : data.MOBILE           === null ? "" : data.MOBILE,
+                    email           : data.EMAIL            === null ? "" : data.EMAIL,
+                    email_confirmed : data.EMAIL_CONFIRMED  === 1,
+                    avatar_link     : data.AVATAR_LINK      === null ? "" : data.AVATAR_LINK,
+                    avatar_text     : `${data.FIRST_NAME[0]}${data.LAST_NAME[0]}`,
+                    information     : data.INFORMATION      === null ? "" : data.INFORMATION
+                };
+                SuccessResp(resp, {user_data: UserData});
+            } else {
+                RespCustomCode(resp, result.code, result.msg);
+            }
         } else {
-            resp.send(`<h3>${result}</h3>`);
+            RespCustomCode(resp, result.code, result.msg);
         }
     } catch(e) {
-        resp.send("<h1>Missing params!</h1>");
+        CatchErr(resp, e, FUNC_NAME);
+    }
+}
+
+exports.UpdateAvatar = function(req, resp) {
+    const FUNC_NAME = "UpdateAvatar" + FILE_NAME;
+    const uid       = req.app.locals.uid;
+    const reqData   = req.body;
+    try {
+        avatarUpload(req, resp, function(err) {
+            if (err instanceof  multer.MulterError) {
+                console.log(err.message);
+                RespCustomCode(resp, undefined, "Have error when upload file", 500);
+            } else if (err) {
+                RespCustomCode(resp, undefined, err, 400);
+            } else {
+                console.log(req.file);
+            }
+        });
+    } catch(e) {
+        CatchErr(resp, e, FUNC_NAME);
     }
 }
