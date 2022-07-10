@@ -13,11 +13,11 @@
  - [RN Paper Custom font](https://callstack.github.io/react-native-paper/fonts.html)
  
 ## TODO Jun 26 2022:
- - [ ] **IMPORTANT! Find a way to update offset without re-render**: (redux JUST SAVE THIS DATA from current call, update to **conversation** state and update **offset**)
+ - [x] **IMPORTANT! Find a way to update offset without re-render**: (redux JUST SAVE THIS DATA from current call, update to **conversation** state and update **offset**)
  - [x] Use local DB stores host IP
  - [x] Create chat UI
  - [ ] Create Profile UI
  - [ ] Create search friend UI
  - [ ] Create comments UI
 ## Socket idea:  
- - Use `rooms` to make private chat
+ - [x] **(CURRENT)** Use `rooms` to make private chat

@@ -6,8 +6,10 @@ import {useDispatch, useSelector} from "react-redux";
 import io from "socket.io-client";
 import uuid from "react-native-uuid";
 import LinearGradient from "react-native-linear-gradient";
-import {DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
+import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 import {GetChatHistory} from "../ReduxSaga/Chat/Actions";
+import {GET_CHAT_HISTORY} from "../API_Definition";
+import jwt_decode from "jwt-decode";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -90,29 +92,61 @@ const ChatScreen = function(props) {
     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIsImVtYWlsIjoiaG9hbmduZUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImRhdW1vZSIsImlhdCI6MTY1NjI1NjA5NywiZXhwIjoxODcyMjU2MDk3fQ.cotV9sFZeH5p3w-iu25mE2FGxw2id0VOfEwWCVmNQy4";
     const { route, navigation }     = props;
     const { chatInfo }              = route.params;
-    const { width, height }         = Dimensions.get("window");
-    const dispatch                  = useDispatch();
     const limitMessage              = 20; //Load 20 message each time
     const [socket, setSocket]       = useState(null);
-    const [msg, setMsg]             = useState("??? WTF bro");
+    const [msg, setMsg]             = useState("");
     const [Conversation, setConversation] = useState([]);
-    const offset = useState(0);
-    const chats = useSelector(state => state.Chats);
+    const conversationAction = useRef({
+       offset: 0,
+       loading: false
+    });
+    const [jwtInfo, setJwtInfo] = useState({
+        uid: -1,
+        username: ""
+    });
     const { receiver_avatar, receiver_avatar_text, room_chat_id, receiver_first_name, receiver_last_name, type, receiver_uid, receiver_username } = chatInfo;
 
+    const HandleScrollTop = function(e) {
+        if (e.nativeEvent.contentOffset.y === 0 && !conversationAction.current.loading) LoadChatHistory()
+    }
+
+    const DecodeJWT = function() {
+        const jwtData = jwt_decode(token);
+        setJwtInfo(jwtData);
+    }
+
     useEffect(() => {
-        console.log("======================\n", chats);
+        DecodeJWT();
         LoadChatHistory();
-    }, []);
+    }, [token]);
 
     const LoadChatHistory = function() {
-        dispatch(GetChatHistory(offset, limitMessage));
+        // dispatch(GetChatHistory(offset, limitMessage));
+        conversationAction.current.loading = true;
+        const options = {
+            params: {
+                offset: conversationAction.current.offset,
+                limit: limitMessage,
+                receiver_id: receiver_uid
+            }
+        }
+        axiosConfig(GET_CHAT_HISTORY, "get", options)
+            .then(r => {
+                const respData = r.data.data;
+                conversationAction.current.offset = respData.next_offset;
+                const chatHistory = Array.isArray(respData.chat_history) ? respData.chat_history : [];
+                setConversation(prevState => chatHistory.concat(prevState));
+            })
+            .catch(e => console.error(e))
+            .finally(() => {
+                conversationAction.current.loading = false;
+            });
     }
 
     const HandleChatSocket = function(receiveData) {
         const newMessage = {
             ...receiveData,
-            sender: false
+            sender: receiveData.sender_id === jwtInfo.uid
         };
         setConversation(prevState => [...prevState, newMessage]);
     }
@@ -121,10 +155,11 @@ const ChatScreen = function(props) {
         if (msg.trim() === "") return;
         const newMessage = {
             ...chatInfo,
+            sender_id: uid,
             msgID   : uuid.v1(),
             msg     : msg,
             sender  : true,
-            state   : MessageState.SENDING
+            state   : MessageState.SENT
         };
         setMsg("");
         setConversation(prevState => [...prevState, newMessage]);
@@ -145,11 +180,11 @@ const ChatScreen = function(props) {
     const ChatSection = function() {
         return(
             <ChatScreenWrapper>
-                <ScrollView>
+                <ScrollView onScroll={HandleScrollTop}>
                     {Array.isArray(Conversation) && Conversation.map(function(v, index) {
                         return (
-                            <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.uid === Conversation[index-1].uid)}>
-                                <AvatarMessageUser size={35} label={v.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.uid !== Conversation[index-1].uid))}/>
+                            <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.sender_id === Conversation[index-1].sender_id)}>
+                                <AvatarMessageUser size={35} label={v.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>
                                 <ChatMessage sender={v.sender} onLongPress={() => console.log("Long press")}>
                                     <Text style={{color: "white"}}>{v.msg}</Text>
                                 </ChatMessage>
@@ -163,22 +198,22 @@ const ChatScreen = function(props) {
         );
     }
 
-    const InputMessageSection = function() {
-        return (
-            <InputMessageWrapper>
-                <InputMessage defaultValue={msg} onChangeText={text => setMsg(text)} placeholder="Type your message"/>
-                <IconButton
-                    icon="send"
-                    style={{
-                        transform: [{rotate: '-30deg'}]
-                    }}
-                    size={25}
-                    onPress={sendMessage}
-                    animate={true}
-                    color={Theme.primaryTextColor}/>
-            </InputMessageWrapper>
-        );
-    }
+    // const InputMessageSection = function() {
+    //     return (
+    //         <InputMessageWrapper>
+    //             <InputMessage defaultValue={msg} onChangeText={text => setMsg(text)} placeholder="Type your message"/>
+    //             <IconButton
+    //                 icon="send"
+    //                 style={{
+    //                     transform: [{rotate: '-30deg'}]
+    //                 }}
+    //                 size={25}
+    //                 onPress={sendMessage}
+    //                 animate={true}
+    //                 color={Theme.primaryTextColor}/>
+    //         </InputMessageWrapper>
+    //     );
+    // }
 
     useEffect(function () {
         console.log("Room name: ", room_chat_id);
@@ -215,7 +250,6 @@ const ChatScreen = function(props) {
                     animate={true}
                     color={Theme.primaryTextColor}/>
             </InputMessageWrapper>
-            {/*<InputMessageSection sendMessage={sendMessage}/>*/}
         </>
     );
 }

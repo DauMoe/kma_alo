@@ -115,7 +115,7 @@ const ListChatSection = function({data, navigation}) {
     );
 }
 
-const Legacy_ListChatsScreen = function(props) {
+const ListChatsScreen = function(props) {
     const { navigation }                        = props;
     const { width, height }                     = Dimensions.get("window");
     const dispatch                              = useDispatch();
@@ -165,4 +165,4 @@ const Legacy_ListChatsScreen = function(props) {
     }
 }
 
-export default Legacy_ListChatsScreen;
+export default ListChatsScreen;

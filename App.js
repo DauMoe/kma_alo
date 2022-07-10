@@ -14,7 +14,7 @@ import {
 import SetIPModal from "./components/SetIPModal";
 import ForgetPasswordScreen from "./components/ForgetPasswordScreen";
 import ChatScreen from "./components/ChatScreen";
-import Legacy_ListChatsScreen from "./components/ChatScreen/ListChatsScreen";
+import ListChatsScreen from "./components/ChatScreen/ListChatsScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -25,7 +25,7 @@ const App = function(props) {
         screenOptions={{
           headerShown: false
         }}
-        initialRouteName={LIST_CHATS_SCREEN}>
+        initialRouteName={MAIN_SCREEN}>
           <Stack.Screen
             name={LOADING_SCREEN}
             component={LoadingScreen}
@@ -48,7 +48,7 @@ const App = function(props) {
           />
           <Stack.Screen
               name={LIST_CHATS_SCREEN}
-              component={Legacy_ListChatsScreen}
+              component={ListChatsScreen}
           />
       </Stack.Navigator>
       <SetIPModal/>
