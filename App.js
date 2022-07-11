@@ -16,9 +16,9 @@ import ForgetPasswordScreen from "./components/ForgetPasswordScreen";
 import ChatScreen from "./components/ChatScreen";
 import ListChatsScreen from "./components/ChatScreen/ListChatsScreen";
 import FriendsScreen from "./components/FriendsScreen";
-import ProfileScreen from "./components/ProfileScreen";
+import ProfileScreen from "./components/UserProfileScreen";
 import {StatusBar} from "react-native";
-import EditProfileScreen from "./components/ProfileScreen/EditProfileScreen";
+import EditProfileScreen from "./components/UserProfileScreen/EditProfileScreen";
 
 const Stack = createNativeStackNavigator();
 

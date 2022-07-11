@@ -5,8 +5,8 @@ import NewsFeedScreen from '../NewsFeedScreen/index';
 import LoadingScreen from '../LoadingScreen/index';
 import ChatScreen from '../ChatScreen/index';
 import FriendsScreen from "../FriendsScreen";
-import ProfileScreen from "../ProfileScreen";
 import ListChatsScreen from "../ChatScreen/ListChatsScreen";
+import ProfileScreen from "../UserProfileScreen";
 
 const MainScreen = function(props) {
     const { navigation }        = props;

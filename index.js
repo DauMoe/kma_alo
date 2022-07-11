@@ -20,8 +20,8 @@ const theme = {
     colors: {
         ...DefaultTheme.colors,
         primary   : '#58B7E9',
-        secondary : '#000',
-        tertiary  : '#fff'
+        secondary : '#c74e4e',
+        tertiary  : '#000'
     },
     fonts: configureFonts(FontConfig)
 };
