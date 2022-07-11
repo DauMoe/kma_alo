@@ -108,10 +108,13 @@ exports.UpdateAvatarDAO = async(uid, path) => {
     const FUNC_NAME = `UpdateAvatarDAO${FILE_NAME}`;
     let SQL, SQL_BIND = "";
     try {
+        SQL             = "SELECT AVATAR_LINK FROM USERS WHERE UID = ?";
+        SQL_BIND        = mysql.format(SQL, [uid]);
+        const result    = await query(SQL_BIND);
         SQL             = "UPDATE USERS SET AVATAR_LINK = ? WHERE UID = ?";
         SQL_BIND        = mysql.format(SQL, [path, uid]);
         await query(SQL_BIND);
-        return DB_RESP(200);
+        return DB_RESP(200, result);
     } catch (e) {
         DB_ERR(FUNC_NAME, SQL_BIND, e.message);
         return DB_RESP(503, e.message);
