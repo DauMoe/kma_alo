@@ -3,7 +3,7 @@ import {View, Text, Image, ScrollView, PermissionsAndroid, ToastAndroid, Dimensi
 import styled from "styled-components/native";
 import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 import {GET_USER_PROFILE, UPDATE_AVATAR} from "../API_Definition";
-import {Button, FAB, Modal, Portal, Provider} from "react-native-paper";
+import {Avatar, Button, FAB, Modal, Portal, Provider} from "react-native-paper";
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import {useIsFocused, useNavigation} from "@react-navigation/native";
 import {EDIT_USER_PROFILE_SCREEN} from "../Definition";
@@ -88,29 +88,25 @@ const ProfileScreen = function(props) {
     const [showSelectModal, setShow] = useState(false);
     const [isLoading, setLoading] = useState(false);
 
-    const UpdateAvatar = function(avatarFile) {
-        console.log("Update");
+    const UpdateAvatar = function(avatarBase64) {
+        console.log("???");
         const formData = new FormData();
-        formData.append("avatar", avatarFile);
+        formData.append("avatar", avatarBase64);
         const options = {
-            body: formData,
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            }
+            avatarBase64: avatarBase64
         }
-        axiosConfig(UPDATE_AVATAR, "put", formData)
+        axiosConfig(UPDATE_AVATAR, "put", options)
             .then(r => {
-                console.log(r)
+                console.log("ok");
+                setProfile({
+                    ...userProfile,
+                    avatar_link: r.data.data.avatarBase64
+                });
             })
             .catch(e => {
                 console.error(JSON.stringify(e));
             })
-        // try {
-        //     const r = await axiosConfig(UPDATE_AVATAR, "put", options);
-        //     console.log(r);
-        // } catch(e) {
-        //     console.error(e);
-        // }
+            .finally(() => console.log("DONE"));
     }
 
     const GetImageFromCamera = function() {
@@ -130,27 +126,10 @@ const ProfileScreen = function(props) {
                     const result = await launchCamera({
                         "mediaType": "photo",
                         "cameraType": "front",
-                        "quality": 1
+                        "quality": 1,
+                        "includeBase64": true
                     });
-                    console.log(result);
-                    if (result.didCancel) {
-                        console.info("User canceled");
-                    } else if (result.errorCode === "camera_unavailable") {
-                        ToastAndroid.show("Camera is not available", ToastAndroid.LONG);
-                    } else if (result.errorCode === "permission") {
-                        ToastAndroid.show("Please allow us access camera or gallery", ToastAndroid.LONG);
-                    } else if (result.errorCode === "others") {
-                        ToastAndroid.show(result.errorMessage, ToastAndroid.LONG);
-                    } else if ((result.assets[0].fileSize/1000) > 1000 * 10) {
-                        ToastAndroid.show("Image file is too large (Max: 10MB)", ToastAndroid.LONG);
-                    } else {
-                        console.log(result);
-                        UpdateAvatar(result.assets[0].uri);
-                        // setProfile({
-                        //     ...userProfile,
-                        //     avatar_link: result.assets[0].uri
-                        // });
-                    }
+                    HandleImage(result);
                 } catch(e) {
                     console.error("Launch camera err: ", e);
                 }
@@ -176,32 +155,31 @@ const ProfileScreen = function(props) {
                         "mediaType": "photo",
                         "cameraType": "front",
                         "quality": 1,
-                        "includeBase64": false,
-                        "includeExtra": true
+                        "includeBase64": true
                     });
-                    if (result.didCancel) {
-                        console.info("User canceled");
-                    } else if (result.errorCode === "camera_unavailable") {
-                        ToastAndroid.show("Camera is not available", ToastAndroid.LONG);
-                    } else if (result.errorCode === "permission") {
-                        ToastAndroid.show("Please allow us access camera or gallery", ToastAndroid.LONG);
-                    } else if (result.errorCode === "others") {
-                        ToastAndroid.show(result.errorMessage, ToastAndroid.LONG);
-                    } else if ((result.assets[0].fileSize/1000) > 1000 * 10) {
-                        ToastAndroid.show("Image file is too large (Max: 10MB)", ToastAndroid.LONG);
-                    } else {
-                        console.log(result.assets[0]);
-                        UpdateAvatar(result.assets[0].uri);
-                        // setProfile({
-                        //     ...userProfile,
-                        //     avatar_link: result.assets[0].uri
-                        // });
-                    }
+                    HandleImage(result);
                 } catch(e) {
                     console.error("Launch library err: ", e);
                 }
             })
             .catch(e => console.error(e))
+    }
+
+    const HandleImage = function(result) {
+        if (result.didCancel) {
+            console.info("User canceled");
+        } else if (result.errorCode === "camera_unavailable") {
+            ToastAndroid.show("Camera is not available", ToastAndroid.LONG);
+        } else if (result.errorCode === "permission") {
+            ToastAndroid.show("Please allow us access camera or gallery", ToastAndroid.LONG);
+        } else if (result.errorCode === "others") {
+            ToastAndroid.show(result.errorMessage, ToastAndroid.LONG);
+        } else if ((result.assets[0].fileSize/1000) > 1000 * 10) {
+            ToastAndroid.show("Image file is too large (Max: 10MB)", ToastAndroid.LONG);
+        } else {
+            const avatarBase64 = "data:image/png;base64," + result.assets[0].base64;
+            UpdateAvatar(avatarBase64);
+        }
     }
 
     const SelectImageSource = function() {
@@ -237,16 +215,17 @@ const ProfileScreen = function(props) {
         setLoading(true);
         axiosConfig(GET_USER_PROFILE, "get")
             .then(r => {
-                setProfile({
-                    ...r.data.data.user_data,
-                    avatar_link: `${DEFAULT_BASE_URL}${r.data.data.user_data.avatar_link}`
-                });
+                setProfile(r.data.data.user_data);
             })
             .catch(e => console.error(e))
             .finally(() => {
                 setLoading(false);
             })
     }, [props, isFocus]);
+
+    useEffect(function() {
+
+    }, [userProfile.avatar_link]);
 
     if (isLoading) return (<ProfileSkeleton width={width} height={height}/>);
 
@@ -261,9 +240,12 @@ const ProfileScreen = function(props) {
                         iconColor={"#6A6A6A"}
                         style={{position: "absolute", bottom: 0, zIndex: 1, left: 110, backgroundColor: "white"}}
                     />
-                    <Image
-                        style={{width: 150, height: 150, borderRadius: 200, borderWidth: 2, borderColor: "black"}}
-                        source={{uri: `${userProfile.avatar_link}`}}/>
+                    {userProfile.avatar_link !== ""
+                         ? <Image
+                            style={{width: 150, height: 150, borderRadius: 200, borderWidth: 2, borderColor: "black"}}
+                            source={{uri: `${userProfile.avatar_link}`}}/>
+                        : <Avatar.Text label={userProfile.avatar_text} size={150}/>
+                    }
                     <View style={{alignItems: "center", justifyContent: "center", flex: 1}}>
                         <Button
                             icon="arrow-right-bold"
