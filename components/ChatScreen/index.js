@@ -155,7 +155,7 @@ const ChatScreen = function(props) {
         if (msg.trim() === "") return;
         const newMessage = {
             ...chatInfo,
-            sender_id: uid,
+            sender_id: jwtInfo.uid,
             msgID   : uuid.v1(),
             msg     : msg,
             sender  : true,

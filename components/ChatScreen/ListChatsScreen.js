@@ -7,6 +7,7 @@ import {GetListChats} from "../ReduxSaga/Chat/Actions";
 import {CHAT_SCREEN} from "../Definition";
 import 'moment-timezone';
 import moment from "moment";
+import {useNavigation} from "@react-navigation/native";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -79,6 +80,10 @@ const MessageTime = styled(Text)`
 `;
 
 const ListChatSection = function({data, navigation}) {
+    useEffect(function() {
+       // console.log(navigation.navigate());
+    });
+
     const GotoChatScreen = function(chatInfo) {
         navigation.navigate(CHAT_SCREEN, {
             chatInfo: chatInfo
@@ -116,7 +121,7 @@ const ListChatSection = function({data, navigation}) {
 }
 
 const ListChatsScreen = function(props) {
-    const { navigation }                        = props;
+    const navigation                            = useNavigation();
     const { width, height }                     = Dimensions.get("window");
     const dispatch                              = useDispatch();
     const { loaded, error, error_msg, data }    = useSelector(state => state.Chats);

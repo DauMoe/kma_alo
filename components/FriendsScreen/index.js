@@ -24,6 +24,12 @@ const FriendsScreen = function(props) {
     const [contacts, setContacts] = useState([]);
 
     useEffect(function() {
+        /***
+         * @TODO
+         * @First: create action with side effects to check new contact
+         * @Second: display new contact from response data
+         */
+
         PermissionsAndroid.request(
             PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
             {
@@ -32,13 +38,12 @@ const FriendsScreen = function(props) {
                     "This app would like to view your contacts.",
                 buttonNeutral: "Ask Me Later",
                 buttonNegative: "Cancel",
-                buttonPositive: "OK"
+                buttonPositive: "Allow"
             }
         ).then(r => {
             Contacts.getAll()
                 .then(c => {
                     setContacts(c);
-                    console.log(c[0].phoneNumbers);
                 })
                 .catch(e => {
                     console.error("C: ", e);
@@ -52,7 +57,7 @@ const FriendsScreen = function(props) {
         <ScrollView>
             {contacts.map((contact, index) => {
                 return(
-                  <Text key={index} style={{color: "black"}}>{JSON.stringify(contact.phoneNumbers)}</Text>
+                  <Text key={index} style={{color: "black"}}>{JSON.stringify(contact.phoneNumbers[0])}</Text>
                 );
             })}
         </ScrollView>
