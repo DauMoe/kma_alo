@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
-import {View, Text, TextInput, ScrollView, Dimensions} from "react-native";
+import {View, Text, TextInput, ScrollView, Dimensions, ToastAndroid} from "react-native";
 import styled from "styled-components/native";
 import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
-import {GET_USER_PROFILE} from "../API_Definition";
+import {GET_USER_PROFILE, UPDATE_USER_INFO} from "../API_Definition";
 import {Button, IconButton} from "react-native-paper";
 import {useNavigation} from "@react-navigation/native";
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
@@ -46,6 +46,7 @@ const EditProfileInput = styled(TextInput)`
     border-color: gray;
     padding-left: 15px;
     padding-right: 15px;
+    font-family: "NunitoRegular";
 `;
 
 const SkeletonWrapper = styled(View)`
@@ -85,7 +86,36 @@ const EditProfileScreen = function(props) {
     const [isLoading, setLoading] = useState(false);
 
     const SaveProfile = function() {
-
+        if (EditProfile.first_name.trim() === "") {
+            ToastAndroid.show("Enter your first name!", ToastAndroid.LONG);
+            return;
+        }
+        if (EditProfile.last_name.trim() === "") {
+            ToastAndroid.show("Enter your last name!", ToastAndroid.LONG);
+            return;
+        }
+        if (EditProfile.email.trim() === "") {
+            ToastAndroid.show("Enter your email!", ToastAndroid.LONG);
+            return;
+        }
+        if (EditProfile.mobile.trim() === "") {
+            ToastAndroid.show("Enter your mobile!", ToastAndroid.LONG);
+            return;
+        }
+        if (EditProfile.username.trim() === "") {
+            ToastAndroid.show("Enter your username!", ToastAndroid.LONG);
+            return;
+        }
+        axiosConfig(UPDATE_USER_INFO, "put", EditProfile)
+            .then(r => {
+                setProfile(r.data.data.user_data);
+                ToastAndroid.show("Update info successful", ToastAndroid.LONG);
+                navigation.goBack();
+            })
+            .catch(e => {
+                console.log(Object.keys(e));
+                console.error(JSON.stringify(e.response.data))
+            });
     }
 
     useEffect(function() {
@@ -100,50 +130,6 @@ const EditProfileScreen = function(props) {
             })
     }, []);
 
-    const LoadedInput = function() {
-        return(
-            <>
-                <ScrollView>
-                    <EditProfileInfoWrapper>
-                        <EditProfileTitle>Email:</EditProfileTitle>
-                        <EditProfileInput defaultValue={EditProfile.email} onChangeText={e => setProfile({...EditProfile, email: e})}/>
-                    </EditProfileInfoWrapper>
-                    <EditProfileInfoWrapper>
-                        <EditProfileTitle>First name:</EditProfileTitle>
-                        <EditProfileInput defaultValue={EditProfile.first_name} onChangeText={e => setProfile({...EditProfile, first_name: e})}/>
-                    </EditProfileInfoWrapper>
-                    <EditProfileInfoWrapper>
-                        <EditProfileTitle>Last name:</EditProfileTitle>
-                        <EditProfileInput defaultValue={EditProfile.last_name} onChangeText={e => setProfile({...EditProfile, last_name: e})}/>
-                    </EditProfileInfoWrapper>
-                    <EditProfileInfoWrapper>
-                        <EditProfileTitle>Username:</EditProfileTitle>
-                        <EditProfileInput defaultValue={EditProfile.username} onChangeText={e => setProfile({...EditProfile, username: e})}/>
-                    </EditProfileInfoWrapper>
-                    <EditProfileInfoWrapper>
-                        <EditProfileTitle>Mobile:</EditProfileTitle>
-                        <EditProfileInput defaultValue={EditProfile.mobile} onChangeText={e => setProfile({...EditProfile, mobile: e})}/>
-                    </EditProfileInfoWrapper>
-                    <EditProfileInfoWrapper>
-                        <EditProfileTitle>Information:</EditProfileTitle>
-                        <EditProfileInput defaultValue={EditProfile.information} onChangeText={e => setProfile({...EditProfile, information: e})}/>
-                    </EditProfileInfoWrapper>
-                </ScrollView>
-                <View style={{margin: 20}}>
-                    <Button
-                        icon="content-save"
-                        color="white"
-                        uppercase
-                        onPress={SaveProfile}
-                        contentStyle={{paddingTop: 3, paddingBottom: 3}}
-                        style={{borderRadius: 10, backgroundColor: "#61dafb"}}>
-                        Save
-                    </Button>
-                </View>
-            </>
-        );
-    }
-
     return(
         <View>
             <TopBarEditProfile>
@@ -152,7 +138,45 @@ const EditProfileScreen = function(props) {
             </TopBarEditProfile>
             {isLoading
                 ? <EditProfileSkeleton width={width} height={height}/>
-                : <LoadedInput/>}
+                : <>
+                    <ScrollView>
+                        <EditProfileInfoWrapper>
+                            <EditProfileTitle>Email:</EditProfileTitle>
+                            <EditProfileInput defaultValue={EditProfile.email} onChangeText={e => setProfile({...EditProfile, email: e})}/>
+                        </EditProfileInfoWrapper>
+                        <EditProfileInfoWrapper>
+                            <EditProfileTitle>First name:</EditProfileTitle>
+                            <EditProfileInput defaultValue={EditProfile.first_name} onChangeText={e => setProfile({...EditProfile, first_name: e})}/>
+                        </EditProfileInfoWrapper>
+                        <EditProfileInfoWrapper>
+                            <EditProfileTitle>Last name:</EditProfileTitle>
+                            <EditProfileInput defaultValue={EditProfile.last_name} onChangeText={e => setProfile({...EditProfile, last_name: e})}/>
+                        </EditProfileInfoWrapper>
+                        <EditProfileInfoWrapper>
+                            <EditProfileTitle>Username:</EditProfileTitle>
+                            <EditProfileInput defaultValue={EditProfile.username} onChangeText={e => setProfile({...EditProfile, username: e})}/>
+                        </EditProfileInfoWrapper>
+                        <EditProfileInfoWrapper>
+                            <EditProfileTitle>Mobile:</EditProfileTitle>
+                            <EditProfileInput defaultValue={EditProfile.mobile} onChangeText={e => setProfile({...EditProfile, mobile: e})}/>
+                        </EditProfileInfoWrapper>
+                        <EditProfileInfoWrapper>
+                            <EditProfileTitle>Information:</EditProfileTitle>
+                            <EditProfileInput defaultValue={EditProfile.information} onChangeText={e => setProfile({...EditProfile, information: e})}/>
+                        </EditProfileInfoWrapper>
+                    </ScrollView>
+                    <View style={{margin: 20}}>
+                        <Button
+                            icon="content-save"
+                            color="white"
+                            uppercase
+                            onPress={SaveProfile}
+                            contentStyle={{paddingTop: 3, paddingBottom: 3}}
+                            style={{borderRadius: 10, backgroundColor: "#61dafb"}}>
+                            Save
+                        </Button>
+                    </View>
+                </>}
         </View>
     )
 }

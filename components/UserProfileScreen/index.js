@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from "react";
-import {View, Text, Image, ScrollView, PermissionsAndroid, ToastAndroid} from "react-native";
+import {View, Text, Image, ScrollView, PermissionsAndroid, ToastAndroid, Dimensions} from "react-native";
 import styled from "styled-components/native";
 import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 import {GET_USER_PROFILE, UPDATE_AVATAR} from "../API_Definition";
 import {Button, FAB, Modal, Portal, Provider} from "react-native-paper";
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
-import {useNavigation} from "@react-navigation/native";
-import {EDIT_PROFILE_SCREEN} from "../Definition";
+import {useIsFocused, useNavigation} from "@react-navigation/native";
+import {EDIT_USER_PROFILE_SCREEN} from "../Definition";
+import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -48,16 +49,33 @@ const UserAvatarWrapper = styled(View)`
   margin: 15px;
 `;
 
-const ProfileSkeleton = function() {
+const ProfileSkeleton = function({width, height}) {
     return(
-        <View style={{backgroundColor: "gray"}}>
-            <View style={{backgroundColor: "white", width: 150, height: 150, borderRadius: 500}}></View>
-        </View>
+        <UserProfileTitle style={{padding: 20}}>
+            <SkeletonPlaceholder>
+                <View style={{display: "flex", flexDirection: "row", marginBottom: 20}}>
+                    <View style={{width: 150, height: 150, borderRadius: 500}}></View>
+                    <View style={{justifyContent: "center", marginLeft: 20, flex: 1}}>
+                        <View style={{width: 150, height: 50, borderRadius: 500}}></View>
+                    </View>
+                </View>
+                {Array(5).fill(1).map((v, index) => {
+                    return(
+                      <View key={"__indexprofile_skeleton_" + index} style={{marginTop: 10}}>
+                          <View style={{width: 80, height: 30, borderRadius: 5}}></View>
+                          <View style={{width: width-40, height: 50, borderRadius: 10, marginTop: 10}}></View>
+                      </View>
+                    );
+                })}
+            </SkeletonPlaceholder>
+        </UserProfileTitle>
     )
 }
 
 const ProfileScreen = function(props) {
     const navigation                = useNavigation();
+    const isFocus                   = useIsFocused();
+    const { width, height }         = Dimensions.get("window");
     const [userProfile, setProfile] = useState({
        first_name   : "",
        last_name    : "",
@@ -70,16 +88,23 @@ const ProfileScreen = function(props) {
     const [showSelectModal, setShow] = useState(false);
     const [isLoading, setLoading] = useState(false);
 
-    const UpdateAvatar = function() {
+    const UpdateAvatar = function(avatarFile) {
         console.log("Update");
         const formData = new FormData();
-        formData.append("avatar", userProfile.avatar_link);
+        formData.append("avatar", avatarFile);
         const options = {
             body: formData,
             headers: {
                 'Content-Type': 'multipart/form-data',
             }
         }
+        axiosConfig(UPDATE_AVATAR, "put", formData)
+            .then(r => {
+                console.log(r)
+            })
+            .catch(e => {
+                console.error(JSON.stringify(e));
+            })
         // try {
         //     const r = await axiosConfig(UPDATE_AVATAR, "put", options);
         //     console.log(r);
@@ -120,7 +145,7 @@ const ProfileScreen = function(props) {
                         ToastAndroid.show("Image file is too large (Max: 10MB)", ToastAndroid.LONG);
                     } else {
                         console.log(result);
-                        UpdateAvatar();
+                        UpdateAvatar(result.assets[0].uri);
                         // setProfile({
                         //     ...userProfile,
                         //     avatar_link: result.assets[0].uri
@@ -151,7 +176,8 @@ const ProfileScreen = function(props) {
                         "mediaType": "photo",
                         "cameraType": "front",
                         "quality": 1,
-                        "includeBase64": false
+                        "includeBase64": false,
+                        "includeExtra": true
                     });
                     if (result.didCancel) {
                         console.info("User canceled");
@@ -164,7 +190,8 @@ const ProfileScreen = function(props) {
                     } else if ((result.assets[0].fileSize/1000) > 1000 * 10) {
                         ToastAndroid.show("Image file is too large (Max: 10MB)", ToastAndroid.LONG);
                     } else {
-                        UpdateAvatar();
+                        console.log(result.assets[0]);
+                        UpdateAvatar(result.assets[0].uri);
                         // setProfile({
                         //     ...userProfile,
                         //     avatar_link: result.assets[0].uri
@@ -203,7 +230,7 @@ const ProfileScreen = function(props) {
     }
 
     const GoToEditProfile = function() {
-        navigation.push(EDIT_PROFILE_SCREEN);
+        navigation.push(EDIT_USER_PROFILE_SCREEN);
     }
 
     useEffect(function() {
@@ -219,9 +246,9 @@ const ProfileScreen = function(props) {
             .finally(() => {
                 setLoading(false);
             })
-    }, []);
+    }, [props, isFocus]);
 
-    if (isLoading) return (<ProfileSkeleton/>);
+    if (isLoading) return (<ProfileSkeleton width={width} height={height}/>);
 
     return(
         <>

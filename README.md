@@ -19,5 +19,6 @@
  - [ ] Create Profile UI
  - [ ] Create search friend UI
  - [ ] Create comments UI
+ - [ ] Load file from uri -> send formdata
 ## Socket idea:  
  - [x] **(CURRENT)** Use `rooms` to make private chat

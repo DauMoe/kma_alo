@@ -10,6 +10,7 @@ import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 import {GetChatHistory} from "../ReduxSaga/Chat/Actions";
 import {GET_CHAT_HISTORY} from "../API_Definition";
 import jwt_decode from "jwt-decode";
+import {useIsFocused} from "@react-navigation/native";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -96,6 +97,7 @@ const ChatScreen = function(props) {
     const [socket, setSocket]       = useState(null);
     const [msg, setMsg]             = useState("");
     const [Conversation, setConversation] = useState([]);
+    const isFocus = useIsFocused();
     const conversationAction = useRef({
        offset: 0,
        loading: false
@@ -118,7 +120,7 @@ const ChatScreen = function(props) {
     useEffect(() => {
         DecodeJWT();
         LoadChatHistory();
-    }, [token]);
+    }, [props, token, isFocus]);
 
     const LoadChatHistory = function() {
         // dispatch(GetChatHistory(offset, limitMessage));

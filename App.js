@@ -4,7 +4,7 @@ import LoadingScreen from "./components/LoadingScreen";
 import LoginScreen from './components/LoginScreen/index';
 import MainScreen from './components/MainScreen/index';
 import {
-    CHAT_SCREEN, EDIT_PROFILE_SCREEN,
+    CHAT_SCREEN, EDIT_USER_PROFILE_SCREEN,
     FORGET_PASSWORD_SCREEN, FRIENDS_SCREEN,
     LIST_CHATS_SCREEN,
     LOADING_SCREEN,
@@ -69,7 +69,7 @@ const App = function(props) {
                 component={ProfileScreen}
             />
             <Stack.Screen
-                name={EDIT_PROFILE_SCREEN}
+                name={EDIT_USER_PROFILE_SCREEN}
                 component={EditProfileScreen}
             />
       </Stack.Navigator>
