@@ -85,28 +85,33 @@ const ProfileScreen = function(props) {
        information  : "",
        avatar_link  : null
     });
+    const [avatar, setAvatar] = useState({
+        ready: false,
+        value: ""
+    });
     const [showSelectModal, setShow] = useState(false);
     const [isLoading, setLoading] = useState(false);
 
     const UpdateAvatar = function(avatarBase64) {
-        console.log("???");
         const formData = new FormData();
         formData.append("avatar", avatarBase64);
         const options = {
             avatarBase64: avatarBase64
         }
+        setAvatar({
+            ...avatar,
+            ready: false
+        });
         axiosConfig(UPDATE_AVATAR, "put", options)
             .then(r => {
-                console.log("ok");
-                setProfile({
-                    ...userProfile,
-                    avatar_link: r.data.data.avatarBase64
+                setAvatar({
+                    ready: true,
+                    value: r.data.data.avatarBase64
                 });
             })
             .catch(e => {
                 console.error(JSON.stringify(e));
-            })
-            .finally(() => console.log("DONE"));
+            });
     }
 
     const GetImageFromCamera = function() {
@@ -216,16 +221,16 @@ const ProfileScreen = function(props) {
         axiosConfig(GET_USER_PROFILE, "get")
             .then(r => {
                 setProfile(r.data.data.user_data);
+                setAvatar({
+                    ready: true,
+                    value: r.data.data.user_data.avatar_link
+                });
             })
             .catch(e => console.error(e))
             .finally(() => {
                 setLoading(false);
             })
     }, [props, isFocus]);
-
-    useEffect(function() {
-
-    }, [userProfile.avatar_link]);
 
     if (isLoading) return (<ProfileSkeleton width={width} height={height}/>);
 
@@ -240,11 +245,20 @@ const ProfileScreen = function(props) {
                         iconColor={"#6A6A6A"}
                         style={{position: "absolute", bottom: 0, zIndex: 1, left: 110, backgroundColor: "white"}}
                     />
-                    {userProfile.avatar_link !== ""
-                         ? <Image
+                    {!avatar.ready && (
+                        <View>
+                            <SkeletonPlaceholder>
+                                <View style={{width: 150, height: 150, borderRadius: 500}}></View>
+                            </SkeletonPlaceholder>
+                        </View>
+                    )}
+                    {avatar.ready && avatar.value !== "" &&
+                        <Image
                             style={{width: 150, height: 150, borderRadius: 200, borderWidth: 2, borderColor: "black"}}
-                            source={{uri: `${userProfile.avatar_link}`}}/>
-                        : <Avatar.Text label={userProfile.avatar_text} size={150}/>
+                            source={{uri: `${avatar.value}`}}/>
+                    }
+                    {avatar.ready && avatar.value === "" &&
+                        <Avatar.Text label={userProfile.avatar_text} size={150}/>
                     }
                     <View style={{alignItems: "center", justifyContent: "center", flex: 1}}>
                         <Button
