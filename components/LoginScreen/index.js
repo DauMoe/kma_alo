@@ -2,12 +2,12 @@ import React, { useEffect, useRef, useState } from "react";;
 import styled from "styled-components/native";
 import { View, Text, TextInput, KeyboardAvoidingView, Dimensions } from "react-native";
 import { Button, HelperText } from "react-native-paper";
-import { FORGET_PASSWORD_SCREEN, HOST_TABLE, MAIN_SCREEN } from "../Definition";
+import {CREATE_ACCOUNT_SCREEN, FORGET_PASSWORD_SCREEN, HOST_TABLE, MAIN_SCREEN} from "../Definition";
 import BgImage from "./../Media/login_background.svg";
 import { TextInput as TextInputRNPaper } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { LocalLoginAction } from "../ReduxSaga/Authenticator/Actions";
-import { _db } from "../Utils";
+import {useNavigation} from "@react-navigation/native";
 
 const LoginScreenWrapper = styled(View)`
     height          : ${props => props.height + "px"};
@@ -81,11 +81,11 @@ const CreateNewAccount = styled(Text)`
 `;
 
 const LoginScreen = function(props) {
-    const { navigation }            = props;
+    const navigation                = useNavigation();
     const {width, height}           = Dimensions.get("window");
-    const [username, setUsername]   = useState("dad");
+    const [username, setUsername]   = useState("daumoe");
     const [userErr, setUserErr]     = useState("");
-    const [password, setPassword]   = useState("sdsad");
+    const [password, setPassword]   = useState("123");
     const [passErr, setPassErr]     = useState("");
     const [showPass, setPlainPass]  = useState(false);
     const authenticator             = useSelector(state => state.Authenticator);
@@ -97,7 +97,7 @@ const LoginScreen = function(props) {
     }
 
     const GotoCreateAccountScreen = function() {
-        console.log("Forget password");
+        navigation.push(CREATE_ACCOUNT_SCREEN);
     }
 
     const Authenticate = function() {
@@ -125,7 +125,7 @@ const LoginScreen = function(props) {
             //didUpdate
             if (authenticator.loaded && authenticator.token) navigation.navigate(MAIN_SCREEN)
         }
-    });
+    }, []);
 
     return(
         <KeyboardAvoidingView behavior="height">

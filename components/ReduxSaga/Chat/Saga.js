@@ -31,7 +31,6 @@ function* GetChatHistory({data}) {
     try {
         const GetChatHistoryCall = call(axiosConfig, GET_CHAT_HISTORY, "get", options);
         const [GetChatHistoryData] = yield all([GetChatHistoryCall]);
-        console.info(GetChatHistoryData.data.data);
         yield put(GetChatHistorySuccess(GetChatHistoryData.data.data));
     } catch(e) {
         console.error("SAGA GetChatHistory: ", e);

@@ -6,7 +6,7 @@ import {GET_USER_PROFILE, UPDATE_AVATAR} from "../API_Definition";
 import {Avatar, Button, FAB, Modal, Portal, Provider} from "react-native-paper";
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import {useIsFocused, useNavigation} from "@react-navigation/native";
-import {EDIT_USER_PROFILE_SCREEN} from "../Definition";
+import {EDIT_USER_PROFILE_SCREEN, LOGIN_SCREEN} from "../Definition";
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 
 const Theme = {
@@ -209,7 +209,10 @@ const ProfileScreen = function(props) {
     }
 
     const Logout = function() {
-
+        navigation.reset({
+            index: 0,
+            routes: [{name: LOGIN_SCREEN}]
+        });
     }
 
     const GoToEditProfile = function() {

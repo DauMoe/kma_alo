@@ -1,4 +1,14 @@
-import { CHECK_ALL_LOCAL_DATA, HOST_IS_EXIST, HOST_IS_NOT_EXIST, SIGNED_IN_FAIL, SIGNED_IN_SUCESS, SINGING_IN, TOKEN_IS_EXIST, TOKEN_IS_NOT_EXIST } from "./ActionTypes";
+import {
+    CHECK_ALL_LOCAL_DATA,
+    HOST_IS_EXIST,
+    HOST_IS_NOT_EXIST,
+    SIGNED_IN_FAIL,
+    SIGNED_IN_SUCESS, SIGNED_UP_FAIL, SIGNED_UP_SUCCESS,
+    SINGING_IN,
+    SIGNING_UP,
+    TOKEN_IS_EXIST,
+    TOKEN_IS_NOT_EXIST, INIT_SIGN_UP_STATE
+} from "./ActionTypes";
 
 export function LocalLoginAction(username, password) {
     return {
@@ -21,9 +31,36 @@ export function LocalAuthenSuccess(data) {
     }
 }
 
+export function LocalSignupAction({first_name, last_name, username, email, mobile, password}) {
+    return {
+        type: SIGNING_UP,
+        data: { first_name, last_name, username, email, mobile, password }
+    }
+}
+
+export function LocalSignupFail(err) {
+    return {
+        type: SIGNED_UP_FAIL,
+        data: { err }
+    }
+}
+
+export function LocalSignSuccess(description) {
+    return {
+        type: SIGNED_UP_SUCCESS,
+        data: description
+    }
+}
+
 export function CheckAllLocalData() {
     return {
         type: CHECK_ALL_LOCAL_DATA
+    }
+}
+
+export function InitSignupState() {
+    return {
+        type: INIT_SIGN_UP_STATE
     }
 }
 

@@ -4,6 +4,7 @@ import { View, Text, TextInput, KeyboardAvoidingView, TouchableWithoutFeedback, 
 import { Button } from "react-native-paper";
 import BgImage from "./../Media/login_background.svg";
 import { TextInput as TextInputRNPaper } from "react-native-paper";
+import {useNavigation} from "@react-navigation/native";
 
 const LoginScreenWrapper = styled(View)`
     height          : ${props => props.height + "px"};
@@ -51,7 +52,7 @@ const GoBackLoginScreen = styled(Text)`
 `;
 
 const ForgetPasswordScreen = function(props) {
-    const { navigation }            = props;
+    const navigation                = useNavigation();
     const {width, height}           = Dimensions.get("window");
     const [email, setEmail]         = useState("");
     const [isLoading, setLoading]   = useState(false);
@@ -124,7 +125,7 @@ const ForgetPasswordScreen = function(props) {
                     </View>
 
                     <View style={{marginTop: 30}}>
-                        <GoBackLoginScreen onPress={_ => navigation.goBack()}>Go back</GoBackLoginScreen>
+                        <GoBackLoginScreen onPress={_ => navigation.pop()}>Go back</GoBackLoginScreen>
                     </View>
                 </LoginFormWrapper>
             </LoginScreenWrapper>

@@ -16,10 +16,10 @@
  - [x] **IMPORTANT! Find a way to update offset without re-render**: (redux JUST SAVE THIS DATA from current call, update to **conversation** state and update **offset**)
  - [x] Use local DB stores host IP
  - [x] Create chat UI
- - [ ] Create Profile UI
+ - [x] Create Profile UI
  - [ ] Create search friend UI
  - [ ] Create comments UI
- - [ ] **Jul 12, 2022** Create Signup UI
+ - [x] **Jul 12, 2022** Create Signup UI
  - [x] Load file from uri -> send formdata
 ## Socket idea:  
  - [x] **(CURRENT)** Use `rooms` to make private chat

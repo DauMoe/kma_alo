@@ -4,7 +4,7 @@ import LoadingScreen from "./components/LoadingScreen";
 import LoginScreen from './components/LoginScreen/index';
 import MainScreen from './components/MainScreen/index';
 import {
-    CHAT_SCREEN, EDIT_USER_PROFILE_SCREEN,
+    CHAT_SCREEN, CREATE_ACCOUNT_SCREEN, EDIT_USER_PROFILE_SCREEN,
     FORGET_PASSWORD_SCREEN, FRIENDS_SCREEN,
     LIST_CHATS_SCREEN,
     LOADING_SCREEN,
@@ -19,6 +19,7 @@ import FriendsScreen from "./components/FriendsScreen";
 import ProfileScreen from "./components/UserProfileScreen";
 import {StatusBar} from "react-native";
 import EditProfileScreen from "./components/UserProfileScreen/EditProfileScreen";
+import CreateAccountScreen from "./components/CreateAccountScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -35,7 +36,7 @@ const App = function(props) {
             screenOptions={{
                 headerShown: false
             }}
-            initialRouteName={MAIN_SCREEN}>
+            initialRouteName={LOGIN_SCREEN}>
             <Stack.Screen
                 name={LOADING_SCREEN}
                 component={LoadingScreen}
@@ -71,6 +72,10 @@ const App = function(props) {
             <Stack.Screen
                 name={EDIT_USER_PROFILE_SCREEN}
                 component={EditProfileScreen}
+            />
+            <Stack.Screen
+                name={CREATE_ACCOUNT_SCREEN}
+                component={CreateAccountScreen}
             />
       </Stack.Navigator>
       {/*<SetIPModal/>*/}
