@@ -19,7 +19,9 @@
  - [x] Create Profile UI
  - [ ] Create search friend UI
  - [ ] Create comments UI
- - [x] **Jul 12, 2022** Create Signup UI
+ - [ ] Create Profile UI (when user click a name -> Show all post of this person);
+ - [ ] Call UI
+ - [x] Create Signup UI
  - [x] Load file from uri -> send formdata
 ## Socket idea:  
  - [x] **(CURRENT)** Use `rooms` to make private chat
