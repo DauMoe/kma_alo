@@ -23,9 +23,7 @@ function* LocalLogin({data}) {
     try {
         const LocalLoginCall    = call(axiosConfig, LOCAL_LOGIN, "post", reqBody);
         const [LocalLoginData]  = yield all([LocalLoginCall]);
-        yield put(LocalAuthenSuccess({
-            token: LocalLoginData.data.data.token
-        }));
+        yield put(LocalAuthenSuccess(LocalLoginData.data.data.token));
     } catch(e) {
         console.error("SAGA LocalLogin: ", e.message);
         yield put(LocalAuthenFail(e));

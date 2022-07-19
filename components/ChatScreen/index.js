@@ -1,5 +1,5 @@
 import React, {Fragment, useEffect, useRef, useState} from "react";
-import {View, Text, ScrollView, TextInput, TouchableHighlight, Dimensions} from "react-native";
+import {View, Text, ScrollView, TextInput, TouchableHighlight, Dimensions, Image} from "react-native";
 import styled from "styled-components/native";
 import {Avatar, Button, IconButton} from "react-native-paper";
 import {useDispatch, useSelector} from "react-redux";
@@ -59,6 +59,7 @@ const ChatMessage = styled(TouchableHighlight)`
   border-radius: 15px;
   border-bottom-right-radius: ${props => props.sender ? "0px" : "15px"};
   border-top-left-radius: ${props => props.sender ? "15px" : "0px"};
+  margin-right: 5px;
 `;
 
 const InputMessageWrapper = styled(View)`
@@ -173,8 +174,11 @@ const ChatScreen = function(props) {
             <ChatHeadWrapper>
                 <IconButton icon="chevron-left" size={35} onPress={() => navigation.goBack()} color={Theme.primaryTextColor}/>
                 <ChatHeadUsername>{chatInfo.receiver_first_name} {chatInfo.receiver_last_name}</ChatHeadUsername>
-                <Avatar.Text size={30} label={chatInfo.receiver_avatar_text} style={{marginRight: 10}}/>
-
+                {
+                    chatInfo.receiver_avatar === ""
+                        ? <Avatar.Text size={30} label={chatInfo.receiver_avatar_text} style={{marginRight: 10}}/>
+                        : <Image source={{uri: chatInfo.receiver_avatar}} style={{width: 30, height: 30, borderRadius: 9999, marginRight: 10}}/>
+                }
             </ChatHeadWrapper>
         );
     }
@@ -186,12 +190,17 @@ const ChatScreen = function(props) {
                     {Array.isArray(Conversation) && Conversation.map(function(v, index) {
                         return (
                             <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.sender_id === Conversation[index-1].sender_id)}>
-                                <AvatarMessageUser size={35} label={v.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>
+                                {/*<AvatarMessageUser size={35} label={v.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>*/}
+                                {
+                                    chatInfo.receiver_avatar === ""
+                                        ? <AvatarMessageUser size={35} label={chatInfo.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>
+                                        : <Image source={{uri: chatInfo.receiver_avatar}} style={{width: 35, height: 35, borderRadius: 9999, marginRight: 10, opacity: (!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id)) ? 1 : 0)}}/>
+                                }
                                 <ChatMessage sender={v.sender} onLongPress={() => console.log("Long press")}>
                                     <Text style={{color: "white"}}>{v.msg}</Text>
                                 </ChatMessage>
-                                {v.sender && v.state === MessageState.SENDING && <IconButton icon="check-circle-outline" size={15} color={"gray"} style={{margin: 0}}/>}
-                                {v.sender && v.state === MessageState.SENT && <IconButton icon="checkbox-marked-circle" size={15} color={"gray"} style={{margin: 0}}/>}
+                                {/*{v.sender && v.state === MessageState.SENDING && <IconButton icon="check-circle-outline" size={15} color={"gray"} style={{margin: 0}}/>}*/}
+                                {/*{v.sender && v.state === MessageState.SENT && <IconButton icon="checkbox-marked-circle" size={15} color={"gray"} style={{margin: 0}}/>}*/}
                             </ChatMessageWrapper>
                         )
                     })}
@@ -199,23 +208,6 @@ const ChatScreen = function(props) {
             </ChatScreenWrapper>
         );
     }
-
-    // const InputMessageSection = function() {
-    //     return (
-    //         <InputMessageWrapper>
-    //             <InputMessage defaultValue={msg} onChangeText={text => setMsg(text)} placeholder="Type your message"/>
-    //             <IconButton
-    //                 icon="send"
-    //                 style={{
-    //                     transform: [{rotate: '-30deg'}]
-    //                 }}
-    //                 size={25}
-    //                 onPress={sendMessage}
-    //                 animate={true}
-    //                 color={Theme.primaryTextColor}/>
-    //         </InputMessageWrapper>
-    //     );
-    // }
 
     useEffect(function () {
         console.log("Room name: ", room_chat_id);

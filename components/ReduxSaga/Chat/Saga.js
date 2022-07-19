@@ -8,7 +8,7 @@ function* GetAllChats() {
     try {
         const GetAllChatsCall = call(axiosConfig, GET_ALL_CHAT, "get");
         const [GetAllChatsData] = yield all([GetAllChatsCall]);
-        yield put(GetListChatsSuccess(GetAllChatsData));
+        yield put(GetListChatsSuccess(GetAllChatsData.data.data));
     } catch(e) {
         console.error("SAGA GetAllChats: ", e);
         yield put(GetListChatsFail(e));
@@ -27,7 +27,6 @@ function* GetChatHistory({data}) {
             limit: limit
         }
     }
-    console.log(options);
     try {
         const GetChatHistoryCall = call(axiosConfig, GET_CHAT_HISTORY, "get", options);
         const [GetChatHistoryData] = yield all([GetChatHistoryCall]);

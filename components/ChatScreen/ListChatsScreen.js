@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from "react";
-import {View, ScrollView, Text, Button, TextInput, Dimensions, TouchableOpacity} from "react-native";
+import React, {useEffect, useRef, useState} from "react";
+import {View, ScrollView, Text, Button, TextInput, Dimensions, TouchableOpacity, Image} from "react-native";
 import styled from "styled-components/native";
 import {Avatar, IconButton, TextInput as TextInputRNP} from "react-native-paper";
 import {useDispatch, useSelector} from "react-redux";
@@ -8,6 +8,7 @@ import {CHAT_SCREEN} from "../Definition";
 import 'moment-timezone';
 import moment from "moment";
 import {useNavigation} from "@react-navigation/native";
+import lodash from "lodash";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -31,14 +32,15 @@ const ChatHeadUsername = styled(Text)`
 `;
 
 const SearchChatSectionWrapper = styled(View)`
-  width: 100px
+  width: 100%;
+  padding: 0 20px 10px 20px;
 `;
 
 const SearchChatInput = styled(TextInput)`
   border-radius: 999999999px;
-  background-color: #9A9A9A;
+  background-color: #efefef;
   padding-left: 20px;
-  
+
 `;
 
 const ListChatSectionWrapper = styled(ScrollView)`
@@ -79,10 +81,14 @@ const PreviewMessage = styled(Text)`
 const MessageTime = styled(Text)`
 `;
 
-const ListChatSection = function({data, navigation}) {
-    useEffect(function() {
-       // console.log(navigation.navigate());
-    });
+const ListChatsScreen = function(props) {
+    const navigation                            = useNavigation();
+    const { width, height }                     = Dimensions.get("window");
+    const dispatch                              = useDispatch();
+    const { loaded, error, error_msg, data }    = useSelector(state => state.Chats);
+    const [ListChat, setListChat]               = useState([]);
+    const [searchChat, setSearchChat]           = useState("");
+    const isMount = useRef();
 
     const GotoChatScreen = function(chatInfo) {
         navigation.navigate(CHAT_SCREEN, {
@@ -90,82 +96,76 @@ const ListChatSection = function({data, navigation}) {
         });
     }
 
-    return (
-        <ListChatSectionWrapper>
-
-            {Array.isArray(data) && data.map(function(chat, index) {
-                if (true) {
-                    return(
-                        <TouchableOpacity onPress={() => GotoChatScreen(chat)} key={"__chat_no_" + index}>
-                            <PreviewChatWrapper>
-                                {
-                                    chat.receiver_avatar === "" && <Avatar.Text size={50} label={chat.receiver_avatar_text} style={{marginRight: 15}}/>
-                                }
-                                <PreviewChatContent>
-                                    <ChatUsername>{chat.receiver_first_name} {chat.receiver_last_name}</ChatUsername>
-                                    <PreviewMessageWrapper>
-                                        <PreviewMessage>{chat.last_message}</PreviewMessage>
-                                        <MessageTime>{moment(chat.last_send).isValid() && moment(chat.last_send).format("HH:MM")}</MessageTime>
-                                    </PreviewMessageWrapper>
-                                </PreviewChatContent>
-                                {/*<IconButton icon="check-circle" size={15} color={"gray"}/>*/}
-                                <IconButton icon="check-circle-outline" size={15} color={"gray"}/>
-                            </PreviewChatWrapper>
-                        </TouchableOpacity>
-                    )
-                }
-            })}
-
-        </ListChatSectionWrapper>
-    );
-}
-
-const ListChatsScreen = function(props) {
-    const navigation                            = useNavigation();
-    const { width, height }                     = Dimensions.get("window");
-    const dispatch                              = useDispatch();
-    const { loaded, error, error_msg, data }    = useSelector(state => state.Chats);
-
-    const ChatHeadSection = function() {
-        return(
-            <View style={{
-                backgroundColor: Theme.primaryColor,
-                borderBottomLeftRadius: 20,
-                borderBottomRightRadius: 20,
-                paddingBottom: 10
-            }}>
-                <ChatHeadSectionWrapper>
-                    <ChatHeadUsername>Message</ChatHeadUsername>
-                </ChatHeadSectionWrapper>
-                <SearchChatSectionWrapper>
-                    <SearchChatInput placeholder={"Search chat"}/>
-                </SearchChatSectionWrapper>
-            </View>
-        );
+    const SearchChat = function(e) {
+        setSearchChat(e);
+        const FilterChat = lodash.filter(data, chat => chat.display_name.toLowerCase().indexOf(e.toLowerCase()) > -1);
+        setListChat(FilterChat);
     }
 
     useEffect(function() {
-        dispatch(GetListChats());
-    }, []);
+        if (!isMount.current) {
+            dispatch(GetListChats());
+            isMount.current = true;
+        } else {
+            if (loaded && !error) setListChat(data);
+        }
+    }, [data]);
 
     if (!loaded) {
         return(
-            <View style={{height: height, display: "flex", alignContent: "center", alignItems: "center", justifyContent: "center"}}><Text style={{color: "black"}}>Loading...</Text></View>
+            <View style={{height: height, display: "flex", alignContent: "center", alignItems: "center", justifyContent: "center"}}><Text style={{color: "gray"}}>Loading...</Text></View>
         );
     }
 
     if (loaded && !error) {
         return(
             <>
-                <ChatHeadSection/>
-                <ListChatSection data={data.data.data} navigation={navigation}/>
+                <View style={{
+                    backgroundColor: Theme.primaryColor,
+                    borderBottomLeftRadius: 20,
+                    borderBottomRightRadius: 20,
+                    paddingBottom: 10
+                }}>
+                    <ChatHeadSectionWrapper>
+                        <ChatHeadUsername>Message</ChatHeadUsername>
+                    </ChatHeadSectionWrapper>
+                    <SearchChatSectionWrapper>
+                        <SearchChatInput onChangeText={SearchChat} placeholder={"Search chat"}/>
+                    </SearchChatSectionWrapper>
+                </View>
+
+                <ListChatSectionWrapper>
+                    {Array.isArray(ListChat) && ListChat.map(function(chat, index) {
+                        if (true) {
+                            return(
+                                <TouchableOpacity onPress={() => GotoChatScreen(chat)} key={"__chat_no_" + index}>
+                                    <PreviewChatWrapper>
+                                        { chat.receiver_avatar === ""
+                                            ? <Avatar.Text size={50} label={chat.receiver_avatar_text} style={{marginRight: 15}}/>
+                                            : <Image source={{uri: chat.receiver_avatar}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>
+                                        }
+                                        <PreviewChatContent>
+                                            <ChatUsername>{chat.display_name}</ChatUsername>
+                                            <PreviewMessageWrapper>
+                                                <PreviewMessage>{chat.last_message}</PreviewMessage>
+                                                <MessageTime>{moment(chat.last_send).isValid() && moment(chat.last_send).format("HH:MM")}</MessageTime>
+                                            </PreviewMessageWrapper>
+                                        </PreviewChatContent>
+                                        {/*<IconButton icon="check-circle" size={15} color={"gray"}/>*/}
+                                        {/*<IconButton icon="check-circle-outline" size={15} color={"gray"}/>*/}
+                                    </PreviewChatWrapper>
+                                </TouchableOpacity>
+                            )
+                        }
+                    })}
+                </ListChatSectionWrapper>
             </>
         );
     }
 
     if (error) {
         return(
-            <View style={{height: height, display: "flex", alignContent: "center", alignItems: "center", justifyContent: "center"}}><Text style={{color: "black"}}>{error_msg}</Text></View>
+            <View style={{height: height, display: "flex", alignContent: "center", alignItems: "center", justifyContent: "center"}}><Text style={{color: "red"}}>{error_msg}</Text></View>
         );
     }
 }

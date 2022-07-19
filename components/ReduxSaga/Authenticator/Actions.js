@@ -25,6 +25,7 @@ export function LocalAuthenFail(err) {
 }
 
 export function LocalAuthenSuccess(data) {
+    console.log("token: ", data);
     return {
         type: SIGNED_IN_SUCESS,
         data: data

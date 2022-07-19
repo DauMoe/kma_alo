@@ -121,8 +121,10 @@ const LoginScreen = function(props) {
         if (!isMounted.current) {
             //didMount
             isMounted.current = true;
+            console.log("didMount");
         } else {
             //didUpdate
+            console.log("update");
             if (authenticator.loaded && authenticator.token) navigation.navigate(MAIN_SCREEN)
         }
     }, []);

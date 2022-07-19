@@ -36,7 +36,7 @@ const App = function(props) {
             screenOptions={{
                 headerShown: false
             }}
-            initialRouteName={LOGIN_SCREEN}>
+            initialRouteName={MAIN_SCREEN}>
             <Stack.Screen
                 name={LOADING_SCREEN}
                 component={LoadingScreen}
