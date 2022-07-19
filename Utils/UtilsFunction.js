@@ -1,9 +1,12 @@
+require("dotenv").config();
 const nodemailer    = require("nodemailer");
 const PORT          = process.env.SV_PORT || 8080;
 const ip            = require("ip");
 const IMAGE_PATH    = "assets/image";
 const JWT_SECRET_KEY = "kme_alo";
 const jwt = require("jsonwebtoken");
+const fs = require("fs");
+const util = require("util");
 
 const RespCustomCode = (resp, data, description, code) => {
     resp.statusCode = code || 200;
@@ -105,6 +108,7 @@ exports.HOST_ADDRESS    = `http:\/\/${ip.address()}:${PORT}/`;
 exports.IMAGE_PATH      = IMAGE_PATH;
 exports.SALT_ROUND      = 5;
 exports.JWT_SECRET_KEY  = JWT_SECRET_KEY;
+exports.readFile = util.promisify(fs.readFile);
 exports.ChatEventKey    = {
     SENDED  : "SENDED",
     RECEIVED: "RECEIVED",

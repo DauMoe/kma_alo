@@ -1,6 +1,9 @@
 const { GetNumber } = require("../../../Utils/GetValue");
-const { CatchErr, RespCustomCode, SuccessResp } = require("../../../Utils/UtilsFunction");
+const { CatchErr, RespCustomCode, SuccessResp, readFile} = require("../../../Utils/UtilsFunction");
 const { GetAllPrivateChatIDDAO, CreateNewPrivateChatDAO, SavePrivateMessageToDBDAO, GetMessageHistoryDAO} = require("./PrivateChatDAO");
+const fs = require("fs");
+const path = require("path");
+const util = require("util");
 
 const FILE_NAME = " - PrivateChatController.js";
 
@@ -10,15 +13,20 @@ exports.GetAllPrivateChatID = async(req, resp) => {
         const uid           = req.app.locals.uid;
         const result        = await GetAllPrivateChatIDDAO(uid);
         const respResult    = [];
+
         if (result.code === 200) {
+            let ListPromise = [];
+
             for (const i of result.msg) {
+                i.AVATAR_LINK === null ? ListPromise.push("") : ListPromise.push(readFile(path.join(__dirname, "..", "..", "..", "public", "avatar", i.AVATAR_LINK), "utf-8"));
                 respResult.push({
                     receiver_first_name : i.FIRST_NAME              === null ? "" : i.FIRST_NAME,
                     receiver_last_name  : i.LAST_NAME               === null ? "" : i.LAST_NAME,
                     room_chat_id        : i.ROOM_CHAT_ID            === null ? "" : i.ROOM_CHAT_ID,
                     receiver_username   : i.USERNAME                === null ? "" : i.USERNAME,
-                    receiver_avatar     : i.AVATAR_LINK             === null ? "" : i.AVATAR_LINK,
+                    receiver_avatar     : null,
                     receiver_avatar_text: `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
+                    display_name        : `${i.FIRST_NAME} ${i.LAST_NAME}`,
                     receiver_uid        : (i.UID_ONE !== null &&i.UID_ONE !== uid) ? i.UID_ONE : i.UID_TWO,
                     last_send           : i.CREATED_AT              === null ? "" : i.CREATED_AT,
                     last_message        : i.CONTENT                 === null ? "" : i.CONTENT,
@@ -27,9 +35,13 @@ exports.GetAllPrivateChatID = async(req, resp) => {
                     sender_id           : (i.UID_ONE !== null &&i.UID_ONE === uid) ? i.UID_ONE : i.UID_TWO,
                 });
             }
+            const avatars = await Promise.all(ListPromise);
+            for (const [index, avatar] of avatars.entries()) {
+                respResult[index].receiver_avatar = avatar;
+            }
             SuccessResp(resp, respResult);
         } else {
-            RespCustomCode(resp, result.code, result.msg);
+            RespCustomCode(resp, undefined, result.code, result.msg);
         }
     } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
@@ -46,7 +58,7 @@ exports.CreateNewPrivateChat = async(req, resp) => {
         if (result.code === 200) {
             SuccessResp(resp);
         } else {
-            RespCustomCode(resp, result.code, result.msg);
+            RespCustomCode(resp, undefined, result.code, result.msg);
         }
     } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
@@ -86,7 +98,6 @@ exports.GetMessageHistory = async(req, resp) => {
                     receiver_first_name : i.FIRST_NAME          === null ? "" : i.FIRST_NAME,
                     receiver_last_name  : i.LAST_NAME           === null ? "" : i.LAST_NAME,
                     receiver_avatar     : i.AVATAR              === null ? "" : i.AVATAR,
-                    receiver_avatar_text: `${i.FIRST_NAME[0]}${i.LAST_NAME}`,
                     state               : "SENT",
                     receiver_avatar_text: `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`
                 });
@@ -97,7 +108,7 @@ exports.GetMessageHistory = async(req, resp) => {
                 limit: limit
             });
         } else {
-            RespCustomCode(resp, result.code, result.msg);
+            RespCustomCode(resp, undefined, result.code, result.msg);
         }
     } catch (e) {
         CatchErr(resp, e, FUNC_NAME);

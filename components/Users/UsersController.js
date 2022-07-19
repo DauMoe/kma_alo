@@ -123,7 +123,7 @@ exports.GetUserInfo = async(req, resp) => {
                 SuccessResp(resp, {user_data: UserData});
             }
         } else {
-            RespCustomCode(resp, result.code, result.msg);
+            RespCustomCode(resp, undefined, result.code, result.msg);
         }
     } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
@@ -159,10 +159,10 @@ exports.UpdateUserInfo = async(req, resp) => {
                 };
                 SuccessResp(resp, {user_data: UserData});
             } else {
-                RespCustomCode(resp, result.code, result.msg);
+                RespCustomCode(resp, undefined, result.code, result.msg);
             }
         } else {
-            RespCustomCode(resp, result.code, result.msg);
+            RespCustomCode(resp, undefined, result.code, result.msg);
         }
     } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
@@ -190,7 +190,7 @@ exports.UpdateAvatar = function(req, resp) {
                     avatarBase64: avatarBase64
                 })
             } else {
-                RespCustomCode(resp, result.code, result.msg);
+                RespCustomCode(resp, undefined, result.code, result.msg);
             }
         });
 

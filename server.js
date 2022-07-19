@@ -10,8 +10,8 @@ const { HOST_PORT, HOST_ADDRESS } = require("./Utils/UtilsFunction");
 const { PrivateChatSocket, RoomChatSocket } = require("./components/Chat/ChatSocket");
 const UsersRouter = require("./components/Users/UsersRouter");
 const PrivateChatRouter = require("./components/Chat/PrivateChat/PrivateChatRouter");
-const dotenv = require("dotenv");
-dotenv.config();
+const FriendsRouter = require("./components/Friends/FriendsRouter");
+require("dotenv").config();
 
 if (!fs.existsSync("public/avatar")) {
     fs.mkdirSync("public/avatar");
@@ -25,22 +25,20 @@ RootNSP.use(function(socket, next) {
 PrivateChatSocket(io);
 RoomChatSocket(io);
 
-// const expressSession = require("express-session");
-// const flash = require("connect-flash");
-// const MAX_AGE_SESSION = 1000 * 60 * 60 * 1;
-
 app.use(cors());
 app.use(express.json({
     limit: '50mb'
 }));
-// app.use(expressSession({saveUninitialized: false, secret: "daumoe", cookie: {maxAge: MAX_AGE_SESSION, secure: true}, resave: false}));
-// app.use(flash());
 app.use(passport.initialize());
-// app.use(passport.session({saveUninitialized: false, secret: "daumoe", cookie: {maxAge: MAX_AGE_SESSION, secure: true}, resave: false}));
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.get("/health", async(req, resp) => {
+   resp.send("it's still ok");
+});
 
 app.use("/users", UsersRouter);
 app.use("/private_chat", PrivateChatRouter);
+app.use("/friends", FriendsRouter)
 
 httpServer.listen(HOST_PORT, function() {
     console.log(`Host IP: '${HOST_ADDRESS}'`);

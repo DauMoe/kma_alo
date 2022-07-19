@@ -1,10 +1,6 @@
 const { SocketAuthenticate, ChatEventKey } = require("../../Utils/UtilsFunction");
 const {SavePrivateMessageToDB} = require("./PrivateChat/PrivateChatController");
 
-const CheckRequireField = function(socket, next) {
-    console.log(socket);
-};
-
 exports.PrivateChatSocket = function(io) {
     const PrivateChatNSP = io.of("/private");
 
