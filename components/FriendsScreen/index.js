@@ -1,11 +1,22 @@
 import React, {useEffect, useState} from "react";
-import {View, Text, TextInput, PermissionsAndroid, Button, ScrollView, Image} from "react-native";
+import {View, Text, TextInput, PermissionsAndroid, ScrollView, Image} from "react-native";
 import styled from "styled-components/native";
 import Contacts from "react-native-contacts";
-import {Avatar} from "react-native-paper";
+import {Avatar, Button, withTheme} from "react-native-paper";
 
 const FriendsScreen = function(props) {
+    const { colors } = props.theme;
     const [contacts, setContacts] = useState([]);
+
+    const RecommendWrapper = styled(View)`
+      padding: 20px 10px;
+    `;
+
+    const RecommendTitle = styled(Text)`
+      color: ${colors.text};
+      font-family: "NunitoBold";
+      font-size: 20px;
+    `;
 
     useEffect(function() {
         /***
@@ -37,17 +48,28 @@ const FriendsScreen = function(props) {
         });
     }, []);
 
+    const ShowMoreRecommendFriend = function() {
+
+    }
+
     const RecommendSection = () => {
         return (
           <>
-              {Array(10).fill(1).map(value => {
+              {Array(2).fill(1).map(value => {
                   return(
                       <View style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
-                        <Avatar.Text size={40} label={"DM"} style={{marginRight: 10}}/>
-                        <Text style={{fontFamily: "NunitoExtraBold", fontSize: 20}}>Daumoe</Text>
-                          <View style={{display: "flex"}}>
-
-                          </View>
+                            <Avatar.Text size={50} label={"DM"} style={{marginRight: 15}}/>
+                            <View>
+                                <Text style={{fontFamily: "NunitoSemiBold", fontSize: 18, color: colors.text}}>Daumoe</Text>
+                                <View style={{display: "flex", flexDirection: "row", marginTop: 5}}>
+                                    <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: colors.positiveBgColor, marginRight: 15}} color={colors.positiveTextColor} mode="text">
+                                        Add friend
+                                    </Button>
+                                    <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: colors.negativeBgColor}} color={colors.negativeTextColor} mode="text">
+                                        Remove
+                                    </Button>
+                                </View>
+                            </View>
                       </View>
                   )
               })}
@@ -57,7 +79,11 @@ const FriendsScreen = function(props) {
 
     return(
         <ScrollView>
-            <RecommendSection/>
+            <RecommendWrapper>
+                <RecommendTitle>May you know: </RecommendTitle>
+                <RecommendSection/>
+                <Button uppercase={false} style={{marginTop: 10}} onPress={ShowMoreRecommendFriend} mode="text">See more</Button>
+            </RecommendWrapper>
         </ScrollView>
     );
 
@@ -72,4 +98,4 @@ const FriendsScreen = function(props) {
     // );
 }
 
-export default FriendsScreen;
+export default withTheme(FriendsScreen);

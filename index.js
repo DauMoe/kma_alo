@@ -20,8 +20,12 @@ const theme = {
     colors: {
         ...DefaultTheme.colors,
         primary   : '#58B7E9',
-        secondary : '#c74e4e',
-        tertiary  : '#000'
+        accent : '#c74e4e',
+        negativeTextColor: '#FFF',
+        negativeBgColor: '#a9a9a9',
+        positiveTextColor: '#FFF',
+        positiveBgColor: '#1ea5e1',
+        text: '#343333'
     },
     fonts: configureFonts(FontConfig)
 };
