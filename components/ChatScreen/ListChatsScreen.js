@@ -9,6 +9,7 @@ import 'moment-timezone';
 import moment from "moment";
 import {useNavigation} from "@react-navigation/native";
 import lodash from "lodash";
+import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -81,6 +82,43 @@ const PreviewMessage = styled(Text)`
 const MessageTime = styled(Text)`
 `;
 
+const LoadingChatScreen = function() {
+    return (
+        <>
+            <View style={{
+                backgroundColor: Theme.primaryColor,
+                borderBottomLeftRadius: 20,
+                borderBottomRightRadius: 20,
+                paddingBottom: 10
+            }}>
+                <ChatHeadSectionWrapper>
+                    <ChatHeadUsername>Message</ChatHeadUsername>
+                </ChatHeadSectionWrapper>
+                <SearchChatSectionWrapper>
+                    <SkeletonPlaceholder>
+                        <View style={{height: 50, borderRadius: 999999, paddingLeft: 40, paddingRight: 40}}></View>
+                    </SkeletonPlaceholder>
+                </SearchChatSectionWrapper>
+            </View>
+            <ListChatSectionWrapper>
+                <SkeletonPlaceholder>
+                    {Array(10).fill(1).map(function(v, index) {
+                        return(
+                            <View key={"_loading_chat_" + index} style={{paddingTop: 20, paddingLeft: 20, display: "flex", flexDirection: "row"}}>
+                                <View style={{width: 50, height: 50, marginRight: 15, borderRadius: 9999}}></View>
+                                <View style={{flex: 1, paddingRight: 30}}>
+                                    <View style={{height: 20, width: 100, borderRadius: 10}}></View>
+                                    <View style={{height: 20, marginTop: 10, borderRadius: 10}}></View>
+                                </View>
+                            </View>
+                        );
+                    })}
+                </SkeletonPlaceholder>
+            </ListChatSectionWrapper>
+        </>
+    );
+}
+
 const ListChatsScreen = function(props) {
     const navigation                            = useNavigation();
     const { width, height }                     = Dimensions.get("window");
@@ -104,18 +142,14 @@ const ListChatsScreen = function(props) {
 
     useEffect(function() {
         if (!isMount.current) {
-            dispatch(GetListChats());
+            // dispatch(GetListChats());
             isMount.current = true;
         } else {
             if (loaded && !error) setListChat(data);
         }
     }, [data]);
 
-    if (!loaded) {
-        return(
-            <View style={{height: height, display: "flex", alignContent: "center", alignItems: "center", justifyContent: "center"}}><Text style={{color: "gray"}}>Loading...</Text></View>
-        );
-    }
+    if (!loaded) return <LoadingChatScreen/>
 
     if (loaded && !error) {
         return(

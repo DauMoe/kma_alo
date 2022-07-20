@@ -22,6 +22,5 @@
  - [ ] Create Profile UI (when user click a name -> Show all post of this person);
  - [ ] Call UI
  - [x] Create Signup UI
- - [x] Load file from uri -> send formdata
 ## Socket idea:  
  - [x] **(CURRENT)** Use `rooms` to make private chat
