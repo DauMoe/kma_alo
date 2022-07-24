@@ -109,6 +109,7 @@ exports.IMAGE_PATH      = IMAGE_PATH;
 exports.SALT_ROUND      = 5;
 exports.JWT_SECRET_KEY  = JWT_SECRET_KEY;
 exports.readFile = util.promisify(fs.readFile);
+exports.writeFile = util.promisify(fs.writeFile);
 exports.ChatEventKey    = {
     SENDED  : "SENDED",
     RECEIVED: "RECEIVED",

@@ -74,12 +74,15 @@ exports.GetListFriends = async(req, resp) => {
             for (const i of result.msg) {
                 i.AVATAR_LINK === null ? ListPromises.push("") : ListPromises.push(readFile(path.join(__dirname, "..", "..", "public", "avatar", i.AVATAR_LINK), "utf-8"));
                 respData.push({
-                    uid         : i.UID         === null ? -1 : i.UID,
-                    first_name  : i.FIRST_NAME  === null ? "" : i.FIRST_NAME,
-                    last_name   : i.LAST_NAME   === null ? "" : i.LAST_NAME,
-                    username    : i.USERNAME    === null ? "" : i.USERNAME,
-                    avatar      : i.AVATAR_LINK === null ? "" : i.AVATAR_LINK,
-                    avatar_text : `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`
+                    uid         : i.UID             === null ? -1 : i.UID,
+                    first_name  : i.FIRST_NAME      === null ? "" : i.FIRST_NAME,
+                    last_name   : i.LAST_NAME       === null ? "" : i.LAST_NAME,
+                    username    : i.USERNAME        === null ? "" : i.USERNAME,
+                    avatar      : i.AVATAR_LINK     === null ? "" : i.AVATAR_LINK,
+                    avatar_text : `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
+                    type        : i.TYPE,
+                    send_request: i.SEND_REQUEST_AT === null ? "" : i.SEND_REQUEST_AT,
+                    accept_at   : i.ACCEPT_AT === null || i.TYPE != 'FRIEND' ? "" : i.ACCEPT_AT
                 });
             }
             const listAvatars = await Promise.all(ListPromises);
