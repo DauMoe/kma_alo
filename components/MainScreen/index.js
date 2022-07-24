@@ -6,7 +6,7 @@ import ListChatsScreen from "../ChatScreen/ListChatsScreen";
 import ProfileScreen from "../UserProfileScreen";
 
 const MainScreen = function(props) {
-    const [CurrentTab, setTab]  = useState(1);
+    const [CurrentTab, setTab]  = useState(0);
     const [routes, setRoutes]   = useState([
       {key: "news_feed", title: "Feed", icon: 'newspaper-variant'},
       {key: "friends", title: "Friends", icon: 'newspaper-variant'},

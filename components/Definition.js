@@ -9,6 +9,7 @@ export const LIST_CHATS_SCREEN          = "ListChatsScreen";
 export const FRIENDS_SCREEN             = "FriendsScreen";
 export const PROFILE_SCREEN             = "ProfileScreen";
 export const EDIT_USER_PROFILE_SCREEN   = "EditUserProfileScreen";
+export const CREATE_POST_SCREEN         = "CreatePostScreen";
 
 //Database definition
 export const DB_FILE_NAME           = "halo.db";

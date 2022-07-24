@@ -5,3 +5,5 @@ export const UPDATE_AVATAR      = "/users/avatar";
 export const UPDATE_USER_INFO   = "/users/user_info"
 export const GET_ALL_CHAT       = "/private_chat/all";
 export const GET_CHAT_HISTORY   = "/private_chat/history";
+export const NEW_POST           = "/posts/new";
+export const GET_POSTS          = "/posts/get_post";

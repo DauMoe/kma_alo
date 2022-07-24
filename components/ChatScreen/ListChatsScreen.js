@@ -142,10 +142,12 @@ const ListChatsScreen = function(props) {
 
     useEffect(function() {
         if (!isMount.current) {
-            // dispatch(GetListChats());
+            dispatch(GetListChats());
             isMount.current = true;
         } else {
-            if (loaded && !error) setListChat(data);
+            if (loaded && !error) {
+                setListChat(data);
+            }
         }
     }, [data]);
 

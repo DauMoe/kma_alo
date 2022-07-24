@@ -12,6 +12,10 @@ const FriendsScreen = function(props) {
       padding: 20px 10px;
     `;
 
+    const FriendsWrapper = styled(View)`
+    
+    `;
+
     const RecommendTitle = styled(Text)`
       color: ${colors.text};
       font-family: "NunitoBold";
@@ -52,12 +56,13 @@ const FriendsScreen = function(props) {
 
     }
 
-    const RecommendSection = () => {
-        return (
-          <>
-              {Array(2).fill(1).map(value => {
-                  return(
-                      <View style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
+    return(
+        <ScrollView>
+            <RecommendWrapper>
+                <RecommendTitle>May you know: </RecommendTitle>
+                {Array(2).fill(1).map(value => {
+                    return(
+                        <View style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
                             <Avatar.Text size={50} label={"DM"} style={{marginRight: 15}}/>
                             <View>
                                 <Text style={{fontFamily: "NunitoSemiBold", fontSize: 18, color: colors.text}}>Daumoe</Text>
@@ -70,20 +75,18 @@ const FriendsScreen = function(props) {
                                     </Button>
                                 </View>
                             </View>
-                      </View>
-                  )
-              })}
-          </>
-        );
-    }
-
-    return(
-        <ScrollView>
-            <RecommendWrapper>
-                <RecommendTitle>May you know: </RecommendTitle>
-                <RecommendSection/>
+                        </View>
+                    )
+                })}
                 <Button uppercase={false} style={{marginTop: 10}} onPress={ShowMoreRecommendFriend} mode="text">See more</Button>
             </RecommendWrapper>
+            <FriendsWrapper>
+                {Array(2).fill(1).map(value => {
+                    return(
+                        <></>
+                    )
+                })}
+            </FriendsWrapper>
         </ScrollView>
     );
 
