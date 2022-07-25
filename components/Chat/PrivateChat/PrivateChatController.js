@@ -18,13 +18,13 @@ exports.GetAllPrivateChatID = async(req, resp) => {
             let ListPromise = [];
 
             for (const i of result.msg) {
-                i.AVATAR_LINK === null ? ListPromise.push("") : ListPromise.push(readFile(path.join(__dirname, "..", "..", "..", "public", "avatar", i.AVATAR_LINK), "utf-8"));
+                // i.AVATAR_LINK === null ? ListPromise.push("") : ListPromise.push(readFile(path.join(__dirname, "..", "..", "..", "public", "avatar", i.AVATAR_LINK), "utf-8"));
                 respResult.push({
                     receiver_first_name : i.FIRST_NAME              === null ? "" : i.FIRST_NAME,
                     receiver_last_name  : i.LAST_NAME               === null ? "" : i.LAST_NAME,
                     room_chat_id        : i.ROOM_CHAT_ID            === null ? "" : i.ROOM_CHAT_ID,
                     receiver_username   : i.USERNAME                === null ? "" : i.USERNAME,
-                    receiver_avatar     : null,
+                    receiver_avatar     : i.AVATAR_LINK             === null ? "" : `/avatar/${i.AVATAR_LINK}`,
                     receiver_avatar_text: `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
                     display_name        : `${i.FIRST_NAME} ${i.LAST_NAME}`,
                     receiver_uid        : (i.UID_ONE !== null &&i.UID_ONE !== uid) ? i.UID_ONE : i.UID_TWO,
@@ -35,10 +35,10 @@ exports.GetAllPrivateChatID = async(req, resp) => {
                     sender_id           : (i.UID_ONE !== null &&i.UID_ONE === uid) ? i.UID_ONE : i.UID_TWO,
                 });
             }
-            const avatars = await Promise.all(ListPromise);
-            for (const [index, avatar] of avatars.entries()) {
-                respResult[index].receiver_avatar = avatar;
-            }
+            // const avatars = await Promise.all(ListPromise);
+            // for (const [index, avatar] of avatars.entries()) {
+            //     respResult[index].receiver_avatar = avatar;
+            // }
             SuccessResp(resp, respResult);
         } else {
             RespCustomCode(resp, undefined, result.code, result.msg);

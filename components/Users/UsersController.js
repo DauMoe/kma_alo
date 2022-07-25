@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const { GetString, GetNumber } = require("../../Utils/GetValue");
-const { CatchErr, SuccessResp, RespCustomCode, CREATE_TRANSPORTER, SALT_ROUND, JWT_SECRET_KEY, HOST_ADDRESS} = require("../../Utils/UtilsFunction");
+const { CatchErr, SuccessResp, RespCustomCode, CREATE_TRANSPORTER, SALT_ROUND, JWT_SECRET_KEY, HOST_ADDRESS, writeFile} = require("../../Utils/UtilsFunction");
 const { NewLocalUserDAO, LocalLoginDAO, GetUserInfoDAO, ActiveAccountDAO, GetProfileInformationDAO, UpdateUserInfoDAO,
     UpdateAvatarDAO
 } = require("./UsersDAO");
@@ -110,18 +110,19 @@ exports.GetUserInfo = async(req, resp) => {
                 mobile          : data.MOBILE           === null ? "" : data.MOBILE,
                 email           : data.EMAIL            === null ? "" : data.EMAIL,
                 email_confirmed : data.EMAIL_CONFIRMED  === 1,
-                avatar_link     : "",
+                avatar_link     : data.AVATAR_LINK      === null ? "" : `/avatar/${data.AVATAR_LINK}`,
                 avatar_text     : `${data.FIRST_NAME[0]}${data.LAST_NAME[0]}`,
                 information     : data.INFORMATION      === null ? "" : data.INFORMATION
             };
-            if (data.AVATAR_LINK !== null) {
-                fs.readFile(path.join(__dirname, "..", "..", "public", "avatar", data.AVATAR_LINK), "utf-8", function(err, data) {
-                    UserData.avatar_link = data;
-                    SuccessResp(resp, {user_data: UserData});
-                });
-            } else {
-                SuccessResp(resp, {user_data: UserData});
-            }
+            SuccessResp(resp, {user_data: UserData});
+            // if (data.AVATAR_LINK !== null) {
+            //     fs.readFile(path.join(__dirname, "..", "..", "public", "avatar", data.AVATAR_LINK), "utf-8", function(err, data) {
+            //         UserData.avatar_link = data;
+            //         SuccessResp(resp, {user_data: UserData});
+            //     });
+            // } else {
+            //     SuccessResp(resp, {user_data: UserData});
+            // }
         } else {
             RespCustomCode(resp, undefined, result.code, result.msg);
         }
@@ -169,30 +170,42 @@ exports.UpdateUserInfo = async(req, resp) => {
     }
 }
 
-exports.UpdateAvatar = function(req, resp) {
+exports.UpdateAvatar = async function(req, resp) {
     const FUNC_NAME = "UpdateAvatar" + FILE_NAME;
     const uid       = req.app.locals.uid;
     const reqData   = req.body;
     try {
         const avatarBase64  = GetString(reqData, "avatarBase64");
-        const pathImage     = `${Date.now()}.txt`;
-        fs.writeFile(path.join(__dirname, "..", "..", "public", "avatar", pathImage) , avatarBase64, async function(err) {
-            if (err) {
-                RespCustomCode(resp, undefined, err, 405);
-                return;
-            }
-            const result = await UpdateAvatarDAO(uid, pathImage);
-            if (result.code === 200) {
-                try {
-                    fs.unlinkSync(path.join(__dirname, "..", "..", "public", "avatar", result.msg[0].AVATAR_LINK));
-                } catch(e) {}
-                SuccessResp(resp, {
-                    avatarBase64: avatarBase64
-                })
-            } else {
-                RespCustomCode(resp, undefined, result.code, result.msg);
-            }
-        });
+        const pathImage     = `_avatar_${new Date().getTime()}.jpg`;
+        await writeFile(path.join(__dirname, "..", "..", "public", "avatar", pathImage), avatarBase64.replace(/^data:image\/png;base64,/, ""), "base64");
+        const result = await UpdateAvatarDAO(uid, pathImage);
+        if (result.code === 200) {
+            try {
+                fs.unlinkSync(path.join(__dirname, "..", "..", "public", "avatar", result.msg[0].AVATAR_LINK));
+            } catch(e) {}
+            SuccessResp(resp, {
+                avatar_link: `/avatar/${pathImage}`
+            })
+        } else {
+            RespCustomCode(resp, undefined, result.code, result.msg);
+        }
+        // fs.writeFile(path.join(__dirname, "..", "..", "public", "avatar", pathImage) , avatarBase64, async function(err) {
+        //     if (err) {
+        //         RespCustomCode(resp, undefined, err, 405);
+        //         return;
+        //     }
+        //     const result = await UpdateAvatarDAO(uid, pathImage);
+        //     if (result.code === 200) {
+        //         try {
+        //             fs.unlinkSync(path.join(__dirname, "..", "..", "public", "avatar", result.msg[0].AVATAR_LINK));
+        //         } catch(e) {}
+        //         SuccessResp(resp, {
+        //             avatarBase64: avatarBase64
+        //         })
+        //     } else {
+        //         RespCustomCode(resp, undefined, result.code, result.msg);
+        //     }
+        // });
 
         // avatarUpload(req, resp, async function(err) {
         //     if (err instanceof  multer.MulterError) {

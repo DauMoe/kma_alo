@@ -34,20 +34,15 @@ exports.RecommendNewFriends = async(req, resp) => {
             const result = await RecommendNewFriendsDAO(uid, list_mobile, list_email);
             const respData = [];
             if (result.code === 200) {
-                let ListPromises = [];
                 for (const i of result.msg) {
-                    i.AVATAR_LINK === null ? ListPromises.push("") : ListPromises.push(readFile(path.join(__dirname, "..", "..", "public", "avatar", i.AVATAR_LINK), "utf-8"));
                     respData.push({
                         uid         : i.UID         === null ? -1 : i.UID,
                         first_name  : i.FIRST_NAME  === null ? "" : i.FIRST_NAME,
                         last_name   : i.LAST_NAME   === null ? "" : i.LAST_NAME,
                         username    : i.USERNAME    === null ? "" : i.USERNAME,
-                        avatar_text : `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`
+                        avatar_text : `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
+                        avatar_link : i.AVATAR_LINK === null ? "" : `/avatar/${i.AVATAR_LINK}`
                     });
-                }
-                const listAvatars = await Promise.all(ListPromises);
-                for (const [index, avatar] of listAvatars.entries()) {
-                    respData[index].avatar = avatar;
                 }
                 SuccessResp(resp, {
                     recommend_friends: respData
@@ -72,7 +67,6 @@ exports.GetListFriends = async(req, resp) => {
         if (result.code === 200) {
             let ListPromises = [];
             for (const i of result.msg) {
-                i.AVATAR_LINK === null ? ListPromises.push("") : ListPromises.push(readFile(path.join(__dirname, "..", "..", "public", "avatar", i.AVATAR_LINK), "utf-8"));
                 respData.push({
                     uid         : i.UID             === null ? -1 : i.UID,
                     first_name  : i.FIRST_NAME      === null ? "" : i.FIRST_NAME,
@@ -80,6 +74,8 @@ exports.GetListFriends = async(req, resp) => {
                     username    : i.USERNAME        === null ? "" : i.USERNAME,
                     avatar      : i.AVATAR_LINK     === null ? "" : i.AVATAR_LINK,
                     avatar_text : `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
+                    avatar_link : i.AVATAR_LINK     === null ? "" : `/avatar/${i.AVATAR_LINK}`,
+                    display_name: `${i.FIRST_NAME} ${i.LAST_NAME}`,
                     type        : i.TYPE,
                     send_request: i.SEND_REQUEST_AT === null ? "" : i.SEND_REQUEST_AT,
                     accept_at   : i.ACCEPT_AT === null || i.TYPE != 'FRIEND' ? "" : i.ACCEPT_AT
