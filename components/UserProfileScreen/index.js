@@ -106,7 +106,7 @@ const ProfileScreen = function(props) {
             .then(r => {
                 setAvatar({
                     ready: true,
-                    value: r.data.data.avatarBase64
+                    value: DEFAULT_BASE_URL + r.data.data.avatar_link
                 });
             })
             .catch(e => {
@@ -226,7 +226,7 @@ const ProfileScreen = function(props) {
                 setProfile(r.data.data.user_data);
                 setAvatar({
                     ready: true,
-                    value: r.data.data.user_data.avatar_link
+                    value: DEFAULT_BASE_URL + r.data.data.user_data.avatar_link
                 });
             })
             .catch(e => console.error(e))

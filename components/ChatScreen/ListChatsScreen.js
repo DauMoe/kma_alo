@@ -10,6 +10,7 @@ import moment from "moment";
 import {useNavigation} from "@react-navigation/native";
 import lodash from "lodash";
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
+import {DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -151,6 +152,13 @@ const ListChatsScreen = function(props) {
         }
     }, [data]);
 
+    useEffect(function() {
+        const unsub = navigation.addListener('focus', () => {
+            dispatch(GetListChats());
+        });
+        return unsub;
+    }, [navigation]);
+
     if (!loaded) return <LoadingChatScreen/>
 
     if (loaded && !error) {
@@ -178,7 +186,7 @@ const ListChatsScreen = function(props) {
                                     <PreviewChatWrapper>
                                         { chat.receiver_avatar === ""
                                             ? <Avatar.Text size={50} label={chat.receiver_avatar_text} style={{marginRight: 15}}/>
-                                            : <Image source={{uri: chat.receiver_avatar}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>
+                                            : <Image source={{uri: DEFAULT_BASE_URL + chat.receiver_avatar}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>
                                         }
                                         <PreviewChatContent>
                                             <ChatUsername>{chat.display_name}</ChatUsername>

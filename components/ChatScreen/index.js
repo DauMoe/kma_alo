@@ -177,7 +177,7 @@ const ChatScreen = function(props) {
                 {
                     chatInfo.receiver_avatar === ""
                         ? <Avatar.Text size={30} label={chatInfo.receiver_avatar_text} style={{marginRight: 10}}/>
-                        : <Image source={{uri: chatInfo.receiver_avatar}} style={{width: 30, height: 30, borderRadius: 9999, marginRight: 10}}/>
+                        : <Image source={{uri: DEFAULT_BASE_URL + chatInfo.receiver_avatar}} style={{width: 30, height: 30, borderRadius: 9999, marginRight: 10}}/>
                 }
             </ChatHeadWrapper>
         );
@@ -194,7 +194,7 @@ const ChatScreen = function(props) {
                                 {
                                     chatInfo.receiver_avatar === ""
                                         ? <AvatarMessageUser size={35} label={chatInfo.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>
-                                        : <Image source={{uri: chatInfo.receiver_avatar}} style={{width: 35, height: 35, borderRadius: 9999, marginRight: 10, opacity: (!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id)) ? 1 : 0)}}/>
+                                        : <Image source={{uri: DEFAULT_BASE_URL + chatInfo.receiver_avatar}} style={{width: 35, height: 35, borderRadius: 9999, marginRight: 10, opacity: (!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id)) ? 1 : 0)}}/>
                                 }
                                 <ChatMessage sender={v.sender} onLongPress={() => console.log("Long press")}>
                                     <Text style={{color: "white"}}>{v.msg}</Text>

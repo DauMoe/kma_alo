@@ -1,9 +1,20 @@
 import React, {useRef, useState} from "react";
-import {Button, FAB, IconButton, Modal, Portal, Provider, withTheme} from "react-native-paper";
+import {
+    ActivityIndicator,
+    Button,
+    FAB,
+    HelperText,
+    IconButton,
+    Modal,
+    Portal,
+    Provider,
+    withTheme
+} from "react-native-paper";
 import styled from "styled-components/native";
 import { FlatGrid } from "react-native-super-grid";
 import {RichEditor, RichToolbar, actions} from "react-native-pell-rich-editor";
 import {
+    Alert,
     Dimensions,
     Image,
     KeyboardAvoidingView,
@@ -11,7 +22,7 @@ import {
     Platform,
     SafeAreaView,
     ScrollView,
-    Text, ToastAndroid,
+    Text, ToastAndroid, TouchableOpacity,
     View
 } from "react-native";
 import {launchCamera, launchImageLibrary} from "react-native-image-picker";
@@ -24,6 +35,7 @@ const CreatePostScreen = function(props) {
     const navigation                    = useNavigation();
     const { width , height }            = Dimensions.get("window");
     const [listMedia, addMedia]         = useState([]);
+    const [loading, setLoading]         = useState(false);
     const [content, setContent]         = useState("");
     const [showSelectModal, setShow]    = useState(false);
 
@@ -129,15 +141,52 @@ const CreatePostScreen = function(props) {
             ToastAndroid.show("Write something huh?", ToastAndroid.LONG);
             return;
         }
+        setLoading(true);
         axiosConfig(NEW_POST, "post", {
             title: "",
             content: content,
             media: listMedia
         })
             .then(r => {
-                console.log(r)
+                ToastAndroid.show(r.data.description, ToastAndroid.LONG);
+                navigation.pop();
             })
-            .catch(e => console.error(e));
+            .catch(e => {
+                ToastAndroid.show(`Sorry, trouble now: ${e.message}`, ToastAndroid.LONG);
+                console.error(e);
+            })
+            .finally(() => {
+                setLoading(false);
+            })
+    }
+
+    const DeleteMedia = function(index) {
+        let CopyMedias = [...listMedia];
+        CopyMedias.splice(index, 1);
+        addMedia(CopyMedias);
+    }
+
+    const ConfirmDeleteMedia = function(index) {
+        Alert.alert(
+            "Delete?",
+            "This image will be removed",
+            [{
+                text: "Delete",
+                onPress: () => DeleteMedia(index)
+            }, {
+                text: "Cancel",
+                style: "cancel"
+            }]
+        )
+    }
+
+    const MediaItem = function(props) {
+        const { item } = props;
+        return (
+            <TouchableOpacity onLongPress={() => ConfirmDeleteMedia(item.index)}>
+                <Image source={{uri: item.item.content}} style={{width: (width-10)/2, height: 150, resizeMode: "contain"}}/>
+            </TouchableOpacity>
+        )
     }
 
     const richText = useRef();
@@ -149,10 +198,11 @@ const CreatePostScreen = function(props) {
                     flexDirection: "row",
                     justifyContent: "space-between",
                     padding: 10,
-                    alignItems: "center"
+                    alignItems: "center",
+                    backgroundColor: "white"
                 }}>
                     <View style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
-                        <IconButton onPress={() => navigation.pop()} icon="keyboard-backspace"/>
+                        <IconButton onPress={() => {!loading ? navigation.pop() : null}} icon="keyboard-backspace"/>
                         <Text style={{
                             fontFamily: "NunitoExtraBold",
                             color: colors.text,
@@ -160,6 +210,8 @@ const CreatePostScreen = function(props) {
                         }}>New Post</Text>
                     </View>
                     <Button
+                        loading={loading}
+                        disabled={loading}
                         onPress={CreatePost}
                         uppercase={false}
                         mode="text"
@@ -168,12 +220,14 @@ const CreatePostScreen = function(props) {
                             backgroundColor: colors.positiveBgColor,
                             borderRadius: 5
                         }}
-                    >Create</Button>
+                    >{loading ? "Creating" : "Create"}</Button>
                 </View>
                 <RichToolbar
+                    disabled={loading}
                     editor={richText}
                 />
                 <RichEditor
+                    disabled={loading}
                     ref={richText}
                     pasteAsPlainText
                     placeholder="How are you today?"
@@ -181,17 +235,26 @@ const CreatePostScreen = function(props) {
                 />
 
                 {listMedia.length > 0 &&
-                    <FlatGrid
-                        spacing={10}
-                        data={listMedia}
-                        itemDimension={150}
-                        renderItem={({item}) => (<Image source={{uri: item.content}} style={{width: (width-10)/2, height: 150, resizeMode: "contain"}}/>)}
-                    />
+                    <>
+                        <HelperText
+                            style={{
+                                fontStyle: "italic",
+                                color: "#ad3737"
+                            }}
+                        >Tip: Hold to remove image</HelperText>
+                        <FlatGrid
+                            spacing={10}
+                            data={listMedia}
+                            itemDimension={150}
+                            renderItem={item => (<MediaItem item={item}/>)}
+                        />
+                    </>
                 }
 
             </View>
             <SelectImageSource/>
             <FAB
+                disabled={loading}
                 style={{
                     position: "absolute",
                     bottom: 10,
