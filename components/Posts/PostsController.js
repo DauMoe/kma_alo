@@ -68,11 +68,20 @@ exports.GetPost = async(req, resp) => {
                     mediaLinks.push(`/post/${j}`);
                 }
                 respData.push({
-                    post_id: i.POST_ID,
-                    author_id: i.AUTHOR_ID,
-                    title: i.TITLE,
-                    content: i.CONTENT,
-                    media: (i.MEDIA_LINKS === "" || i.MEDIA_LINKS === null) ? [] : mediaLinks
+                    post_id     : i.POST_ID         === null ? -1 : i.POST_ID,
+                    author_id   : i.AUTHOR_ID       === null ? -1 : i.AUTHOR_ID,
+                    title       : i.TITLE           === null ? -1 : i.TITLE,
+                    content     : i.CONTENT         === null ? -1 : i.CONTENT,
+                    uid         : i.UID             === null ? -1 : i.UID,
+                    username    : i.USERNAME        === null ? "" : i.USERNAME,
+                    first_name  : i.FIRST_NAME      === null ? -1 : i.FIRST_NAME,
+                    last_name   : i.LAST_NAME       === null ? -1 : i.LAST_NAME,
+                    avatar      : i.AVATAR_LINK     === null ? "" : `/avatar/${i.AVATAR_LINK}`,
+                    avatar_text : `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
+                    display_name: `${i.FIRST_NAME} ${i.LAST_NAME}`,
+                    media       : (i.MEDIA_LINKS === "" || i.MEDIA_LINKS === null) ? [] : mediaLinks,
+                    created_at  : i.CREATED_AT      === null ? -1 : i.CREATED_AT,
+                    updated_at  : i.UPDATED_AT      === null ? -1 : i.UPDATED_AT
                 })
             }
             SuccessResp(resp, {

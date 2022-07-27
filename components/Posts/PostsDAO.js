@@ -49,7 +49,7 @@ exports.GetPostDAO = async(uid, offset, limit) => {
         }
         if (ListFriendIDs.length === 0) return DB_RESP(200, []);
         //Get your post after posted under 24 hours and friends posts
-        SQL             = "SELECT * FROM POSTS WHERE (AUTHOR_ID = ? AND TIMESTAMPDIFF(HOUR, CREATED_AT, NOW()) < 24) OR (AUTHOR_ID IN ?) ORDER BY CREATED_AT DESC LIMIT ?,?";
+        SQL             = "SELECT a.*, b.FIRST_NAME, b.LAST_NAME, b.AVATAR_LINK, b.USERNAME FROM POSTS a JOIN USERS b ON a.AUTHOR_ID = b.UID WHERE (a.AUTHOR_ID = ? AND TIMESTAMPDIFF(HOUR, a.CREATED_AT, NOW()) < 24) OR (a.AUTHOR_ID IN ?) ORDER BY a.CREATED_AT DESC LIMIT ?,?";
         SQL_BIND        = mysql.format(SQL, [uid, [ListFriendIDs], offset, limit]);
         const result1   = await query(SQL_BIND);
         return DB_RESP(200, result1);
