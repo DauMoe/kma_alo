@@ -4,6 +4,8 @@ import { Avatar, Button } from "react-native-paper";
 import { useDispatch } from "react-redux";
 import styled from "styled-components/native";
 import { GetComments } from "../ReduxSaga/Comments/ActionFunctions";
+import { WebView } from "react-native-webview";
+import AutoHeightWebView from "react-native-autoheight-webview";
 
 const NewsWrapper = styled(View)`
     padding         : 10px;
@@ -77,12 +79,16 @@ const CommentButton = styled(Button)`
 `; 
 
 const SingleNews = function(props) {
-    const { width, height, showComment } = props;
+    const { width, height, showComment, data } = props;
     const dispatch          = useDispatch();
 
     const LoadComments = function(postId) {
         dispatch(GetComments(postId));
         showComment(true);
+    }
+
+    const GenContent = function(content) {
+        return `<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body>${content}</body></html>`
     }
 
     return(
@@ -99,9 +105,12 @@ const SingleNews = function(props) {
                 </View>
             </NewsHeader>
 
-            <NewsContent>
-                <Text>chuyển sinh thành người vợ của tổng tài iq số 8 nằm ngang đầy quyền lực, sở hữu khối tài sản ròng lên tới 10000000000 tỷ đô tiêu 3 đời chắc là gần hết và là ceo của tập đoàn đứng top 1 thế giới 🥰🙏 lạnk lẽo với tất cả mọi người, ngọt ngào với mỗi mình iem</Text>
-            </NewsContent>
+            <AutoHeightWebView
+                style={{
+                    marginTop: 5
+                }}
+                source={{html: GenContent(data.content)}}
+            />
 
             <NewsMedia>
                 <Image style={{resizeMode: "contain", width: "100%", height: 100}} source={{ uri: 'https://reactnative.dev/img/tiny_logo.png'}}/>

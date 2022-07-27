@@ -24,7 +24,7 @@ const UserProfileInfoWrapper = styled(View)`
   margin: 0 10px;
 `;
 
-const UserProfileWrapper = styled(View)`
+const UserProfileWrapper = styled(ScrollView)`
   margin-top: 20px;
   display: flex;
 `

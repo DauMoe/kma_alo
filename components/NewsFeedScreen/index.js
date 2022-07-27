@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import {View, ScrollView, Dimensions, Text, TouchableOpacity} from "react-native";
 import SingleNews from "./SingleNews";
 import styled from 'styled-components/native';
@@ -6,6 +6,10 @@ import CommentsScreen from "./CommentScreen";
 import {useNavigation} from "@react-navigation/native";
 import {CREATE_POST_SCREEN} from "../Definition";
 import {FAB, withTheme} from "react-native-paper";
+import {WebView} from "react-native-webview";
+import AutoHeightWebView from "react-native-autoheight-webview";
+import {axiosConfig} from "../ReduxSaga/AxiosConfig";
+import {GET_POSTS} from "../API_Definition";
 
 const NewsFeedWrapper = styled(View)`
     height: ${props => props.height + "px"};
@@ -24,6 +28,7 @@ const NewsFeedScreen = function(props) {
     const navigation = useNavigation();
     const { width, height } = Dimensions.get("window");
     const [openComment, setOpen] = useState(false);
+    const [listPost, setPost] = useState([]);
 
     const openCommentScreen = function(show) {
         setOpen(show);
@@ -33,6 +38,21 @@ const NewsFeedScreen = function(props) {
         navigation.navigate(CREATE_POST_SCREEN);
     }
 
+    useEffect(function() {
+        axiosConfig(GET_POSTS, "get", {
+            params: {
+                offset: 0,
+                limit: 10
+            }
+        })
+            .then(r => {
+                setPost(r.data.data.list_post);
+            })
+            .catch(e => {
+                console.error(Object.keys(e));
+                console.error(e.response)
+            })
+    }, []);
 
     return(
         <NewsFeedWrapper height={height}>
@@ -47,13 +67,9 @@ const NewsFeedScreen = function(props) {
                 }}
             />
             <ScrollView>
-                <SingleNews showComment={openCommentScreen}/>
-                <SingleNews showComment={openCommentScreen}/>
-                <SingleNews showComment={openCommentScreen}/>
-                <SingleNews showComment={openCommentScreen}/>
-                <SingleNews showComment={openCommentScreen}/>
-                <SingleNews showComment={openCommentScreen}/>
-                <SingleNews showComment={openCommentScreen}/>
+                {listPost.map((post, index) => {
+                    return (<SingleNews key={"_post_" + index} data={post}/>)
+                })}
             </ScrollView>
             <CommentsScreen show={openComment}/>
         </NewsFeedWrapper>

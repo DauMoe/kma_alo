@@ -42,7 +42,7 @@ const SearchChatInput = styled(TextInput)`
   border-radius: 999999999px;
   background-color: #efefef;
   padding-left: 20px;
-
+  color: #777777;
 `;
 
 const ListChatSectionWrapper = styled(ScrollView)`

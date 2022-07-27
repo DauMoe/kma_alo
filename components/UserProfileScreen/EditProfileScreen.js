@@ -164,18 +164,18 @@ const EditProfileScreen = function(props) {
                             <EditProfileTitle>Information:</EditProfileTitle>
                             <EditProfileInput defaultValue={EditProfile.information} onChangeText={e => setProfile({...EditProfile, information: e})}/>
                         </EditProfileInfoWrapper>
+                        <View style={{margin: 20}}>
+                            <Button
+                                icon="content-save"
+                                color="white"
+                                uppercase
+                                onPress={SaveProfile}
+                                contentStyle={{paddingTop: 3, paddingBottom: 3}}
+                                style={{borderRadius: 10, backgroundColor: "#61dafb"}}>
+                                Save
+                            </Button>
+                        </View>
                     </ScrollView>
-                    <View style={{margin: 20}}>
-                        <Button
-                            icon="content-save"
-                            color="white"
-                            uppercase
-                            onPress={SaveProfile}
-                            contentStyle={{paddingTop: 3, paddingBottom: 3}}
-                            style={{borderRadius: 10, backgroundColor: "#61dafb"}}>
-                            Save
-                        </Button>
-                    </View>
                 </>}
         </View>
     )
