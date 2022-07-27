@@ -6,6 +6,9 @@ import styled from "styled-components/native";
 import { GetComments } from "../ReduxSaga/Comments/ActionFunctions";
 import { WebView } from "react-native-webview";
 import AutoHeightWebView from "react-native-autoheight-webview";
+import {FlatGrid} from "react-native-super-grid";
+import {DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
+import moment from "moment";
 
 const NewsWrapper = styled(View)`
     padding         : 10px;
@@ -54,8 +57,9 @@ const NewsMedia = styled(View)`
 `;
 
 const PostTimestamp = styled(Text)`
-    font-size   : 10px;
+    font-size   : 12px;
     font-style  : italic;
+    color: white;
 `;
 
 const NewsInteractive = styled(View)`
@@ -83,7 +87,7 @@ const SingleNews = function(props) {
     const dispatch          = useDispatch();
 
     const LoadComments = function(postId) {
-        dispatch(GetComments(postId));
+        // dispatch(GetComments(postId));
         showComment(true);
     }
 
@@ -95,13 +99,20 @@ const SingleNews = function(props) {
         <NewsWrapper>
             <NewsHeader>
                 <AvatarWrapper>
-                    <Avatar.Text size={50} label="DM" style={{marginRight: 10}}/>
-                    <ActiveStatusDot active={false}/>
+                    {
+                        data.avatar === ""
+                            ? <Avatar.Text size={50} label="DM" style={{marginRight: 10}}/>
+                            : <Image source={{uri: DEFAULT_BASE_URL + data.avatar}} style={{width: 50, height: 50, borderRadius: 9999, marginRight: 10}}/>
+                    }
+                    {/*<ActiveStatusDot active={false}/>*/}
                 </AvatarWrapper>
                 <View>
-                    <NewsUsername>Daumoe</NewsUsername>
-                    {/* <PostTimestamp>Jun 17 at 9:09 PM</PostTimestamp> */}
-                    <PostTimestamp>Posted 3h ago</PostTimestamp>
+                    <NewsUsername>{data.display_name}</NewsUsername>
+                    {
+                        moment.duration(moment().diff(moment(data.created_at))).asHours() < 24
+                            ? <PostTimestamp>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asHours())} ago</PostTimestamp>
+                            : <PostTimestamp>Posted at {moment(data.created_at).format("MMM DD hh:mm A")}</PostTimestamp>
+                    }
                 </View>
             </NewsHeader>
 
@@ -112,9 +123,29 @@ const SingleNews = function(props) {
                 source={{html: GenContent(data.content)}}
             />
 
-            <NewsMedia>
-                <Image style={{resizeMode: "contain", width: "100%", height: 100}} source={{ uri: 'https://reactnative.dev/img/tiny_logo.png'}}/>
-            </NewsMedia>
+            {data.media.length > 0 &&
+                data.media.map((image, index) => {
+                    return(
+                        <Image
+                            key={"_post_" + index}
+                            source={{uri: DEFAULT_BASE_URL + image}}
+                            style={{
+                                width: data.media.length === 1 ? width : (width-10)/2,
+                                height: 150,
+                                resizeMode: "contain"
+                            }}
+                        />
+                    )
+                })
+                // <NewsMedia>
+                //     <FlatGrid
+                //         spacing={10}
+                //         data={data.media}
+                //         itemDimension={150}
+                //         renderItem={item => (<Image source={{uri: DEFAULT_BASE_URL + item}} style={{width: (width-10)/2, height: 150, resizeMode: "contain"}}/>)}
+                //     />
+                // </NewsMedia>
+            }
 
             <NewsInteractive>
                 <ReactionButton onPress={e => console.log("Like")} onLongPress={e => console.log("Hold to choose")} uppercase={false} icon='thumb-up'>Like</ReactionButton>

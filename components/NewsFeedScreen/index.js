@@ -68,7 +68,15 @@ const NewsFeedScreen = function(props) {
             />
             <ScrollView>
                 {listPost.map((post, index) => {
-                    return (<SingleNews key={"_post_" + index} data={post}/>)
+                    return(
+                        <SingleNews
+                            width={width}
+                            height={height}
+                            key={"_post_" + index}
+                            data={post}
+                            showComment={openCommentScreen}
+                        />
+                    )
                 })}
             </ScrollView>
             <CommentsScreen show={openComment}/>
