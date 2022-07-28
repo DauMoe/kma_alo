@@ -39,10 +39,10 @@ const SearchChatSectionWrapper = styled(View)`
 `;
 
 const SearchChatInput = styled(TextInput)`
+  padding-left: 20px;
   border-radius: 999999999px;
   background-color: #efefef;
-  padding-left: 20px;
-  color: #777777;
+  color: #626262;
 `;
 
 const ListChatSectionWrapper = styled(ScrollView)`

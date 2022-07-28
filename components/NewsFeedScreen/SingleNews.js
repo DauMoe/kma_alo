@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, Image } from "react-native";
-import { Avatar, Button } from "react-native-paper";
+import {Avatar, Button, withTheme} from "react-native-paper";
 import { useDispatch } from "react-redux";
 import styled from "styled-components/native";
 import { GetComments } from "../ReduxSaga/Comments/ActionFunctions";
@@ -11,9 +11,10 @@ import {DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 import moment from "moment";
 
 const NewsWrapper = styled(View)`
-    padding         : 10px;
-    background-color: #646464;
-    margin-top      : 10px;
+    padding         : 15px;
+    background-color: #fff;
+    margin: 10px 15px 0 15px;
+    border-radius: 20px;
 `;
 
 const NewsHeader = styled(View)`
@@ -39,9 +40,9 @@ const ActiveStatusDot = styled(View)`
 `;
 
 const NewsUsername = styled(Text)`
-    color       : white;
+    color       : ${props => props.theme.text};
     font-family : "NunitoBold";
-    font-size   : 18px;
+    font-size   : 16px;
 `;
 
 const NewsContent = styled(Text)`
@@ -52,14 +53,13 @@ const NewsContent = styled(Text)`
 `;
 
 const NewsMedia = styled(View)`
-    background-color: aliceblue;
     margin-top: 8px;
 `;
 
 const PostTimestamp = styled(Text)`
-    font-size   : 12px;
+    font-size   : 10px;
     font-style  : italic;
-    color: white;
+    color: ${props => props.theme.secondaryTextColor};
 `;
 
 const NewsInteractive = styled(View)`
@@ -85,6 +85,7 @@ const CommentButton = styled(Button)`
 const SingleNews = function(props) {
     const { width, height, showComment, data } = props;
     const dispatch          = useDispatch();
+    const { colors } = props.theme;
 
     const LoadComments = function(postId) {
         // dispatch(GetComments(postId));
@@ -96,25 +97,53 @@ const SingleNews = function(props) {
     }
 
     return(
-        <NewsWrapper>
-            <NewsHeader>
-                <AvatarWrapper>
+        <NewsWrapper elevation={8}>
+            <NewsHeader theme={colors}>
+                <AvatarWrapper theme={colors}>
                     {
                         data.avatar === ""
-                            ? <Avatar.Text size={50} label="DM" style={{marginRight: 10}}/>
-                            : <Image source={{uri: DEFAULT_BASE_URL + data.avatar}} style={{width: 50, height: 50, borderRadius: 9999, marginRight: 10}}/>
+                            ? <Avatar.Text size={40} label="DM" style={{marginRight: 10}}/>
+                            : <Image source={{uri: DEFAULT_BASE_URL + data.avatar}} style={{width: 40, height: 40, borderRadius: 9999, marginRight: 10}}/>
                     }
                     {/*<ActiveStatusDot active={false}/>*/}
                 </AvatarWrapper>
                 <View>
-                    <NewsUsername>{data.display_name}</NewsUsername>
+                    <NewsUsername theme={colors}>{data.display_name}</NewsUsername>
                     {
                         moment.duration(moment().diff(moment(data.created_at))).asHours() < 24
-                            ? <PostTimestamp>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asHours())} ago</PostTimestamp>
-                            : <PostTimestamp>Posted at {moment(data.created_at).format("MMM DD hh:mm A")}</PostTimestamp>
+                            ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asHours())} ago</PostTimestamp>
+                            : <PostTimestamp theme={colors}>Posted at {moment(data.created_at).format("MMM DD hh:mm A")}</PostTimestamp>
                     }
                 </View>
             </NewsHeader>
+
+            <NewsMedia>
+                {data.media.length > 0 &&
+                    data.media.map((image, index) => {
+                        return(
+                            <Image
+                                key={"_post_" + index}
+                                source={{uri: DEFAULT_BASE_URL + image}}
+                                style={{
+                                    height: 300,
+                                    flex: 1,
+                                    width: null,
+                                    resizeMode: "contain",
+                                    borderRadius: 10
+                                }}
+                            />
+                        )
+                    })
+                    // <NewsMedia>
+                    //     <FlatGrid
+                    //         spacing={10}
+                    //         data={data.media}
+                    //         itemDimension={150}
+                    //         renderItem={item => (<Image source={{uri: DEFAULT_BASE_URL + item}} style={{width: (width-10)/2, height: 150, resizeMode: "contain"}}/>)}
+                    //     />
+                    // </NewsMedia>
+                }
+            </NewsMedia>
 
             <AutoHeightWebView
                 style={{
@@ -122,30 +151,6 @@ const SingleNews = function(props) {
                 }}
                 source={{html: GenContent(data.content)}}
             />
-
-            {data.media.length > 0 &&
-                data.media.map((image, index) => {
-                    return(
-                        <Image
-                            key={"_post_" + index}
-                            source={{uri: DEFAULT_BASE_URL + image}}
-                            style={{
-                                width: data.media.length === 1 ? width : (width-10)/2,
-                                height: 150,
-                                resizeMode: "contain"
-                            }}
-                        />
-                    )
-                })
-                // <NewsMedia>
-                //     <FlatGrid
-                //         spacing={10}
-                //         data={data.media}
-                //         itemDimension={150}
-                //         renderItem={item => (<Image source={{uri: DEFAULT_BASE_URL + item}} style={{width: (width-10)/2, height: 150, resizeMode: "contain"}}/>)}
-                //     />
-                // </NewsMedia>
-            }
 
             <NewsInteractive>
                 <ReactionButton onPress={e => console.log("Like")} onLongPress={e => console.log("Hold to choose")} uppercase={false} icon='thumb-up'>Like</ReactionButton>
@@ -155,4 +160,4 @@ const SingleNews = function(props) {
     );
 }
 
-export default SingleNews;
+export default withTheme(SingleNews);

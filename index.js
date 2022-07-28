@@ -25,7 +25,8 @@ const theme = {
         negativeBgColor: '#a9a9a9',
         positiveTextColor: '#FFF',
         positiveBgColor: '#1ea5e1',
-        text: '#343333'
+        text: '#343333',
+        secondaryTextColor: '#8d8d8d'
     },
     fonts: configureFonts(FontConfig)
 };
