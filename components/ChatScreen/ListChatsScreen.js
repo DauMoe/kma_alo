@@ -38,12 +38,10 @@ const SearchChatSectionWrapper = styled(View)`
   padding: 0 20px 10px 20px;
 `;
 
-const SearchChatInput = styled.TextInput.attrs({
-    color: 'gray'
-})`
+const SearchChatInput = styled(TextInput)`
   padding-left: 20px;
   border-radius: 999999999px;
-  background-color: #f1f1f1;
+  background-color: #efefef;
   color: #626262;
 `;
 
@@ -176,7 +174,7 @@ const ListChatsScreen = function(props) {
                         <ChatHeadUsername>Message</ChatHeadUsername>
                     </ChatHeadSectionWrapper>
                     <SearchChatSectionWrapper>
-                        <SearchChatInput onChangeText={SearchChat} placeholder={"Search chat"}/>
+                        <SearchChatInput placeholderTextColor={"#b4b4b4"} onChangeText={SearchChat} placeholder={"Search chat"}/>
                     </SearchChatSectionWrapper>
                 </View>
 
