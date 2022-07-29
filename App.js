@@ -39,8 +39,16 @@ const App = function(props) {
             }}
             initialRouteName={MAIN_SCREEN}>
             <Stack.Screen
+                name={CREATE_POST_SCREEN}
+                component={CreatePostScreen}
+                options={{
+                    animation: "none"
+                }}
+            />
+            <Stack.Screen
                 name={LOADING_SCREEN}
                 component={LoadingScreen}
+
             />
             <Stack.Screen
                 name={LOGIN_SCREEN}
@@ -73,14 +81,16 @@ const App = function(props) {
             <Stack.Screen
                 name={EDIT_USER_PROFILE_SCREEN}
                 component={EditProfileScreen}
+                options={{
+                    animation: "none"
+                }}
             />
             <Stack.Screen
                 name={CREATE_ACCOUNT_SCREEN}
                 component={CreateAccountScreen}
-            />
-            <Stack.Screen
-                name={CREATE_POST_SCREEN}
-                component={CreatePostScreen}
+                options={{
+                    animation: "none"
+                }}
             />
       </Stack.Navigator>
       {/*<SetIPModal/>*/}

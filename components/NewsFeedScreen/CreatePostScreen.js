@@ -1,7 +1,7 @@
 import React, {useRef, useState} from "react";
 import {
     ActivityIndicator,
-    Button,
+    Button, DefaultTheme,
     FAB,
     HelperText,
     IconButton,

@@ -38,10 +38,12 @@ const SearchChatSectionWrapper = styled(View)`
   padding: 0 20px 10px 20px;
 `;
 
-const SearchChatInput = styled(TextInput)`
+const SearchChatInput = styled.TextInput.attrs({
+    color: 'gray'
+})`
   padding-left: 20px;
   border-radius: 999999999px;
-  background-color: #efefef;
+  background-color: #f1f1f1;
   color: #626262;
 `;
 

@@ -2,10 +2,10 @@ import axios from "axios";
 import { HOST_TABLE, HOST_TB_CREATE_AT, HOST_TB_VALUE, TOKEN_TABLE, TOKEN_TB_VALUE } from "../Definition";
 import { _db } from '../Utils';
 
-const PRODUCTION_URL                = "http://20.89.56.87:8000";
+const PRODUCTION_URL                = "http://20.89.94.38:8000";
 const TEST_URL                      = "http://192.168.1.36:4000";
 const OTHER_URL                     = "http://192.168.110.41:8000";
-export const DEFAULT_BASE_URL       = TEST_URL;
+export const DEFAULT_BASE_URL       = PRODUCTION_URL;
 
 export const clearToken = function(token) {
     // instance.defaults.headers.common['Authorization'] = undefined;

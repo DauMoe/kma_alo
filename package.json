@@ -24,6 +24,7 @@
     "react-native": "0.68.2",
     "react-native-autoheight-webview": "^1.6.4",
     "react-native-contacts": "^7.0.4",
+    "react-native-fast-image": "^8.5.11",
     "react-native-image-picker": "^4.8.4",
     "react-native-linear-gradient": "^2.6.2",
     "react-native-paper": "^4.12.1",

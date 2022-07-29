@@ -13,7 +13,7 @@ import moment from "moment";
 const NewsWrapper = styled(View)`
     padding         : 15px;
     background-color: #fff;
-    margin: 10px 15px 0 15px;
+    margin: 5px 15px;
     border-radius: 20px;
 `;
 

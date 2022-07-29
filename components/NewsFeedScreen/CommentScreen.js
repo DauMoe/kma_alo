@@ -4,6 +4,7 @@ import { Avatar } from "react-native-paper";
 import SwipeUpDown from "react-native-swipe-up-down";
 import { useSelector } from "react-redux";
 import styled from "styled-components/native";
+import {useNavigation} from "@react-navigation/native";
 
 const CommentsWrapper = styled(View)`
     padding: 20px;
@@ -43,7 +44,7 @@ const Comments = function() {
 }
 
 const CommentsScreen = function(props) {
-    const { navigation, show } = props;
+    const { show } = props;
     const { width, height } = Dimensions.get("screen");
     const { loaded, err, error_msg, data } = useSelector(state => state.Comments);
     const swipeUpDownRef = useRef();
