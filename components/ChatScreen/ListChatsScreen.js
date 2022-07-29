@@ -180,27 +180,25 @@ const ListChatsScreen = function(props) {
 
                 <ListChatSectionWrapper>
                     {Array.isArray(ListChat) && ListChat.map(function(chat, index) {
-                        if (true) {
-                            return(
-                                <TouchableOpacity onPress={() => GotoChatScreen(chat)} key={"__chat_no_" + index}>
-                                    <PreviewChatWrapper>
-                                        { chat.receiver_avatar === ""
-                                            ? <Avatar.Text size={50} label={chat.receiver_avatar_text} style={{marginRight: 15}}/>
-                                            : <Image source={{uri: DEFAULT_BASE_URL + chat.receiver_avatar}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>
-                                        }
-                                        <PreviewChatContent>
-                                            <ChatUsername>{chat.display_name}</ChatUsername>
-                                            <PreviewMessageWrapper>
-                                                <PreviewMessage>{chat.last_message}</PreviewMessage>
-                                                <MessageTime>{moment(chat.last_send).isValid() && moment(chat.last_send).format("HH:MM")}</MessageTime>
-                                            </PreviewMessageWrapper>
-                                        </PreviewChatContent>
-                                        {/*<IconButton icon="check-circle" size={15} color={"gray"}/>*/}
-                                        {/*<IconButton icon="check-circle-outline" size={15} color={"gray"}/>*/}
-                                    </PreviewChatWrapper>
-                                </TouchableOpacity>
-                            )
-                        }
+                        return(
+                            <TouchableOpacity onPress={() => GotoChatScreen(chat)} key={"__chat_no_" + index}>
+                                <PreviewChatWrapper>
+                                    { chat.receiver_avatar === ""
+                                        ? <Avatar.Text size={50} label={chat.receiver_avatar_text} style={{marginRight: 15}}/>
+                                        : <Image source={{uri: DEFAULT_BASE_URL + chat.receiver_avatar}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>
+                                    }
+                                    <PreviewChatContent>
+                                        <ChatUsername>{chat.display_name}</ChatUsername>
+                                        <PreviewMessageWrapper>
+                                            <PreviewMessage>{chat.last_message}</PreviewMessage>
+                                            <MessageTime>{moment(chat.last_send).isValid() && moment(chat.last_send).format("HH:MM")}</MessageTime>
+                                        </PreviewMessageWrapper>
+                                    </PreviewChatContent>
+                                    {/*<IconButton icon="check-circle" size={15} color={"gray"}/>*/}
+                                    {/*<IconButton icon="check-circle-outline" size={15} color={"gray"}/>*/}
+                                </PreviewChatWrapper>
+                            </TouchableOpacity>
+                        )
                     })}
                 </ListChatSectionWrapper>
             </>

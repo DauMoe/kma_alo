@@ -8,7 +8,7 @@ import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import {useIsFocused, useNavigation} from "@react-navigation/native";
 import {EDIT_USER_PROFILE_SCREEN, LOGIN_SCREEN} from "../Definition";
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
-import FastImage from "react-native-fast-image";
+// import FastImage from "react-native-fast-image";
 
 const Theme = {
     primaryColor: "#FFFFFF",

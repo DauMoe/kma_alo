@@ -75,7 +75,10 @@ const InputMessage = styled(TextInput)`
   margin: 0 0 0 10px;
   padding: 5px 10px;
   border-radius: 50px;
-  background-color: #B2B2B2;
+  background-color: #ececec;
+  border-width: 1px;
+  border-color: #6e6e6e;
+  color: black
 `;
 
 const AvatarMessageUser = styled(Avatar.Text)`
@@ -230,19 +233,22 @@ const ChatScreen = function(props) {
             <ChatHeadSection/>
             <ChatSection/>
             <InputMessageWrapper>
-                <InputMessage defaultValue={msg} onChangeText={text => setMsg(text)} placeholder="Type your message"/>
+                <InputMessage placeholderTextColor={"#6e6e6e"} defaultValue={msg} onChangeText={text => setMsg(text)} placeholder="Type your message"/>
                 <IconButton
                     icon="send"
                     style={{
-                        transform: [{rotate: '-30deg'}],
-                        backgroundColor: "#16878E",
-                        marginLeft: 10,
-                        marginRight: 10
+                        transform: [{rotate: '-35deg'}],
+                        padding: 0,
+                        margin: 0,
+                        marginLeft: 5,
+                        marginRight: 5,
+                        paddingLeft: 7,
+                        backgroundColor:"#d4fdff"
                     }}
-                    size={22}
+                    size={30}
                     onPress={sendMessage}
                     animate={true}
-                    color={Theme.primaryTextColor}/>
+                    color={"#21a3d5"}/>
             </InputMessageWrapper>
         </>
     );
