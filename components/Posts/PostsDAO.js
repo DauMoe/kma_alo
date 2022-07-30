@@ -98,3 +98,67 @@ exports.ReactionDAO = async(post_id, uid, type) => {
         return DB_RESP(503, e.message);
     }
 }
+
+exports.GetCommentDAO = async(post_id) => {
+    const FUNC_NAME = `GetCommentDAO${FILE_NAME}`;
+    let SQL, SQL_BIND = "";
+    try {
+        SQL             = "SELECT * FROM POST_COMMENTS WHERE POST_ID = ?";
+        SQL_BIND        = mysql.format(SQL, [post_id]);
+        const result    = await query(SQL_BIND);
+        return DB_RESP(200, result);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
+
+exports.DeleteCommentDAO = async(comment_id, uid) => {
+    const FUNC_NAME = `DeleteCommentDAO${FILE_NAME}`;
+    let SQL, SQL_BIND = "";
+    try {
+        SQL             = "SELECT * FROM POST_COMMENTS WHERE COMMENT_ID = ? AND UID = ?";
+        SQL_BIND        = mysql.format(SQL, [comment_id, uid]);
+        const result    = await query(SQL_BIND);
+        if (result.length === 0) return DB_RESP(401, "You are not allowed to delete this comment");
+        SQL             = "DELETE FROM POST_COMMENTS WHERE COMMEND_ID = ?";
+        SQL_BIND        = mysql.format(SQL, [comment_id]);
+        await query(SQL_BIND);
+        return DB_RESP(200);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
+
+exports.NewCommentDAO = async(content, media_link, post_id, uid) => {
+    const FUNC_NAME = `NewCommentDAO${FILE_NAME}`;
+    let SQL, SQL_BIND = "";
+    try {
+        SQL             = "INSERT INTO POST_COMMENTS (CONTENT, UID, POST_ID, MEDIA_LINK) VALUES (?, ?, ?, ?)";
+        SQL_BIND        = mysql.format(SQL, [content, uid, post_id, media_link]);
+        await query(SQL_BIND);
+        return DB_RESP(200);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
+
+exports.EditCommentDAO = async(content, comment_id, uid) => {
+    const FUNC_NAME = `EditCommentDAO${FILE_NAME}`;
+    let SQL, SQL_BIND = "";
+    try {
+        SQL             = "SELECT * FROM POST_COMMENTS WHERE COMMENT_ID = ? AND UID = ?";
+        SQL_BIND        = mysql.format(SQL, [comment_id, uid]);
+        const result    = await query(SQL_BIND);
+        if (result.length === 0) return DB_RESP(401, "You are not allowed to edit this comment");
+        SQL             = "UPDATE POST_COMMENTS SET CONTENT = ? WHERE COMMENT_ID = ?";
+        SQL_BIND        = mysql.format(SQL, [content, comment_id]);
+        await query(SQL_BIND);
+        return DB_RESP(200);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
