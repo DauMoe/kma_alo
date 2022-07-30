@@ -106,43 +106,42 @@ const ProfileScreen = function(props) {
         axiosConfig(UPDATE_AVATAR, "put", options)
             .then(r => {
                 setAvatar({
-                    ...avatar,
                     ready: true,
                     value: avatarBase64
                 });
             })
             .catch(e => {
                 console.error("Update avatar error");
-                console.error(Object.keys(e.response));
+                console.log(e.response)
             });
     }
 
     const GetImageFromCamera = function() {
         setShow(false);
         PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.CAMERA,{
-                title: "Camera access",
-                message:
-                    "This app would like to use your camera.",
-                buttonNeutral: "Ask Me Later",
-                buttonNegative: "Cancel",
-                buttonPositive: "Allow"
-            }
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,{
+              title: "Take a shot",
+              message:
+                "This app would like to use your camera.",
+              buttonNeutral: "Ask Me Later",
+              buttonNegative: "Cancel",
+              buttonPositive: "Allow"
+          }
         )
-            .then(async() => {
-                try {
-                    const result = await launchCamera({
-                        "mediaType": "photo",
-                        "cameraType": "front",
-                        "quality": 1,
-                        "includeBase64": true
-                    });
-                    HandleImage(result);
-                } catch(e) {
-                    console.error("Launch camera err: ", e);
-                }
-            })
-            .catch(e => console.error(e))
+          .then(async() => {
+              try {
+                  const result = await launchCamera({
+                      "mediaType": "photo",
+                      "cameraType": "front",
+                      "quality": 0.3,
+                      "includeBase64": true
+                  });
+                  HandleImage(result);
+              } catch(e) {
+                  console.error("Launch camera err: ", e);
+              }
+          })
+          .catch(e => console.error(e))
     }
 
     const GetImageFromLibrary = function() {
@@ -162,7 +161,7 @@ const ProfileScreen = function(props) {
                     const result = await launchImageLibrary({
                         "mediaType": "photo",
                         "cameraType": "front",
-                        "quality": 1,
+                        "quality": 0.3,
                         "includeBase64": true
                     });
                     HandleImage(result);

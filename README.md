@@ -17,10 +17,11 @@
  - [x] Use local DB stores host IP
  - [x] Create chat UI
  - [x] Create Profile UI
- - [ ] Create search friend UI
+ - [x] Create search friend UI
  - [ ] Create comments UI
- - [ ] Create Profile UI (when user click a name -> Show all post of this person);
+ - [x] Create Profile UI (when user click a name -> Show all post of this person);
  - [ ] Call UI
  - [x] Create Signup UI
+ - [ ] **Complete login scenario**
 ## Socket idea:  
  - [x] **(CURRENT)** Use `rooms` to make private chat
