@@ -9,6 +9,7 @@ const path = require("path");
 const multer = require("multer");
 const url = require("url");
 const fs = require("fs");
+const {response} = require("express");
 const storage = multer.diskStorage({
     filename: function (req, file, cb) {
         cb(null, Date.now() + path.extname(file.originalname))
@@ -228,4 +229,8 @@ exports.UpdateAvatar = async function(req, resp) {
     } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
     }
+}
+
+exports.TokenValid = async(req, resp) => {
+    SuccessResp(resp, undefined);
 }

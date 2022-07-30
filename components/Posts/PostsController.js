@@ -4,7 +4,7 @@ const {CatchErr, writeFile, SuccessResp, RespCustomCode} = require("../../Utils/
 const {GetString, GetStringArray, GetNumber, GetJSONArray} = require("../../Utils/GetValue");
 const fs = require("fs");
 const path = require("path");
-const {CreatePostDAO, DeletePostDAO, GetPostDAO} = require("./PostsDAO");
+const {CreatePostDAO, DeletePostDAO, GetPostDAO, ReactionDAO} = require("./PostsDAO");
 
 const FILE_NAME = " - PostController.js";
 
@@ -93,6 +93,24 @@ exports.GetPost = async(req, resp) => {
             RespCustomCode(resp, undefined, result.msg, result.code);
         }
     } catch(e) {
+        CatchErr(resp, e, FUNC_NAME);
+    }
+}
+
+exports.Reaction = async(req, resp) => {
+    const FUNC_NAME = "Reaction" + FILE_NAME;
+    const uid       = req.app.locals.uid;
+    const reqData   = req.body;
+    try {
+        const post_id   = GetNumber(reqData, "post_id");
+        const type      = GetNumber(reqData, "type");
+        const result    = await ReactionDAO(post_id, uid, type);
+        if (result.code === 200) {
+            SuccessResp(resp, result.msg);
+        } else {
+            RespCustomCode(resp, undefined, result.msg, result.code);
+        }
+    } catch (e) {
         CatchErr(resp, e, FUNC_NAME);
     }
 }

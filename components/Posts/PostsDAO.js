@@ -58,3 +58,43 @@ exports.GetPostDAO = async(uid, offset, limit) => {
         return DB_RESP(503, e.message);
     }
 }
+
+exports.ReactionDAO = async(post_id, uid, type) => {
+    const FUNC_NAME = `ReactionDAO${FILE_NAME}`;
+    let SQL, SQL_BIND = "";
+    try {
+        SQL = "SELECT REACT_ID, TYPE FROM POST_REACTIONS WHERE POST_ID = ? AND REACT_UID = ?";
+        SQL_BIND = mysql.format(SQL, [post_id, uid]);
+        const result = await query(SQL_BIND);
+        if (result.length > 0) {
+            //Already reaction before
+            if (result[0].TYPE === Number(type)) {
+                //Re-reaction the same type <=> delete
+                SQL         = "DELETE FROM POST_REACTIONS WHERE POST_ID = ? AND REACT_UID = ?";
+                SQL_BIND    = mysql.format(SQL, [post_id, uid]);
+            } else {
+                //Re-reaction difference type <=> change to another reaction
+                SQL         = "UPDATE POST_REACTIONS SET TYPE = ? WHERE POST_ID = ? AND REACT_UID = ?";
+                SQL_BIND    = mysql.format(SQL, [type, post_id, uid]);
+            }
+            await query(SQL_BIND);
+            return DB_RESP(200, {
+                mode    : result[0].TYPE === Number(type) ? "delete" : "update",
+                post_id : post_id,
+                uid     : uid
+            });
+        } else {
+            SQL = "INSERT INTO POST_REACTIONS (REACT_UID, POST_ID, TYPE) VALUES (?, ?, ?)";
+            SQL_BIND = mysql.format(SQL, [uid, post_id, type]);
+            await query(SQL_BIND);
+            return DB_RESP(200, {
+                mode    : "insert",
+                post_id : post_id,
+                uid     : uid
+            })
+        }
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
