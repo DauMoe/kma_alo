@@ -61,28 +61,51 @@ exports.GetPost = async(req, resp) => {
         const limit     = GetNumber(reqData, "limit");
         const result    = await GetPostDAO(uid, offset, limit);
         if (result.code === 200) {
-            let respData = [];
+            let respData = [], existedPostId = [];
             for (const i of result.msg) {
                 const mediaLinks = [];
                 for(const j of i.MEDIA_LINKS.split(",")) {
                     mediaLinks.push(`/post/${j}`);
                 }
-                respData.push({
-                    post_id     : i.POST_ID         === null ? -1 : i.POST_ID,
-                    author_id   : i.AUTHOR_ID       === null ? -1 : i.AUTHOR_ID,
-                    title       : i.TITLE           === null ? -1 : i.TITLE,
-                    content     : i.CONTENT         === null ? -1 : i.CONTENT,
-                    uid         : i.UID             === null ? -1 : i.UID,
-                    username    : i.USERNAME        === null ? "" : i.USERNAME,
-                    first_name  : i.FIRST_NAME      === null ? -1 : i.FIRST_NAME,
-                    last_name   : i.LAST_NAME       === null ? -1 : i.LAST_NAME,
-                    avatar      : i.AVATAR_LINK     === null ? "" : `/avatar/${i.AVATAR_LINK}`,
-                    avatar_text : `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
-                    display_name: `${i.FIRST_NAME} ${i.LAST_NAME}`,
-                    media       : (i.MEDIA_LINKS === "" || i.MEDIA_LINKS === null) ? [] : mediaLinks,
-                    created_at  : i.CREATED_AT      === null ? -1 : i.CREATED_AT,
-                    updated_at  : i.UPDATED_AT      === null ? -1 : i.UPDATED_AT
-                })
+                const reactionsIndex = existedPostId.indexOf(i.POST_ID);
+                if (reactionsIndex === -1) {
+                    //Post is not gone through
+                    const item = {
+                        post_id     : i.POST_ID         === null ? -1 : i.POST_ID,
+                        author_id   : i.AUTHOR_ID       === null ? -1 : i.AUTHOR_ID,
+                        title       : i.TITLE           === null ? -1 : i.TITLE,
+                        content     : i.CONTENT         === null ? -1 : i.CONTENT,
+                        uid         : i.UID             === null ? -1 : i.UID,
+                        username    : i.USERNAME        === null ? "" : i.USERNAME,
+                        first_name  : i.FIRST_NAME      === null ? -1 : i.FIRST_NAME,
+                        last_name   : i.LAST_NAME       === null ? -1 : i.LAST_NAME,
+                        avatar      : i.AVATAR_LINK     === null ? "" : `/avatar/${i.AVATAR_LINK}`,
+                        avatar_text : `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
+                        display_name: `${i.FIRST_NAME} ${i.LAST_NAME}`,
+                        media       : (i.MEDIA_LINKS === "" || i.MEDIA_LINKS === null) ? [] : mediaLinks,
+                        created_at  : i.CREATED_AT      === null ? -1 : i.CREATED_AT,
+                        updated_at  : i.UPDATED_AT      === null ? -1 : i.UPDATED_AT,
+                        reactions   : []
+                    };
+                    if (i.TYPE !== null) {
+                        item.reactions.push({
+                            type    : i.TYPE,
+                            uid     : i.REACT_UID,
+                            post_id : i.POST_ID
+                        });
+                    }
+                    respData.push(item);
+                    existedPostId.push(i.POST_ID);
+                } else {
+                    //Already go through this post
+                    if (i.TYPE !== null) {
+                        respData[reactionsIndex].reactions.push({
+                            type    : i.TYPE,
+                            uid     : i.REACT_UID,
+                            post_id : i.POST_ID
+                        });
+                    }
+                }
             }
             SuccessResp(resp, {
                 list_post   : respData,
