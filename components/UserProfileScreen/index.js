@@ -8,7 +8,6 @@ import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import {useIsFocused, useNavigation} from "@react-navigation/native";
 import {EDIT_USER_PROFILE_SCREEN, LOGIN_SCREEN} from "../Definition";
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
-// import FastImage from "react-native-fast-image";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -109,7 +108,7 @@ const ProfileScreen = function(props) {
                 setAvatar({
                     ...avatar,
                     ready: true,
-                    value: r.data.data.avatar_link
+                    value: avatarBase64
                 });
             })
             .catch(e => {
@@ -230,7 +229,7 @@ const ProfileScreen = function(props) {
                 setProfile(r.data.data.user_data);
                 setAvatar({
                     ready: true,
-                    value: r.data.data.user_data.avatar_link
+                    value: DEFAULT_BASE_URL + r.data.data.user_data.avatar_link
                 });
             })
             .catch(e => console.error(e))
@@ -260,13 +259,11 @@ const ProfileScreen = function(props) {
                         </View>
                     )}
                     {avatar.ready && avatar.value !== "" &&
-                        // <FastImage
-                        //     style={{width: 150, height: 150, borderRadius: 200, borderWidth: 2, borderColor: "black"}}
-                        //     source={{uri: DEFAULT_BASE_URL + avatar.value, priority: FastImage.priority.normal}}
-                        // />
                         <Image
                             style={{width: 150, height: 150, borderRadius: 200, borderWidth: 2, borderColor: "black"}}
-                            source={{uri: DEFAULT_BASE_URL + avatar.value}}/>
+                            source={{uri: avatar.value}}
+                            key={avatar.value}
+                        />
                     }
                     {avatar.ready && avatar.value === "" &&
                         <Avatar.Text label={userProfile.avatar_text} size={150}/>
