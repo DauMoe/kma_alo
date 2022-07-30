@@ -1,3 +1,15 @@
+## TODO Jun 26 2022:
+- [x] **IMPORTANT! Find a way to update offset without re-render**: (redux JUST SAVE THIS DATA from current call, update to **conversation** state and update **offset**)
+- [x] Use local DB stores host IP
+- [x] Create chat UI
+- [x] Create Profile UI
+- [x] Create search friend UI
+- [ ] Create comments UI
+- [x] Create Profile UI (when user click a name -> Show all post of this person);
+- [ ] Call UI
+- [x] Create Signup UI
+- [ ] **Complete login scenario**
+
 ## Design  
  - [NewsFeed Design](https://dribbble.com/tags/newsfeed)
  - [Login Screen Design](https://thumbs.dreamstime.com/z/mockup-screen-login-form-welcome-page-your-mobile-app-interface-design-login-page-mockup-screen-login-form-welcome-199562898.jpg)
@@ -11,17 +23,6 @@
  - [RN Paper FAB](https://callstack.github.io/react-native-paper/animated-fab.html)
  - [RN Paper Bottom Navigation](https://callstack.github.io/react-native-paper/bottom-navigation.html)
  - [RN Paper Custom font](https://callstack.github.io/react-native-paper/fonts.html)
- 
-## TODO Jun 26 2022:
- - [x] **IMPORTANT! Find a way to update offset without re-render**: (redux JUST SAVE THIS DATA from current call, update to **conversation** state and update **offset**)
- - [x] Use local DB stores host IP
- - [x] Create chat UI
- - [x] Create Profile UI
- - [x] Create search friend UI
- - [ ] Create comments UI
- - [x] Create Profile UI (when user click a name -> Show all post of this person);
- - [ ] Call UI
- - [x] Create Signup UI
- - [ ] **Complete login scenario**
+
 ## Socket idea:  
  - [x] **(CURRENT)** Use `rooms` to make private chat
