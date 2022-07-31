@@ -21,12 +21,15 @@ export const clearToken = function(token) {
 };
 
 import store from './RootReducer';
-
+let TOKEN, BASE_URL;
 store.subscribe(function() {
     const { token, baseUrl } = store.getState().Authenticator;
-    // console.log("TOKEN: ", token, baseUrl);
-    if (token)      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    if (baseUrl)    axios.defaults.baseURL = baseUrl;
+    console.log("TOKEN: ", token, baseUrl);
+    if (token)      TOKEN       = token;
+    if (baseUrl)    BASE_URL    = baseUrl;
+
+    // if (token)      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    // if (baseUrl)    axios.defaults.baseURL = baseUrl;
 });
 
 export const setBaseUrl = function(baseURL) {
@@ -37,11 +40,11 @@ export const setBaseUrl = function(baseURL) {
 }
 
 export const axiosConfig = function(endpoint, method, config) {
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIsImVtYWlsIjoiaG9hbmduZUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImRhdW1vZSIsImlhdCI6MTY1NjI1NjA5NywiZXhwIjoxODcyMjU2MDk3fQ.cotV9sFZeH5p3w-iu25mE2FGxw2id0VOfEwWCVmNQy4";
+    // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIsImVtYWlsIjoiaG9hbmduZUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImRhdW1vZSIsImlhdCI6MTY1NjI1NjA5NywiZXhwIjoxODcyMjU2MDk3fQ.cotV9sFZeH5p3w-iu25mE2FGxw2id0VOfEwWCVmNQy4";
     const instance = axios.create({
-        baseURL: DEFAULT_BASE_URL
+        baseURL: BASE_URL || DEFAULT_BASE_URL
     });
-    instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    instance.defaults.headers.common['Authorization'] = `Bearer ${TOKEN}`;
     switch(method.toUpperCase()) {
         case "GET":
             return instance.get(endpoint, config);

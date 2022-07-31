@@ -5,7 +5,7 @@ import styled from 'styled-components/native';
 import CommentsScreen from "./CommentScreen";
 import {useNavigation} from "@react-navigation/native";
 import {CREATE_POST_SCREEN, EDIT_USER_PROFILE_SCREEN, LOGIN_SCREEN} from "../Definition";
-import {Button, FAB, withTheme} from "react-native-paper";
+import { Button, FAB, HelperText, withTheme } from "react-native-paper";
 import {WebView} from "react-native-webview";
 import AutoHeightWebView from "react-native-autoheight-webview";
 import {axiosConfig} from "../ReduxSaga/AxiosConfig";
@@ -57,6 +57,14 @@ const NewsFeedScreen = function(props) {
                 console.error(e.response)
             })
     }, []);
+
+    if (!__DEV__) {
+      return (
+        <View style={{display: "flex", alignItems: "center", justifyContent: "center", height: height}}>
+          <Text style={{fontFamily: "NunitoSemiBold", color: "black"}}>Sorry, this feature is developing!</Text>
+        </View>
+      )
+    }
 
     return(
         <NewsFeedWrapper>

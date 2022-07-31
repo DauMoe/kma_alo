@@ -76,6 +76,14 @@ const FriendsScreen = function(props) {
 
     }
 
+  if (!__DEV__) {
+    return (
+      <View style={{display: "flex", alignItems: "center", justifyContent: "center", height: height}}>
+        <Text style={{fontFamily: "NunitoSemiBold", color: "black"}}>Sorry, this feature is developing!</Text>
+      </View>
+    )
+  }
+
     return(
         <ScrollView>
             <RecommendWrapper>

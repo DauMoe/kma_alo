@@ -8,6 +8,8 @@ import { TextInput as TextInputRNPaper } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import { LocalLoginAction } from "../ReduxSaga/Authenticator/Actions";
 import {useNavigation} from "@react-navigation/native";
+import { axiosConfig } from "../ReduxSaga/AxiosConfig";
+import { LOCAL_LOGIN } from "../API_Definition";
 
 const LoginScreenWrapper = styled(View)`
     height          : ${props => props.height + "px"};
@@ -90,7 +92,6 @@ const LoginScreen = function(props) {
     const [showPass, setPlainPass]  = useState(false);
     const authenticator             = useSelector(state => state.Authenticator);
     const dispatch                  = useDispatch();
-    const isMounted                 = useRef();
 
     const GotoForgetpasswordScreen = function() {
         navigation.push(FORGET_PASSWORD_SCREEN);
@@ -113,19 +114,12 @@ const LoginScreen = function(props) {
         } else {
             setPassErr("");
         }
-
         dispatch(LocalLoginAction(username, password));
     }
 
     useEffect(function() {
-        if (!isMounted.current) {
-            //didMount
-            isMounted.current = true;
-        } else {
-            //didUpdate
-            if (authenticator.loaded && authenticator.token) navigation.push(MAIN_SCREEN)
-        }
-    }, []);
+        if (authenticator.loaded && authenticator.token) navigation.navigate(MAIN_SCREEN)
+    });
 
     return(
         <KeyboardAvoidingView behavior="height">
@@ -136,11 +130,11 @@ const LoginScreen = function(props) {
                         <LoginHeader>HALO</LoginHeader>
                         <LoginDescription>Let's in!</LoginDescription>
                     </LoginHeaderWrapper>
-                    
+
                     <View>
-                        <TextInputRNPaper 
+                        <TextInputRNPaper
                             autoFocus={false}
-                            label={"Username or email"} 
+                            label={"Username or email"}
                             mode="flat"
                             value={username}
                             onChangeText={setUsername}
@@ -153,7 +147,7 @@ const LoginScreen = function(props) {
                     </View>
 
                     <View style={{marginTop: 20}}>
-                        <TextInputRNPaper 
+                        <TextInputRNPaper
                             label={"Password"}
                             mode="flat"
                             value={password}
@@ -173,12 +167,12 @@ const LoginScreen = function(props) {
                     </View>
 
                     <View style={{marginTop: 20}}>
-                        <Button 
-                            uppercase={false} 
-                            color="white" 
-                            style={{backgroundColor: "#58B7E9", borderRadius: 10}} 
-                            loading={!authenticator.loaded} 
-                            disabled={!authenticator.loaded} 
+                        <Button
+                            uppercase={false}
+                            color="white"
+                            style={{backgroundColor: "#58B7E9", borderRadius: 10}}
+                            loading={!authenticator.loaded}
+                            disabled={!authenticator.loaded}
                             onPress={Authenticate}>
                                 Login
                         </Button>

@@ -1,5 +1,5 @@
 import { takeEvery, call, takeLatest, put, all } from "redux-saga/effects";
-import {LOCAL_LOGIN, LOCAL_SIGNUP} from "../../API_Definition";
+import { CHECK_VALID_TOKEN, LOCAL_LOGIN, LOCAL_SIGNUP } from "../../API_Definition";
 import { axiosConfig } from "../AxiosConfig";
 import {CHECK_ALL_LOCAL_DATA, SINGING_IN, SIGNING_UP} from "./ActionTypes";
 import {
@@ -53,6 +53,10 @@ export function* LocalSignupSaga() {
     yield takeLatest(SIGNING_UP, LocalSignup);
 }
 
+function* CheckTokenIsValid(token) {
+    const CheckValid = yield call(axiosConfig, CHECK_VALID_TOKEN, "get");
+}
+
 function* CheckAllLocalData() {
     try {
         const CheckLocalHostCall    = call(CheckLocalHost);
@@ -60,17 +64,18 @@ function* CheckAllLocalData() {
         const [HostData, TokenData] = yield all([CheckLocalHostCall, CheckLocalTokenCall]);
         const HostDataLength        = HostData.rows.length;
         const TokenDataLength       = TokenData.rows.length;
-        
+
         if (HostDataLength === 0) {
             yield put(HostIsNotExist());
         } else {
             const BaseURL = HostData.rows.item(0)[`${HOST_TB_VALUE}`];
             yield put(HostExist(BaseURL));
         }
-        
+
         if (TokenDataLength === 0) {
             yield put(TokenIsNotExist());
         } else {
+            yield CheckTokenIsValid(TokenData.rows);
             yield put(TokenIsExist({
                 token: "ffff"
             }));

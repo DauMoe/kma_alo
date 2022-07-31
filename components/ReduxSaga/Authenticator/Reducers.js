@@ -43,7 +43,7 @@ const Authenticator = function(state = initState, action) {
                 error       : false,
                 error_code  : undefined,
                 error_msg   : undefined,
-                token       : data.token
+                token       : data
             }
         case SIGNED_IN_FAIL:
             const { err } = data;
@@ -55,7 +55,7 @@ const Authenticator = function(state = initState, action) {
                     error_code  : 402,
                     error_msg   : `Can't connect to server (${state.baseUrl})`,
                     token       : undefined
-                }    
+                }
             }
             return {
                 ...state,
