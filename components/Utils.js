@@ -43,12 +43,28 @@ export const CheckLocalHost = function() {
     });
 }
 
-export const CheckLocalToken = async function() {
-    const SQL = `SELECT * FROM ${TOKEN_TABLE} ORDER BY ${TOKEN_TB_CREATE_AT} DESC`;
+export const CheckLocalToken = function() {
+    const SQL = `SELECT * FROM ${TOKEN_TABLE}`;
     return new Promise(function (resolve, reject) {
         db.transaction(function(tx) {
             tx.executeSql(SQL, [], function(tx, result) {
                 resolve(result);
+            }, function(tx, error) {
+                reject(error);
+            });
+        });
+    });
+}
+
+export const SaveToken = function(token) {
+    const SQL = `DELETE FROM ${TOKEN_TABLE}`;
+    return new Promise(function (resolve, reject) {
+        db.transaction(function(tx) {
+            tx.executeSql(SQL, [], function(tx, result) {
+                const SQL1 = `INSERT INTO ${TOKEN_TABLE} (${TOKEN_TB_VALUE}) VALUES (?)`;
+                tx.executeSql(SQL1, [token], function(tx1, result) {
+                    resolve(result);
+                })
             }, function(tx, error) {
                 reject(error);
             });

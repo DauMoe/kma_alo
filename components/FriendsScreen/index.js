@@ -56,14 +56,16 @@ const FriendsScreen = function(props) {
     }, []);
 
     useEffect(function() {
-        const GetListFriends = axiosConfig(GET_LIST_FRIENDS, "get");
-        const GetRecommendFriends = axiosConfig(GET_RECOMMEND_FRIENDS, "post");
+        const GetListFriends      = axiosConfig(GET_LIST_FRIENDS, "get");
+        const GetRecommendFriends = axiosConfig(GET_RECOMMEND_FRIENDS, "post", {
+          list_contacts: []
+        });
         Promise.all([GetListFriends, GetRecommendFriends])
             .then(r => {
                 setListFriends(r[0].data.data.list_friends);
             })
             .catch(e => {
-                console.error(e);
+                console.error(e.response);
             });
         // axiosConfig(GET_LIST_FRIENDS, "get")
         //     .then(r => {

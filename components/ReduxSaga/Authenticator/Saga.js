@@ -1,7 +1,7 @@
 import { takeEvery, call, takeLatest, put, all } from "redux-saga/effects";
 import { CHECK_VALID_TOKEN, LOCAL_LOGIN, LOCAL_SIGNUP } from "../../API_Definition";
 import { axiosConfig } from "../AxiosConfig";
-import {CHECK_ALL_LOCAL_DATA, SINGING_IN, SIGNING_UP} from "./ActionTypes";
+import { CHECK_ALL_LOCAL_DATA, SINGING_IN, SIGNING_UP, SIGNED_IN_SUCESS } from "./ActionTypes";
 import {
     HostExist,
     HostIsNotExist,
@@ -11,8 +11,8 @@ import {
     TokenIsExist,
     TokenIsNotExist
 } from './Actions';
-import { CheckLocalHost, CheckLocalToken } from "../../Utils";
-import { HOST_TB_VALUE } from "../../Definition";
+import { CheckLocalHost, CheckLocalToken, SaveToken } from "../../Utils";
+import { TOKEN_TB_VALUE } from "../../Definition";
 
 function* LocalLogin({data}) {
     const { username, password } = data;
@@ -23,7 +23,10 @@ function* LocalLogin({data}) {
     try {
         const LocalLoginCall    = call(axiosConfig, LOCAL_LOGIN, "post", reqBody);
         const [LocalLoginData]  = yield all([LocalLoginCall]);
-        yield put(LocalAuthenSuccess(LocalLoginData.data.data.token));
+        const token             = LocalLoginData.data.data.token;
+        console.log(SaveToken);
+        yield call(SaveToken, token);
+        yield put(LocalAuthenSuccess(token));
     } catch(e) {
         console.error("SAGA LocalLogin: ", e.message);
         yield put(LocalAuthenFail(e));
@@ -53,37 +56,38 @@ export function* LocalSignupSaga() {
     yield takeLatest(SIGNING_UP, LocalSignup);
 }
 
-function* CheckTokenIsValid(token) {
-    const CheckValid = yield call(axiosConfig, CHECK_VALID_TOKEN, "get");
-}
-
 function* CheckAllLocalData() {
     try {
         const CheckLocalHostCall    = call(CheckLocalHost);
         const CheckLocalTokenCall   = call(CheckLocalToken);
         const [HostData, TokenData] = yield all([CheckLocalHostCall, CheckLocalTokenCall]);
-        const HostDataLength        = HostData.rows.length;
+        // const HostDataLength        = HostData.rows.length;
         const TokenDataLength       = TokenData.rows.length;
 
-        if (HostDataLength === 0) {
-            yield put(HostIsNotExist());
-        } else {
-            const BaseURL = HostData.rows.item(0)[`${HOST_TB_VALUE}`];
-            yield put(HostExist(BaseURL));
-        }
+        // if (HostDataLength === 0) {
+        //     yield put(HostIsNotExist());
+        // } else {
+        //     const BaseURL = HostData.rows.item(0)[`${HOST_TB_VALUE}`];
+        //     yield put(HostExist(BaseURL));
+        // }
 
         if (TokenDataLength === 0) {
             yield put(TokenIsNotExist());
         } else {
-            yield CheckTokenIsValid(TokenData.rows);
+            const token = TokenData.rows.item(0)[TOKEN_TB_VALUE]
+            const CheckValid = yield call(axiosConfig, CHECK_VALID_TOKEN, "get", {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
             yield put(TokenIsExist({
-                token: "ffff"
+                token: token
             }));
         }
     } catch(e) {
-        yield put(HostIsNotExist());
+        // yield put(HostIsNotExist());
         yield put(TokenIsNotExist());
-        console.log("Saga.js - CheckLocalData: ", e);
+        console.log("Saga.js - CheckLocalData: ", e.response);
     }
 }
 
