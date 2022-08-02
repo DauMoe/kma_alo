@@ -1,19 +1,17 @@
 import React from "react";
 import { View, Text, Image } from "react-native";
-import {Avatar, Button, withTheme} from "react-native-paper";
-import { useDispatch } from "react-redux";
+import {Avatar, Button, IconButton, withTheme} from "react-native-paper";
+import {useDispatch, useSelector} from "react-redux";
 import styled from "styled-components/native";
-import { GetComments } from "../ReduxSaga/Comments/ActionFunctions";
-import { WebView } from "react-native-webview";
 import AutoHeightWebView from "react-native-autoheight-webview";
-import {FlatGrid} from "react-native-super-grid";
 import {DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 import moment from "moment";
+import jwt_decode from "jwt-decode";
 
 const NewsWrapper = styled(View)`
-    padding         : 15px;
+    padding: 20px;
     background-color: #fff;
-    margin: 5px 15px;
+    margin: 8px 18px;
     border-radius: 20px;
 `;
 
@@ -83,13 +81,19 @@ const CommentButton = styled(Button)`
 `; 
 
 const SingleNews = function(props) {
-    const { width, height, showComment, data } = props;
-    const dispatch          = useDispatch();
-    const { colors } = props.theme;
+    const { width, height, showComment, data }  = props;
+    const { colors }                            = props.theme;
+    const dispatch                              = useDispatch();
+    const { token }                             = useSelector(state => state.Authenticator);
+    const { uid, email, username }              = jwt_decode(token);
 
     const LoadComments = function(postId) {
         // dispatch(GetComments(postId));
         showComment(true);
+    }
+
+    const DeletePost = function(postId) {
+
     }
 
     const GenContent = function(content) {
@@ -107,14 +111,25 @@ const SingleNews = function(props) {
                     }
                     {/*<ActiveStatusDot active={false}/>*/}
                 </AvatarWrapper>
-                <View>
+                <View style={{flex: 1}}>
                     <NewsUsername theme={colors}>{data.display_name}</NewsUsername>
                     {
-                        moment.duration(moment().diff(moment(data.created_at))).asHours() < 24
-                            ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asHours())} ago</PostTimestamp>
+                        moment.duration(moment().diff(moment(data.created_at))).asHours() < 1
+                            ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asMinutes())}m ago</PostTimestamp>
+                            : moment.duration(moment().diff(moment(data.created_at))).asHours() < 24 ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asHours())}h ago</PostTimestamp>
                             : <PostTimestamp theme={colors}>Posted at {moment(data.created_at).format("MMM DD hh:mm A")}</PostTimestamp>
                     }
                 </View>
+                {
+                    data.author_id === uid &&
+                    <View>
+                        <IconButton
+                            icon="dots-vertical"
+                            size={18}
+                            onPress={() => DeletePost(data.post_id)}
+                        />
+                    </View>
+                }
             </NewsHeader>
 
             <NewsMedia>
@@ -125,11 +140,11 @@ const SingleNews = function(props) {
                                 key={"_post_" + index}
                                 source={{uri: DEFAULT_BASE_URL + image}}
                                 style={{
-                                    height: 300,
-                                    flex: 1,
-                                    width: null,
-                                    resizeMode: "contain",
-                                    borderRadius: 10
+                                    width: '100%',
+                                    height: undefined,
+                                    aspectRatio: 1,
+                                    borderRadius: 10,
+                                    marginBottom: index < data.media.length-1 ? 8 : 0
                                 }}
                             />
                         )

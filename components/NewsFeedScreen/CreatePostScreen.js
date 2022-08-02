@@ -152,12 +152,10 @@ const CreatePostScreen = function(props) {
                 navigation.pop();
             })
             .catch(e => {
-                ToastAndroid.show(`Sorry, trouble now: ${e.message}`, ToastAndroid.LONG);
-                console.error(e);
-            })
-            .finally(() => {
                 setLoading(false);
-            })
+                ToastAndroid.show(`Sorry, trouble now: ${e.message}`, ToastAndroid.LONG);
+                console.error(e.response);
+            });
     }
 
     const DeleteMedia = function(index) {

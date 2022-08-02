@@ -11,6 +11,7 @@ import {GetChatHistory} from "../ReduxSaga/Chat/Actions";
 import {GET_CHAT_HISTORY} from "../API_Definition";
 import jwt_decode from "jwt-decode";
 import {useIsFocused} from "@react-navigation/native";
+import Authenticator from "../ReduxSaga/Authenticator/Reducers";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -94,8 +95,9 @@ const MessageState = {
 }
 
 const ChatScreen = function(props) {
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIsImVtYWlsIjoiaG9hbmduZUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImRhdW1vZSIsImlhdCI6MTY1NjI1NjA5NywiZXhwIjoxODcyMjU2MDk3fQ.cotV9sFZeH5p3w-iu25mE2FGxw2id0VOfEwWCVmNQy4";
+    // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIsImVtYWlsIjoiaG9hbmduZUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImRhdW1vZSIsImlhdCI6MTY1NjI1NjA5NywiZXhwIjoxODcyMjU2MDk3fQ.cotV9sFZeH5p3w-iu25mE2FGxw2id0VOfEwWCVmNQy4";
     const { route, navigation }     = props;
+    const { token }                 = useSelector(state => state.Authenticator);
     const { chatInfo }              = route.params;
     const limitMessage              = 20; //Load 20 message each time
     const [socket, setSocket]       = useState(null);

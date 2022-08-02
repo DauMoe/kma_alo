@@ -8,7 +8,8 @@
 - [x] Create Profile UI (when user click a name -> Show all post of this person);
 - [ ] Call UI
 - [x] Create Signup UI
-- [ ] **Complete login scenario**
+- [x] **Complete login scenario**
+- [ ] Save current offset in new feeds when refresh or load more post
 
 ## Design  
  - [NewsFeed Design](https://dribbble.com/tags/newsfeed)
