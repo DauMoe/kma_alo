@@ -77,3 +77,26 @@ exports.GetListFriendsDAO = async(uid) => {
         return DB_RESP(503, e.message);
     }
 }
+
+exports.SearchFriendDAO = async(uid, q) => {
+    const FUNC_NAME = `SearchFriendDAO${FILE_NAME}`;
+    let SQL, SQL_BIND = "";
+    try {
+        SQL             = "SELECT UID_ONE, UID_TWO FROM RELATIONS WHERE UID_ONE = ? OR UID_TWO = ? AND TYPE = 'FRIEND'";
+        SQL_BIND        = mysql.format(SQL, [uid, uid]);
+        const result    = await query(SQL_BIND);
+        if (result.length === 0) return DB_RESP(200, []);
+        let ListUID     = [];
+        for (const i of result) {
+            if (i.UID_ONE === uid) ListUID.push(i.UID_TWO);
+            if (i.UID_TWO === uid) ListUID.push(i.UID_ONE);
+        }
+        SQL             = "SELECT * FROM USERS WHERE UID IN ? AND (FIRST_NAME LIKE ? OR LAST_NAME LIKE ? OR USERNAME LIKE ? OR MOBILE LIKE ?)";
+        SQL_BIND        = mysql.format(SQL, [[ListUID], `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`]);
+        const result1   = await query(SQL_BIND);
+        return DB_RESP(200, result1);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}

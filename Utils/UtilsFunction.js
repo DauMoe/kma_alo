@@ -8,6 +8,9 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const util = require("util");
 
+const env = process.env.NODE_ENV || 'dev';
+console.log("ENV: ", env);
+
 const RespCustomCode = (resp, data, description, code) => {
     resp.statusCode = code || 200;
     resp.json({
@@ -104,7 +107,7 @@ exports.SocketAuthenticate = function(socket, next) {
 };
 
 exports.HOST_PORT       = PORT;
-exports.HOST_ADDRESS    = `http:\/\/${ip.address()}:${PORT}/`;
+exports.HOST_ADDRESS    = env !== "dev" ? "http://20.89.94.38:8000" : `http:\/\/${ip.address()}:${PORT}/`;
 exports.IMAGE_PATH      = IMAGE_PATH;
 exports.SALT_ROUND      = 5;
 exports.JWT_SECRET_KEY  = JWT_SECRET_KEY;

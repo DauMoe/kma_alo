@@ -1,24 +1,22 @@
 const bcrypt = require("bcrypt");
-const { GetString, GetNumber } = require("../../Utils/GetValue");
-const { CatchErr, SuccessResp, RespCustomCode, CREATE_TRANSPORTER, SALT_ROUND, JWT_SECRET_KEY, HOST_ADDRESS, writeFile} = require("../../Utils/UtilsFunction");
-const { NewLocalUserDAO, LocalLoginDAO, GetUserInfoDAO, ActiveAccountDAO, GetProfileInformationDAO, UpdateUserInfoDAO,
+const { GetString } = require("../../Utils/GetValue");
+const { CatchErr, SuccessResp, RespCustomCode, SALT_ROUND, JWT_SECRET_KEY, HOST_ADDRESS, writeFile} = require("../../Utils/UtilsFunction");
+const { NewLocalUserDAO, GetUserInfoDAO, ActiveAccountDAO, UpdateUserInfoDAO,
     UpdateAvatarDAO
 } = require("./UsersDAO");
 const jwt = require("jsonwebtoken");
 const path = require("path");
-const multer = require("multer");
-const url = require("url");
+// const multer = require("multer");
 const fs = require("fs");
-const {response} = require("express");
-const storage = multer.diskStorage({
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname))
-    },
-    destination: function (req, file, cb) {
-        cb(null, "public/avatar")
-    }
-})
-const avatarUpload =  multer({ storage: storage }).single("avatar");
+// const storage = multer.diskStorage({
+//     filename: function (req, file, cb) {
+//         cb(null, Date.now() + path.extname(file.originalname))
+//     },
+//     destination: function (req, file, cb) {
+//         cb(null, "public/avatar")
+//     }
+// })
+// const avatarUpload =  multer({ storage: storage }).single("avatar");
 
 const FILE_NAME = " - UsersController.js";
 
@@ -29,7 +27,7 @@ exports.VerifyAccount = async(req, resp) => {
         const result    = await ActiveAccountDAO(uuid);
         if (result.code === 200) {
             resp.send(`
-                <img style="text-align: center" src="${HOST_ADDRESS}create_account.svg" width="100%" height="100%"/>
+                <img style="text-align: center" src="${HOST_ADDRESS}create_account.svg" width="100%" height="100%" alt="Active Successful"/>
             `);
         } else {
             resp.send(`<h3>${result}</h3>`);
@@ -54,14 +52,13 @@ exports.NewLocalUser = async (req, resp) => {
         const hash_pass     = bcrypt.hashSync(password, SALT);
         const result        = await NewLocalUserDAO(first_name, last_name, username, mobile, email, hash_pass);
         if (result.code === 200) {
-            console.log(`${HOST_ADDRESS}/verify/${result.msg}`);
-            // const ET = CREATE_TRANSPORTER();
-            // ET.sendMail({
-            //     from    : process.env.EMAIL,
-            //     to      : email,
-            //     subject : "XÁC THỰC TÀI KHOẢN",
-            //     html    : `<h1>HALO</h1><p>Click </p><a href="${HOST_ADDRESS}/verify/${result.msg}" target="_blank">here</a><p> to active your account</p><h3>We're very happy when you're a part of our network!</h3><h2 style="color: #B02D2D, text-align: right">~ Be happy <3 ~</h2>`
-            // });
+            const ET = CREATE_TRANSPORTER();
+            ET.sendMail({
+                from    : process.env.EMAIL,
+                to      : email,
+                subject : "XÁC THỰC TÀI KHOẢN",
+                html    : `<h1>HALO</h1><p>Click </p><a href="${HOST_ADDRESS}/verify/${result.msg}" target="_blank">here</a><p> to active your account</p><h3>We're very happy when you're a part of our network!</h3><h2 style="color: #B02D2D, text-align: right">~ Be happy <3 ~</h2>`
+            });
             SuccessResp(resp, "Check mail to active account!");
         } else {
             RespCustomCode(resp, undefined, result.msg, result.code);
@@ -181,12 +178,10 @@ exports.UpdateAvatar = async function(req, resp) {
         await writeFile(path.join(__dirname, "..", "..", "public", "avatar", pathImage), avatarBase64.replace(/^data:image\/png;base64,/, ""), "base64");
         const result = await UpdateAvatarDAO(uid, pathImage);
         if (result.code === 200) {
-            try {
-                fs.unlinkSync(path.join(__dirname, "..", "..", "public", "avatar", result.msg[0].AVATAR_LINK));
-            } catch(e) {}
             SuccessResp(resp, {
                 avatar_link: `/avatar/${pathImage}`
-            })
+            });
+            fs.unlink(path.join(__dirname, "..", "..", "public", "avatar", result.msg[0].AVATAR_LINK), () => {});
         } else {
             RespCustomCode(resp, undefined, result.code, result.msg);
         }

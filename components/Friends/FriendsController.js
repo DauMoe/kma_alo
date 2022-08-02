@@ -1,6 +1,6 @@
 const {CatchErr, SuccessResp, RespCustomCode, readFile} = require("../../Utils/UtilsFunction");
-const {GetJSONArray} = require("../../Utils/GetValue");
-const {RecommendNewFriendsDAO, GetListFriendsDAO} = require("./FriendsDAO");
+const {GetJSONArray, GetString} = require("../../Utils/GetValue");
+const {RecommendNewFriendsDAO, GetListFriendsDAO, SearchFriendDAO} = require("./FriendsDAO");
 const path = require("path");
 const FILE_NAME = " - FriendsController.js";
 
@@ -60,7 +60,6 @@ exports.RecommendNewFriends = async(req, resp) => {
 exports.GetListFriends = async(req, resp) => {
     const FUNC_NAME = "GetListFriends" + FILE_NAME;
     const uid = req.app.locals.uid;
-    const reqData = req.body;
     try {
         const result = await GetListFriendsDAO(uid);
         const respData = [];
@@ -87,6 +86,38 @@ exports.GetListFriends = async(req, resp) => {
             }
             SuccessResp(resp, {
                 list_friends: respData
+            });
+        } else {
+            RespCustomCode(resp, undefined, result.code, result.msg);
+        }
+    } catch(e) {
+        CatchErr(resp, e, FUNC_NAME);
+    }
+}
+
+exports.SearchFriend = async(req, resp) => {
+    const FUNC_NAME = "SearchFriend" + FILE_NAME;
+    const uid       = req.app.locals.uid;
+    const reqData   = req.query;
+    try {
+        const query     = GetString(reqData, "q");
+        const result    = await SearchFriendDAO(uid, query);
+        if (result.code === 200) {
+            const respData = [];
+            for (const i of result.msg) {
+                respData.push({
+                    receiver_uid            : i.UID         === null ? -1 : i.UID,
+                    receiver_first_name     : i.FIRST_NAME  === null ? "" : i.FIRST_NAME,
+                    receiver_last_name      : i.LAST_NAME   === null ? "" : i.LAST_NAME,
+                    receiver_username       : i.USERNAME    === null ? "" : i.USERNAME,
+                    receiver_avatar_text    : `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
+                    receiver_avatar         : i.AVATAR_LINK === null ? "" : `/avatar/${i.AVATAR_LINK}`,
+                    display_name            : `${i.FIRST_NAME} ${i.LAST_NAME}`,
+                    sender_id               : uid
+                });
+            }
+            SuccessResp(resp, {
+                result: respData
             });
         } else {
             RespCustomCode(resp, undefined, result.code, result.msg);
