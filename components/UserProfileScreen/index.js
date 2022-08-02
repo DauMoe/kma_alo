@@ -8,6 +8,8 @@ import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import {useIsFocused, useNavigation} from "@react-navigation/native";
 import {EDIT_USER_PROFILE_SCREEN, LOGIN_SCREEN} from "../Definition";
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
+import { useDispatch } from "react-redux";
+import { SignOutAction } from "../ReduxSaga/Authenticator/Actions";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -76,6 +78,7 @@ const ProfileSkeleton = function({width, height}) {
 const ProfileScreen = function(props) {
     const navigation                = useNavigation();
     const isFocus                   = useIsFocused();
+    const dispatch                  = useDispatch();
     const { width, height }         = Dimensions.get("window");
     const [userProfile, setProfile] = useState({
        first_name   : "",
@@ -211,6 +214,7 @@ const ProfileScreen = function(props) {
     }
 
     const Logout = function() {
+        dispatch(SignOutAction());
         navigation.reset({
             index: 0,
             routes: [{name: LOGIN_SCREEN}]

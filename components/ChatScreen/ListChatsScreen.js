@@ -10,7 +10,8 @@ import moment from "moment";
 import {useNavigation} from "@react-navigation/native";
 import lodash from "lodash";
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
-import {DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
+import { axiosConfig, DEFAULT_BASE_URL } from "../ReduxSaga/AxiosConfig";
+import { SEARCH_FRIEND } from "../API_Definition";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -126,7 +127,7 @@ const ListChatsScreen = function(props) {
     const dispatch                              = useDispatch();
     const { loaded, error, error_msg, data }    = useSelector(state => state.Chats);
     const [ListChat, setListChat]               = useState([]);
-    const [searchChat, setSearchChat]           = useState("");
+    const [searchChat, setSearchChat]           = useState(undefined);
     const isMount = useRef();
 
     const GotoChatScreen = function(chatInfo) {
@@ -136,9 +137,24 @@ const ListChatsScreen = function(props) {
     }
 
     const SearchChat = function(e) {
-        setSearchChat(e);
-        const FilterChat = lodash.filter(data, chat => chat.display_name.toLowerCase().indexOf(e.toLowerCase()) > -1);
-        setListChat(FilterChat);
+        setSearchChat(e??"");
+        const query = e  ?? "";
+        if (query === "") {
+            setListChat(data);
+            return;
+        }
+        axiosConfig(SEARCH_FRIEND, "get", {
+            params: {
+                q: query
+            }
+        })
+          .then(r => {
+              console.log(r.data.data);
+              setListChat(r.data.data.result);
+          })
+          .catch(e => console.log(e.response));
+        // const FilterChat = lodash.filter(data, chat => chat.display_name.toLowerCase().indexOf(e.toLowerCase()) > -1);
+        // setListChat(FilterChat);
     }
 
     useEffect(function() {
@@ -180,25 +196,27 @@ const ListChatsScreen = function(props) {
 
                 <ListChatSectionWrapper>
                     {Array.isArray(ListChat) && ListChat.map(function(chat, index) {
-                        return(
-                            <TouchableOpacity onPress={() => GotoChatScreen(chat)} key={"__chat_no_" + index}>
-                                <PreviewChatWrapper>
-                                    { chat.receiver_avatar === ""
-                                        ? <Avatar.Text size={50} label={chat.receiver_avatar_text} style={{marginRight: 15}}/>
-                                        : <Image source={{uri: DEFAULT_BASE_URL + chat.receiver_avatar}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>
-                                    }
+                        return (
+                          <TouchableOpacity onPress={() => GotoChatScreen(chat)} key={"__chat_no_" + index}>
+                              <PreviewChatWrapper>
+                                  {chat.receiver_avatar === ""
+                                    ? <Avatar.Text size={50} label={chat.receiver_avatar_text} style={{ marginRight: 15 }} />
+                                    : <Image source={{ uri: DEFAULT_BASE_URL + chat.receiver_avatar }} style={{ width: 50, height: 50, borderRadius: 99999, marginRight: 15 }} />
+                                  }
+                                  {searchChat !== "" &&
                                     <PreviewChatContent>
-                                        <ChatUsername>{chat.display_name}</ChatUsername>
-                                        <PreviewMessageWrapper>
-                                            <PreviewMessage>{chat.last_message}</PreviewMessage>
-                                            <MessageTime>{moment(chat.last_send).isValid() && moment(chat.last_send).format("HH:MM")}</MessageTime>
-                                        </PreviewMessageWrapper>
+                                      <ChatUsername>{chat.display_name}</ChatUsername>
+                                      <PreviewMessageWrapper>
+                                          <PreviewMessage>{chat.last_message}</PreviewMessage>
+                                          <MessageTime>{moment(chat.last_send).isValid() && moment(chat.last_send).format("HH:MM")}</MessageTime>
+                                      </PreviewMessageWrapper>
                                     </PreviewChatContent>
-                                    {/*<IconButton icon="check-circle" size={15} color={"gray"}/>*/}
-                                    {/*<IconButton icon="check-circle-outline" size={15} color={"gray"}/>*/}
-                                </PreviewChatWrapper>
-                            </TouchableOpacity>
-                        )
+                                  }
+                                  {/*<IconButton icon="check-circle" size={15} color={"gray"}/>*/}
+                                  {/*<IconButton icon="check-circle-outline" size={15} color={"gray"}/>*/}
+                              </PreviewChatWrapper>
+                          </TouchableOpacity>
+                        );
                     })}
                 </ListChatSectionWrapper>
             </>

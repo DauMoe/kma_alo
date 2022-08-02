@@ -72,4 +72,17 @@ export const SaveToken = function(token) {
     });
 }
 
+export const RemoveToken = function() {
+    const SQL = `DELETE FROM ${TOKEN_TABLE}`;
+    return new Promise(function (resolve, reject) {
+        db.transaction(function(tx) {
+            tx.executeSql(SQL, [], function(tx, result) {
+                resolve(result);
+            }, function(tx, error) {
+                reject(error);
+            });
+        });
+    });
+}
+
 export const _db = db;

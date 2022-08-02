@@ -1,7 +1,7 @@
 import { takeEvery, call, takeLatest, put, all } from "redux-saga/effects";
 import { CHECK_VALID_TOKEN, LOCAL_LOGIN, LOCAL_SIGNUP } from "../../API_Definition";
 import { axiosConfig } from "../AxiosConfig";
-import { CHECK_ALL_LOCAL_DATA, SINGING_IN, SIGNING_UP, SIGNED_IN_SUCESS } from "./ActionTypes";
+import { CHECK_ALL_LOCAL_DATA, SINGING_IN, SIGNING_UP, SIGNED_IN_SUCESS, SIGNING_OUT } from "./ActionTypes";
 import {
     HostExist,
     HostIsNotExist,
@@ -11,7 +11,7 @@ import {
     TokenIsExist,
     TokenIsNotExist
 } from './Actions';
-import { CheckLocalHost, CheckLocalToken, SaveToken } from "../../Utils";
+import { CheckLocalHost, CheckLocalToken, RemoveToken, SaveToken } from "../../Utils";
 import { TOKEN_TB_VALUE } from "../../Definition";
 
 function* LocalLogin({data}) {
@@ -92,4 +92,16 @@ function* CheckAllLocalData() {
 
 export function* CheckAllLocalDataSaga() {
     yield takeEvery(CHECK_ALL_LOCAL_DATA, CheckAllLocalData);
+}
+
+function* SignOut() {
+    try {
+        yield call(RemoveToken);
+    } catch (e) {
+        console.log("Saga.js - SignOut: ", e.response);
+    }
+}
+
+export function* SignOutSaga() {
+    yield takeEvery(SIGNING_OUT, SignOut);
 }

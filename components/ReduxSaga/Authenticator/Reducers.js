@@ -5,6 +5,7 @@ import {
     SIGNED_IN_FAIL,
     SIGNED_IN_SUCESS,
     SIGNED_OUT_SUCESS,
+    SIGNING_OUT,
     SINGING_IN,
     SIGNING_UP,
     TOKEN_IS_EXIST,
@@ -27,6 +28,11 @@ export const initState = {
 const Authenticator = function(state = initState, action) {
     const { type, data } = action;
     switch(type) {
+        case SIGNING_OUT:
+            return {
+                ...state,
+                token: undefined
+            }
         case SINGING_IN:
             return {
                 ...state,

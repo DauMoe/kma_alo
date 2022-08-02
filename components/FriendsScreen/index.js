@@ -5,11 +5,13 @@ import Contacts from "react-native-contacts";
 import {Avatar, Button, withTheme} from "react-native-paper";
 import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 import {GET_LIST_FRIENDS, GET_RECOMMEND_FRIENDS} from "../API_Definition";
+import { useIsFocused } from "@react-navigation/native";
 
 const FriendsScreen = function(props) {
     const { colors } = props.theme;
     const [contacts, setContacts] = useState([]);
     const [listFriends, setListFriends] = useState([]);
+    const isFocus = useIsFocused();
 
     const RecommendWrapper = styled(View)`
       padding: 20px 10px;
@@ -32,7 +34,7 @@ const FriendsScreen = function(props) {
          * @Second: display new contact from response data
          */
 
-        if(!__DEV__) {
+        if(__DEV__) {
             PermissionsAndroid.request(
                 PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
                 {
@@ -49,7 +51,7 @@ const FriendsScreen = function(props) {
                         setContacts(c);
                         const GetListFriends      = axiosConfig(GET_LIST_FRIENDS, "get");
                         const GetRecommendFriends = axiosConfig(GET_RECOMMEND_FRIENDS, "post", {
-                            list_contacts: c
+                            list_contacts: []
                         });
                         Promise.all([GetListFriends, GetRecommendFriends])
                             .then(r => {
@@ -66,7 +68,7 @@ const FriendsScreen = function(props) {
                 console.error("Grant per err: ", e);
             });
         }
-    }, []);
+    }, [isFocus]);
 
     const ShowMoreRecommendFriend = function() {
 
