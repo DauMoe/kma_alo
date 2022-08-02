@@ -53,7 +53,7 @@ const Authenticator = function(state = initState, action) {
                     loaded      : true,
                     error       : true,
                     error_code  : 402,
-                    error_msg   : `Can't connect to server (${state.baseUrl})`,
+                    error_msg   : `${err.message} || ${JSON.stringify(err)}`,
                     token       : undefined
                 }
             }

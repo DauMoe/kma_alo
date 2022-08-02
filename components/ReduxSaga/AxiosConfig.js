@@ -44,7 +44,9 @@ export const axiosConfig = function(endpoint, method, config) {
     const instance = axios.create({
         baseURL: DEFAULT_BASE_URL
     });
-    instance.defaults.headers.common['Authorization'] = `Bearer ${TOKEN}`;
+    if (TOKEN) {
+        instance.defaults.headers.common['Authorization'] = `Bearer ${TOKEN}`;
+    }
     switch(method.toUpperCase()) {
         case "GET":
             return instance.get(endpoint, config);

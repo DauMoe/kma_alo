@@ -85,9 +85,9 @@ const CreateNewAccount = styled(Text)`
 const LoginScreen = function(props) {
     const navigation                = useNavigation();
     const {width, height}           = Dimensions.get("window");
-    const [username, setUsername]   = useState("daumoe");
+    const [username, setUsername]   = useState(__DEV__ ? "daumoe" : "");
     const [userErr, setUserErr]     = useState("");
-    const [password, setPassword]   = useState("123");
+    const [password, setPassword]   = useState(__DEV__ ? "123" : "");
     const [passErr, setPassErr]     = useState("");
     const [showPass, setPlainPass]  = useState(false);
     const authenticator             = useSelector(state => state.Authenticator);
@@ -143,7 +143,7 @@ const LoginScreen = function(props) {
                                 backgroundColor: "white"
                             }}
                             />
-                        <HelperText type="error" visible={authenticator.error_code === 401}>{authenticator.error_msg}</HelperText>
+                        {authenticator.error_code === 401 && <HelperText type="error" visible>{authenticator.error_msg}</HelperText>}
                     </View>
 
                     <View style={{marginTop: 20}}>
@@ -159,7 +159,7 @@ const LoginScreen = function(props) {
                                 backgroundColor: "white"
                             }}
                             />
-                        <HelperText type="error" visible={authenticator.error_code !== 401}>{authenticator.error_msg}</HelperText>
+                        {authenticator.error_code !== 401 && <HelperText type="error" visible>{authenticator.error_msg}</HelperText>}
                     </View>
 
                     <View style={{marginTop: 5}}>

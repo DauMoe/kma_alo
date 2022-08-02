@@ -32,46 +32,40 @@ const FriendsScreen = function(props) {
          * @Second: display new contact from response data
          */
 
-        PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
-            {
-                title: "Contacts Permission",
-                message:
-                    "This app would like to view your contacts.",
-                buttonNeutral: "Ask Me Later",
-                buttonNegative: "Cancel",
-                buttonPositive: "Allow"
-            }
-        ).then(r => {
-            Contacts.getAll()
-                .then(c => {
-                    setContacts(c);
-                })
-                .catch(e => {
-                    console.error("C: ", e);
-                })
-        }).catch(e => {
-            console.error("Grant per err: ", e);
-        });
-    }, []);
-
-    useEffect(function() {
-        const GetListFriends      = axiosConfig(GET_LIST_FRIENDS, "get");
-        const GetRecommendFriends = axiosConfig(GET_RECOMMEND_FRIENDS, "post", {
-          list_contacts: []
-        });
-        Promise.all([GetListFriends, GetRecommendFriends])
-            .then(r => {
-                setListFriends(r[0].data.data.list_friends);
-            })
-            .catch(e => {
-                console.error(e.response);
+        if(!__DEV__) {
+            PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
+                {
+                    title: "Contacts Permission",
+                    message:
+                        "This app would like to view your contacts.",
+                    buttonNeutral: "Ask Me Later",
+                    buttonNegative: "Cancel",
+                    buttonPositive: "Allow"
+                }
+            ).then(r => {
+                Contacts.getAll()
+                    .then(c => {
+                        setContacts(c);
+                        const GetListFriends      = axiosConfig(GET_LIST_FRIENDS, "get");
+                        const GetRecommendFriends = axiosConfig(GET_RECOMMEND_FRIENDS, "post", {
+                            list_contacts: c
+                        });
+                        Promise.all([GetListFriends, GetRecommendFriends])
+                            .then(r => {
+                                setListFriends(r[0].data.data.list_friends);
+                            })
+                            .catch(e => {
+                                console.error(e.response);
+                            });
+                    })
+                    .catch(e => {
+                        console.error("C: ", e);
+                    })
+            }).catch(e => {
+                console.error("Grant per err: ", e);
             });
-        // axiosConfig(GET_LIST_FRIENDS, "get")
-        //     .then(r => {
-        //         setListFriends(r.data.data.list_friends);
-        //     })
-        //     .catch(e => console.log(e));
+        }
     }, []);
 
     const ShowMoreRecommendFriend = function() {

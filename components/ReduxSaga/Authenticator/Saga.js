@@ -24,7 +24,6 @@ function* LocalLogin({data}) {
         const LocalLoginCall    = call(axiosConfig, LOCAL_LOGIN, "post", reqBody);
         const [LocalLoginData]  = yield all([LocalLoginCall]);
         const token             = LocalLoginData.data.data.token;
-        console.log(SaveToken);
         yield call(SaveToken, token);
         yield put(LocalAuthenSuccess(token));
     } catch(e) {
