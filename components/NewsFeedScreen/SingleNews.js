@@ -1,6 +1,6 @@
-import React from "react";
+import React, {useState} from "react";
 import { View, Text, Image } from "react-native";
-import {Avatar, Button, IconButton, withTheme} from "react-native-paper";
+import {Avatar, Button, IconButton, Modal, Portal, Provider, withTheme} from "react-native-paper";
 import {useDispatch, useSelector} from "react-redux";
 import styled from "styled-components/native";
 import AutoHeightWebView from "react-native-autoheight-webview";
@@ -81,7 +81,7 @@ const CommentButton = styled(Button)`
 `; 
 
 const SingleNews = function(props) {
-    const { width, height, showComment, data }  = props;
+    const { width, height, showComment, data, ConfirmDeletePost }  = props;
     const { colors }                            = props.theme;
     const dispatch                              = useDispatch();
     const { token }                             = useSelector(state => state.Authenticator);
@@ -90,10 +90,6 @@ const SingleNews = function(props) {
     const LoadComments = function(postId) {
         // dispatch(GetComments(postId));
         showComment(true);
-    }
-
-    const DeletePost = function(postId) {
-
     }
 
     const GenContent = function(content) {
@@ -124,9 +120,10 @@ const SingleNews = function(props) {
                     data.author_id === uid &&
                     <View>
                         <IconButton
-                            icon="dots-vertical"
-                            size={18}
-                            onPress={() => DeletePost(data.post_id)}
+                            icon="delete-empty"
+                            color={"#9d0b96"}
+                            size={22}
+                            onPress={() => ConfirmDeletePost(data.post_id)}
                         />
                     </View>
                 }

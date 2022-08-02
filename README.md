@@ -10,6 +10,7 @@
 - [x] Create Signup UI
 - [x] **Complete login scenario**
 - [ ] Save current offset in new feeds when refresh or load more post
+- [ ] **Confirm delete post modal**
 
 ## Design  
  - [NewsFeed Design](https://dribbble.com/tags/newsfeed)
