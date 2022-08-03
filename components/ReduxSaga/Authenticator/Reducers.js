@@ -53,22 +53,12 @@ const Authenticator = function(state = initState, action) {
             }
         case SIGNED_IN_FAIL:
             const { err } = data;
-            if (!err.status) {
-                return {
-                    ...state,
-                    loaded      : true,
-                    error       : true,
-                    error_code  : 402,
-                    error_msg   : `${err.message} || ${JSON.stringify(err)}`,
-                    token       : undefined
-                }
-            }
             return {
                 ...state,
                 loaded      : true,
                 error       : true,
-                error_code  : err.response.status,
-                error_msg   : err.response.data.description,
+                error_code  : err.status,
+                error_msg   : err.data.description,
                 token       : undefined
             }
         case SIGNED_OUT_SUCESS:

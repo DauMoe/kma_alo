@@ -10,7 +10,7 @@ function* GetAllChats() {
         const [GetAllChatsData] = yield all([GetAllChatsCall]);
         yield put(GetListChatsSuccess(GetAllChatsData.data.data));
     } catch(e) {
-        console.error("SAGA GetAllChats: ", e);
+        console.error("SAGA GetAllChats: ", e.response.data);
         yield put(GetListChatsFail(e));
     }
 }
@@ -32,8 +32,8 @@ function* GetChatHistory({data}) {
         const [GetChatHistoryData] = yield all([GetChatHistoryCall]);
         yield put(GetChatHistorySuccess(GetChatHistoryData.data.data));
     } catch(e) {
-        console.error("SAGA GetChatHistory: ", e);
-        yield put(GetListChatsFail(e));
+        console.error("SAGA GetChatHistory: ", e.response.data);
+        yield put(GetListChatsFail(e.response));
     }
 }
 

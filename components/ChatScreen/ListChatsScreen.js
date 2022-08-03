@@ -17,7 +17,8 @@ const Theme = {
     primaryColor: "#FFFFFF",
     secondaryColor: "#DCDCDC",
     primaryTextColor: "#333333",
-    secondaryTextColor: "#878787"
+    secondaryTextColor: "#878787",
+    helpTextColor: "#b2b2b2"
 }
 
 const ChatHeadSectionWrapper = styled(View)`
@@ -82,6 +83,7 @@ const PreviewMessage = styled(Text)`
 `;
 
 const MessageTime = styled(Text)`
+  color: ${Theme.helpTextColor};
 `;
 
 const LoadingChatScreen = function() {
@@ -138,23 +140,26 @@ const ListChatsScreen = function(props) {
 
     const SearchChat = function(e) {
         setSearchChat(e??"");
-        const query = e  ?? "";
-        if (query === "") {
-            setListChat(data);
-            return;
-        }
-        axiosConfig(SEARCH_FRIEND, "get", {
-            params: {
-                q: query
+        if (__DEV__) {
+            const query = e  ?? "";
+            if (query === "") {
+                setListChat(data);
+                return;
             }
-        })
-          .then(r => {
-              console.log(r.data.data);
-              setListChat(r.data.data.result);
-          })
-          .catch(e => console.log(e.response));
-        // const FilterChat = lodash.filter(data, chat => chat.display_name.toLowerCase().indexOf(e.toLowerCase()) > -1);
-        // setListChat(FilterChat);
+            axiosConfig(SEARCH_FRIEND, "get", {
+                params: {
+                    q: query
+                }
+            })
+                .then(r => {
+                    console.log(r.data.data);
+                    setListChat(r.data.data.result);
+                })
+                .catch(e => console.log(e.response));
+        } else {
+            const FilterChat = lodash.filter(data, chat => chat.display_name.toLowerCase().indexOf(e.toLowerCase()) > -1);
+            setListChat(FilterChat);
+        }
     }
 
     useEffect(function() {
@@ -203,7 +208,7 @@ const ListChatsScreen = function(props) {
                                     ? <Avatar.Text size={50} label={chat.receiver_avatar_text} style={{ marginRight: 15 }} />
                                     : <Image source={{ uri: DEFAULT_BASE_URL + chat.receiver_avatar }} style={{ width: 50, height: 50, borderRadius: 99999, marginRight: 15 }} />
                                   }
-                                  {searchChat !== "" &&
+                                  {(searchChat !== "" || !__DEV__) &&
                                     <PreviewChatContent>
                                       <ChatUsername>{chat.display_name}</ChatUsername>
                                       <PreviewMessageWrapper>

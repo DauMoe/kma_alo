@@ -1,17 +1,20 @@
 import React, {useEffect, useState} from "react";
-import {View, Text, TextInput, PermissionsAndroid, ScrollView, Image} from "react-native";
+import {View, Text, TextInput, PermissionsAndroid, ScrollView, Image, Dimensions} from "react-native";
 import styled from "styled-components/native";
 import Contacts from "react-native-contacts";
-import {Avatar, Button, withTheme} from "react-native-paper";
+import {ActivityIndicator, Avatar, Button, withTheme} from "react-native-paper";
 import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 import {GET_LIST_FRIENDS, GET_RECOMMEND_FRIENDS} from "../API_Definition";
 import { useIsFocused } from "@react-navigation/native";
+import FriendSkeleton from "./FriendSkeleton";
 
 const FriendsScreen = function(props) {
     const { colors } = props.theme;
     const [contacts, setContacts] = useState([]);
     const [listFriends, setListFriends] = useState([]);
+    const [isLoading, setLoading] = useState(true);
     const isFocus = useIsFocused();
+    const { width, height } = Dimensions.get("window");
 
     const RecommendWrapper = styled(View)`
       padding: 20px 10px;
@@ -59,13 +62,16 @@ const FriendsScreen = function(props) {
                             })
                             .catch(e => {
                                 console.error(e.response);
-                            });
+                            })
+                            .finally(() => setLoading(false));
                     })
                     .catch(e => {
                         console.error("C: ", e);
+                        setLoading(false);
                     })
             }).catch(e => {
                 console.error("Grant per err: ", e);
+                setLoading(false);
             });
         }
     }, [isFocus]);
@@ -75,12 +81,13 @@ const FriendsScreen = function(props) {
     }
 
   if (!__DEV__) {
-    return (
-      <View style={{display: "flex", alignItems: "center", justifyContent: "center", height: height}}>
-        <Text style={{fontFamily: "NunitoSemiBold", color: "black"}}>Sorry, this feature is developing!</Text>
-      </View>
-    )
+      return (
+          <View style={{display: "flex", alignItems: "center", justifyContent: "center", height: height}}>
+              <Text style={{fontFamily: "NunitoSemiBold", color: "black"}}>Sorry, this feature is developing!</Text>
+          </View>
+      )
   }
+    if (isLoading) return <FriendSkeleton/>;
 
     return(
         <ScrollView>
@@ -123,16 +130,6 @@ const FriendsScreen = function(props) {
             </FriendsWrapper>
         </ScrollView>
     )
-
-    // return(
-    //     <ScrollView>
-    //         {contacts.map((contact, index) => {
-    //             return(
-    //               <Text key={index} style={{color: "black"}}>{JSON.stringify(contact.phoneNumbers[0])}</Text>
-    //             );
-    //         })}
-    //     </ScrollView>
-    // );
 }
 
 export default withTheme(FriendsScreen);
