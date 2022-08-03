@@ -8,11 +8,11 @@
 - [ ] Xem danh sách bạn bè + gợi ý bạn bè từ danh bạ
 - [x] Cập nhật thông tin cá nhân (username, email, sdt, ho  và tên)
 - [ ] Cập nhật thông tin danh bạ
-- [ ] Đăng bài (ảnh, chữ, video)
+- [x] Đăng bài (ảnh, chữ, video)
 - [ ] Thả reaction, comment
 - [ ] Tìm bạn bè qua sdt hoặc email, username(tìm, kết bạn)
 - [ ] Quên mk
-- [ ] Search friend in chat
+- [ ] Check email hoặc sdt tồn tại chưa khi tạo account 
 
 # Incoming (fee apply)
  - [ ] Change password

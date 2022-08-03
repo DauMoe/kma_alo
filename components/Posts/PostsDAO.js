@@ -21,7 +21,7 @@ exports.DeletePostDAO = async(post_id, uid) => {
     const FUNC_NAME = `DeletePostDAO${FILE_NAME}`;
     let SQL, SQL_BIND = "";
     try {
-        SQL             = "SELECT FROM POSTS WHERE POST_ID = ? AND AUTHOR_ID = ?";
+        SQL             = "SELECT * FROM POSTS WHERE POST_ID = ? AND AUTHOR_ID = ?";
         SQL_BIND        = mysql.format(SQL, [post_id, uid]);
         const result    = await query(SQL_BIND);
         if (result.length === 0) return DB_RESP(403, "You are not allowed to delete this post");
