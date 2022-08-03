@@ -48,7 +48,7 @@ exports.RecommendNewFriends = async(req, resp) => {
                     recommend_friends: respData
                 });
             } else {
-                RespCustomCode(resp, undefined, result.code, result.msg);
+                RespCustomCode(resp, undefined, result.msg, result.code);
             }
         }
 
@@ -88,7 +88,7 @@ exports.GetListFriends = async(req, resp) => {
                 list_friends: respData
             });
         } else {
-            RespCustomCode(resp, undefined, result.code, result.msg);
+            RespCustomCode(resp, undefined, result.msg, result.code);
         }
     } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
@@ -120,7 +120,7 @@ exports.SearchFriend = async(req, resp) => {
                 result: respData
             });
         } else {
-            RespCustomCode(resp, undefined, result.code, result.msg);
+            RespCustomCode(resp, undefined, result.msg, result.code);
         }
     } catch(e) {
         CatchErr(resp, e, FUNC_NAME);

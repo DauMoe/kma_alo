@@ -1,7 +1,7 @@
 const {query} = require("../../Utils/DB_connection");
 const mysql = require("mysql");
 const {v4: uuidv4} = require("uuid");
-const { DB_RESP, DB_ERR } = require("../../Utils/UtilsFunction");
+const { DB_RESP, DB_ERR, CatchErr} = require("../../Utils/UtilsFunction");
 
 const FILE_NAME = " - UsersDAO.js";
 
@@ -115,6 +115,25 @@ exports.UpdateAvatarDAO = async(uid, path) => {
         SQL_BIND        = mysql.format(SQL, [path, uid]);
         await query(SQL_BIND);
         return DB_RESP(200, result);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
+
+exports.ForgetPasswordDAO = async(email) => {
+    const FUNC_NAME = `ForgetPasswordDAO${FILE_NAME}`;
+    let SQL, SQL_BIND = "";
+    try {
+        SQL             = "SELECT * FROM USERS WHERE EMAIL = ?";
+        SQL_BIND        = mysql.format(SQL, [email]);
+        const result    = await query(SQL_BIND);
+        if (result.length === 0) return DB_RESP(402, "User is not existed");
+        const link_id   = uuidv4();
+        SQL             = "UPDATE USERS SET FORGET_PASSWORD_ID = ? WHERE EMAIL = ?";
+        SQL_BIND        = mysql.format(SQL, [link_id, email]);
+        await query(SQL_BIND);
+        return DB_RESP(200, link_id);
     } catch (e) {
         DB_ERR(FUNC_NAME, SQL_BIND, e.message);
         return DB_RESP(503, e.message);

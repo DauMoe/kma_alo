@@ -11,8 +11,7 @@
 - [x] Đăng bài (ảnh, chữ, video)
 - [ ] Thả reaction, comment
 - [ ] Tìm bạn bè qua sdt hoặc email, username(tìm, kết bạn)
-- [ ] Quên mk
-- [ ] Check email hoặc sdt tồn tại chưa khi tạo account 
+- [x] Quên mk
 
 # Incoming (fee apply)
  - [ ] Change password

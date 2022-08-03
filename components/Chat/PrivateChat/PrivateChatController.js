@@ -41,7 +41,7 @@ exports.GetAllPrivateChatID = async(req, resp) => {
             // }
             SuccessResp(resp, respResult);
         } else {
-            RespCustomCode(resp, undefined, result.code, result.msg);
+            RespCustomCode(resp, undefined, result.msg, result.code);
         }
     } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
@@ -58,7 +58,7 @@ exports.CreateNewPrivateChat = async(req, resp) => {
         if (result.code === 200) {
             SuccessResp(resp);
         } else {
-            RespCustomCode(resp, undefined, result.code, result.msg);
+            RespCustomCode(resp, undefined, result.msg, result.code);
         }
     } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
@@ -108,7 +108,7 @@ exports.GetMessageHistory = async(req, resp) => {
                 limit: limit
             });
         } else {
-            RespCustomCode(resp, undefined, result.code, result.msg);
+            RespCustomCode(resp, undefined, result.msg, result.code);
         }
     } catch (e) {
         CatchErr(resp, e, FUNC_NAME);

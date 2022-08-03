@@ -1,13 +1,14 @@
 const bcrypt = require("bcrypt");
 const { GetString } = require("../../Utils/GetValue");
-const { CatchErr, SuccessResp, RespCustomCode, SALT_ROUND, JWT_SECRET_KEY, HOST_ADDRESS, writeFile} = require("../../Utils/UtilsFunction");
+const { CatchErr, SuccessResp, RespCustomCode, SALT_ROUND, JWT_SECRET_KEY, HOST_ADDRESS, writeFile, CREATE_TRANSPORTER} = require("../../Utils/UtilsFunction");
 const { NewLocalUserDAO, GetUserInfoDAO, ActiveAccountDAO, UpdateUserInfoDAO,
-    UpdateAvatarDAO
+    UpdateAvatarDAO, ForgetPasswordDAO
 } = require("./UsersDAO");
 const jwt = require("jsonwebtoken");
 const path = require("path");
-// const multer = require("multer");
 const fs = require("fs");
+require("dotenv").config();
+// const multer = require("multer");
 // const storage = multer.diskStorage({
 //     filename: function (req, file, cb) {
 //         cb(null, Date.now() + path.extname(file.originalname))
@@ -57,7 +58,7 @@ exports.NewLocalUser = async (req, resp) => {
                 from    : process.env.EMAIL,
                 to      : email,
                 subject : "XÁC THỰC TÀI KHOẢN",
-                html    : `<h1>HALO</h1><p>Click </p><a href="${HOST_ADDRESS}/verify/${result.msg}" target="_blank">here</a><p> to active your account</p><h3>We're very happy when you're a part of our network!</h3><h2 style="color: #B02D2D, text-align: right">~ Be happy <3 ~</h2>`
+                html    : `<h1>HALO</h1><p>Click </p><a href="${HOST_ADDRESS}verify/${result.msg}" target="_blank">here</a><p> to active your account</p><h3>We're very happy when you're a part of our network!</h3><h2>~ Be happy <3 ~</h2>`
             });
             SuccessResp(resp, "Check mail to active account!");
         } else {
@@ -122,7 +123,7 @@ exports.GetUserInfo = async(req, resp) => {
             //     SuccessResp(resp, {user_data: UserData});
             // }
         } else {
-            RespCustomCode(resp, undefined, result.code, result.msg);
+            RespCustomCode(resp, undefined, result.msg, result.code);
         }
     } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
@@ -158,10 +159,10 @@ exports.UpdateUserInfo = async(req, resp) => {
                 };
                 SuccessResp(resp, {user_data: UserData});
             } else {
-                RespCustomCode(resp, undefined, result.code, result.msg);
+                RespCustomCode(resp, undefined, result.msg, result.code);
             }
         } else {
-            RespCustomCode(resp, undefined, result.code, result.msg);
+            RespCustomCode(resp, undefined, result.msg, result.code);
         }
     } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
@@ -183,44 +184,8 @@ exports.UpdateAvatar = async function(req, resp) {
             });
             fs.unlink(path.join(__dirname, "..", "..", "public", "avatar", result.msg[0].AVATAR_LINK), () => {});
         } else {
-            RespCustomCode(resp, undefined, result.code, result.msg);
+            RespCustomCode(resp, undefined, result.msg, result.code);
         }
-        // fs.writeFile(path.join(__dirname, "..", "..", "public", "avatar", pathImage) , avatarBase64, async function(err) {
-        //     if (err) {
-        //         RespCustomCode(resp, undefined, err, 405);
-        //         return;
-        //     }
-        //     const result = await UpdateAvatarDAO(uid, pathImage);
-        //     if (result.code === 200) {
-        //         try {
-        //             fs.unlinkSync(path.join(__dirname, "..", "..", "public", "avatar", result.msg[0].AVATAR_LINK));
-        //         } catch(e) {}
-        //         SuccessResp(resp, {
-        //             avatarBase64: avatarBase64
-        //         })
-        //     } else {
-        //         RespCustomCode(resp, undefined, result.code, result.msg);
-        //     }
-        // });
-
-        // avatarUpload(req, resp, async function(err) {
-        //     if (err instanceof  multer.MulterError) {
-        //         RespCustomCode(resp, undefined, "Have error when upload file", 500);
-        //     } else if (err) {
-        //         RespCustomCode(resp, undefined, err, 400);
-        //     } else {
-        //         console.log(req.file);
-        //         const pathFile = "/avatar/" + req.file.filename;
-        //         const result = await UpdateAvatarDAO(uid, pathFile);
-        //         if (result.code === 200) {
-        //             SuccessResp(resp, {
-        //                 avatar_path: pathFile
-        //             })
-        //         } else {
-        //             RespCustomCode(resp, result.code, result.msg);
-        //         }
-        //     }
-        // });
     } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
     }
@@ -228,4 +193,30 @@ exports.UpdateAvatar = async function(req, resp) {
 
 exports.TokenValid = async(req, resp) => {
     SuccessResp(resp, undefined);
+}
+
+exports.ForgetPassword = async(req, resp) => {
+    const FUNC_NAME = "ForgetPassword" + FILE_NAME;
+    const uid       = req.app.locals.uid;
+    const reqData   = req.body;
+    try {
+        const email     = GetString(reqData, "email");
+        const result    = await ForgetPasswordDAO(email);
+        // console.log(result);
+        if (result.code === 200) {
+            const ET = CREATE_TRANSPORTER();
+            ET.sendMail({
+                from    : process.env.EMAIL,
+                to      : email,
+                subject : "RESET PASSWORD",
+                html    : `<p>Click <a href="${HOST_ADDRESS}reset_password/${result.msg}" target="_blank">here</a> to reset your password</p>`,
+            });
+            SuccessResp(resp, undefined, "Reset password email has been sent to you!");
+        } else {
+            console.log("Here");
+            RespCustomCode(resp, undefined, result.msg, result.code);
+        }
+    } catch(e) {
+        CatchErr(resp, e, FUNC_NAME);
+    }
 }
