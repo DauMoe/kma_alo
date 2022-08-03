@@ -81,7 +81,7 @@ const CommentButton = styled(Button)`
 `; 
 
 const SingleNews = function(props) {
-    const { width, height, showComment, data, ConfirmDeletePost }  = props;
+    const { width, height, showComment, data, ConfirmDeletePost, openDeleteModal }  = props;
     const { colors }                            = props.theme;
     const dispatch                              = useDispatch();
     const { token }                             = useSelector(state => state.Authenticator);
@@ -123,7 +123,7 @@ const SingleNews = function(props) {
                             icon="delete-empty"
                             color={"#9d0b96"}
                             size={22}
-                            onPress={() => ConfirmDeletePost(data.post_id)}
+                            onPress={() => openDeleteModal(true, data.post_id)}
                         />
                     </View>
                 }

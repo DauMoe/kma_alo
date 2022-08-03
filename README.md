@@ -11,6 +11,7 @@
 - [x] **Complete login scenario**
 - [ ] Save current offset in new feeds when refresh or load more post
 - [ ] **Confirm delete post modal**
+- [ ] **Show notification in bottom navigation when having new message**
 
 ## Design  
  - [NewsFeed Design](https://dribbble.com/tags/newsfeed)
