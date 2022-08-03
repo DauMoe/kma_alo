@@ -57,7 +57,11 @@ const NewsFeedScreen = function(props) {
             }
         })
             .then(r => {
-                setPost([...listPost, ...r.data.data.list_post]);
+                if (refresh) {
+                    setPost(r.data.data.list_post);
+                } else {
+                    setPost([...listPost, ...r.data.data.list_post]);
+                }
                 currentState.current.offset = r.data.data.offset;
                 currentState.current.limit  = r.data.data.limit;
             })
@@ -73,14 +77,6 @@ const NewsFeedScreen = function(props) {
     useEffect(function() {
         FetchPost();
     }, [isFocus]);
-
-    if (!__DEV__) {
-      return (
-        <View style={{display: "flex", alignItems: "center", justifyContent: "center", height: height}}>
-          <Text style={{fontFamily: "NunitoSemiBold", color: "black"}}>Sorry, this feature is developing!</Text>
-        </View>
-      )
-    }
 
     return(
         <NewsFeedWrapper>

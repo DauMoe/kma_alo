@@ -117,7 +117,7 @@ const SingleNews = function(props) {
                     }
                 </View>
                 {
-                    data.author_id === uid &&
+                    __DEV__ && data.author_id === uid &&
                     <View>
                         <IconButton
                             icon="delete-empty"
@@ -165,8 +165,8 @@ const SingleNews = function(props) {
             />
 
             <NewsInteractive>
-                <ReactionButton onPress={e => console.log("Like")} onLongPress={e => console.log("Hold to choose")} uppercase={false} icon='thumb-up'>Like</ReactionButton>
-                <CommentButton onPress={_ => LoadComments(1)} uppercase={false} icon='message-reply'>Comment</CommentButton>
+                <ReactionButton onPress={e => console.log("Like")} onLongPress={e => console.log("Hold to choose")} uppercase={false} icon='thumb-up'>{data.reactions.length} {data.reactions.length < 2 ? "like" : "likes"}</ReactionButton>
+                <CommentButton onPress={_ => LoadComments(1)} uppercase={false} icon='message-reply'>0 comment</CommentButton>
             </NewsInteractive>
         </NewsWrapper>
     );

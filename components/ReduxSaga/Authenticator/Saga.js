@@ -27,8 +27,8 @@ function* LocalLogin({data}) {
         yield call(SaveToken, token);
         yield put(LocalAuthenSuccess(token));
     } catch(e) {
-        console.error("SAGA LocalLogin: ", e.message);
-        yield put(LocalAuthenFail(e));
+        console.error("SAGA LocalLogin: ", e.response.data);
+        yield put(LocalAuthenFail(e.response));
     }
 }
 
