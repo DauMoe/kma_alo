@@ -78,7 +78,7 @@ const CommentButton = styled(Button)`
     background-color: white;
     margin-left: 5px;
     border-radius: 5px;
-`; 
+`;
 
 const SingleNews = function(props) {
     const { width, height, showComment, data, ConfirmDeletePost, openDeleteModal }  = props;
@@ -110,14 +110,17 @@ const SingleNews = function(props) {
                 <View style={{flex: 1}}>
                     <NewsUsername theme={colors}>{data.display_name}</NewsUsername>
                     {
-                        moment.duration(moment().diff(moment(data.created_at))).asHours() < 1
-                            ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asMinutes())}m ago</PostTimestamp>
-                            : moment.duration(moment().diff(moment(data.created_at))).asHours() < 24 ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asHours())}h ago</PostTimestamp>
+                        moment.duration(moment().diff(moment(data.created_at))).asMinutes() < 1
+                          ? <PostTimestamp>Just now</PostTimestamp>
+                            :moment.duration(moment().diff(moment(data.created_at))).asHours() < 1
+                          ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asMinutes())}m ago</PostTimestamp>
+                            : moment.duration(moment().diff(moment(data.created_at))).asHours() < 24
+                          ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asHours())}h ago</PostTimestamp>
                             : <PostTimestamp theme={colors}>Posted at {moment(data.created_at).format("MMM DD hh:mm A")}</PostTimestamp>
                     }
                 </View>
                 {
-                    __DEV__ && data.author_id === uid &&
+                    data.author_id === uid &&
                     <View>
                         <IconButton
                             icon="delete-empty"
@@ -161,12 +164,18 @@ const SingleNews = function(props) {
                 style={{
                     marginTop: 5
                 }}
+                customStyle={`
+                  * {
+                    color: black
+                  }
+                `}
                 source={{html: GenContent(data.content)}}
             />
 
             <NewsInteractive>
                 <ReactionButton onPress={e => console.log("Like")} onLongPress={e => console.log("Hold to choose")} uppercase={false} icon='thumb-up'>{data.reactions.length} {data.reactions.length < 2 ? "like" : "likes"}</ReactionButton>
-                <CommentButton onPress={_ => LoadComments(1)} uppercase={false} icon='message-reply'>0 comment</CommentButton>
+                {/*<CommentButton onPress={_ => LoadComments(1)} uppercase={false} icon='message-reply'>0 comment</CommentButton>*/}
+                <CommentButton onPress={_ => console.log("comment")} uppercase={false} icon='message-reply'>0 comment</CommentButton>
             </NewsInteractive>
         </NewsWrapper>
     );

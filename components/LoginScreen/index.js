@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";;
 import styled from "styled-components/native";
-import { View, Text, TextInput, KeyboardAvoidingView, Dimensions } from "react-native";
+import { View, Text, TextInput, KeyboardAvoidingView, Dimensions, ToastAndroid } from "react-native";
 import { Button, HelperText } from "react-native-paper";
 import {CREATE_ACCOUNT_SCREEN, FORGET_PASSWORD_SCREEN, HOST_TABLE, MAIN_SCREEN} from "../Definition";
 import BgImage from "./../Media/login_background.svg";
@@ -86,9 +86,7 @@ const LoginScreen = function(props) {
     const navigation                = useNavigation();
     const {width, height}           = Dimensions.get("window");
     const [username, setUsername]   = useState(__DEV__ ? "daumoe" : "");
-    const [userErr, setUserErr]     = useState("");
     const [password, setPassword]   = useState(__DEV__ ? "123" : "");
-    const [passErr, setPassErr]     = useState("");
     const [showPass, setPlainPass]  = useState(false);
     const authenticator             = useSelector(state => state.Authenticator);
     const dispatch                  = useDispatch();
@@ -102,17 +100,13 @@ const LoginScreen = function(props) {
     }
 
     const Authenticate = function() {
-        if (username === "") {
-            setUserErr("Enter your username or email");
+        if (username.trim() === "") {
+            ToastAndroid.show("Enter your username or email", ToastAndroid.SHORT);
             return;
-        } else {
-            setUserErr("");
         }
-        if (password === "") {
-            setPassErr("Password is required");
+        if (password.trim() === "") {
+            ToastAndroid.show("Password is required", ToastAndroid.SHORT);
             return;
-        } else {
-            setPassErr("");
         }
         dispatch(LocalLoginAction(username, password));
     }
@@ -164,9 +158,11 @@ const LoginScreen = function(props) {
                         </HelperText>}
                     </View>
 
-                    <View style={{marginTop: 5}}>
-                        <ForgetPassword onPress={GotoForgetpasswordScreen}>Forget password?</ForgetPassword>
-                    </View>
+                    {__DEV__ &&
+                      <View style={{marginTop: 5}}>
+                          <ForgetPassword onPress={GotoForgetpasswordScreen}>Forget password?</ForgetPassword>
+                      </View>
+                    }
 
                     <View style={{marginTop: 20}}>
                         <Button

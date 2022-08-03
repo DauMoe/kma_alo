@@ -30,3 +30,4 @@
 ## Socket idea:  
  - [x] **(CURRENT)** Use `rooms` to make private chat
  - **Password keystone**: 1234567
+ - Build APK: assembleRelease

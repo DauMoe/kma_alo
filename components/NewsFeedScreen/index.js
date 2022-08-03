@@ -70,7 +70,7 @@ const NewsFeedScreen = function(props) {
                 currentState.current.limit  = r.data.data.limit;
             })
             .catch(e => {
-                console.error(Object.keys(e));
+                // console.error(Object.keys(e));
                 console.error(e.response)
             })
             .finally(() => {
@@ -86,42 +86,45 @@ const NewsFeedScreen = function(props) {
     }
 
     const DeletePost = () => {
-        console.log("F; ", openModal.post_id)
         axiosConfig(DELETE_POSTS, "delete", {
             data: {
                 post_id: openModal.post_id
             }
         })
-            .then(r => FetchPost(true))
+            .then(r => {
+                setModalState(false, -1);
+                FetchPost(true);
+            })
             .catch(e => {
-                console.error(e.response.config)
                 console.error(e.response.data);
             })
     }
 
     useEffect(function() {
-        FetchPost();
+        FetchPost(true);
     }, [isFocus]);
 
     return(
         <>
             <NewsFeedWrapper>
                 <FlatList
-                    data={listPost}
-                    keyExtractor={(item, index) => "_post_" + index}
-                    onRefresh={() => FetchPost(true)}
-                    refreshing={isLoading}
-                    // onEndReachedThreshold={30}
-                    // onEndReached={FetchPost}
-                    renderItem={({item, index}) => (
-                        <SingleNews
-                            width={width}
-                            height={height}
-                            data={item}
-                            showComment={openCommentScreen}
-                            openDeleteModal={setModalState}
-                        />
-                    )}
+                  data={listPost}
+                  disableVirtualization={false}
+                  keyExtractor={(item, index) => "_post_" + index}
+                  onRefresh={() => FetchPost(true)}
+                  refreshing={isLoading}
+                  // onEndReachedThreshold={30}
+                  // onEndReached={FetchPost}
+                  ListEmptyComponent={!isLoading && <View style={{height: height, display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center"}}><Text style={{color: colors.text, fontFamily: "NunitoSemiBold"}}>Ops! No post. Let's find some friends</Text></View>}
+                  renderItem={({ item, index }) => (
+                    <SingleNews
+                      width={width}
+                      height={height}
+                      data={item}
+                      showComment={openCommentScreen}
+                      openDeleteModal={setModalState}
+                    />
+                  )}
                 />
                 <CommentsScreen show={openComment}/>
                 <FAB

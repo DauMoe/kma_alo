@@ -149,7 +149,9 @@ const CreatePostScreen = function(props) {
         })
             .then(r => {
                 ToastAndroid.show(r.data.description, ToastAndroid.LONG);
-                navigation.pop();
+                if (navigation.canGoBack()) {
+                    navigation.goBack({state: 1});
+                }
             })
             .catch(e => {
                 setLoading(false);
