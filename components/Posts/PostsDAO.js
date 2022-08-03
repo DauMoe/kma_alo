@@ -35,24 +35,36 @@ exports.DeletePostDAO = async(post_id, uid) => {
     }
 }
 
-exports.GetPostDAO = async(uid, offset, limit) => {
+exports.GetPostDAO = async(uid, offset, limit, ownPost) => {
     const FUNC_NAME = `GetPostDAO${FILE_NAME}`;
     let SQL, SQL_BIND = "";
     try {
-        SQL                 = "SELECT UID_ONE, UID_TWO FROM RELATIONS WHERE UID_ONE = ? OR UID_TWO = ?";
-        SQL_BIND            = mysql.format(SQL, [uid, uid]);
-        const result        = await query(SQL_BIND);
-        let ListFriendIDs   = [];
-        for (const i of result) {
-            if (i.UID_ONE === uid) ListFriendIDs.push(i.UID_TWO);
-            if (i.UID_TWO === uid) ListFriendIDs.push(i.UID_ONE);
+        if (ownPost) {
+            SQL             = "SELECT a.*, b.FIRST_NAME, b.LAST_NAME, b.AVATAR_LINK, b.USERNAME, c.REACT_UID, c.TYPE, c.REACT_ID FROM POSTS a JOIN USERS b ON a.AUTHOR_ID = b.UID LEFT JOIN POST_REACTIONS c ON a.POST_ID = c.POST_ID WHERE a.AUTHOR_ID = ? ORDER BY a.CREATED_AT DESC LIMIT ?,?";
+            SQL_BIND        = mysql.format(SQL, [uid, offset, limit]);
+            const result1   = await query(SQL_BIND);
+            return DB_RESP(200, result1);
+        } else {
+            SQL                 = "SELECT UID_ONE, UID_TWO FROM RELATIONS WHERE UID_ONE = ? OR UID_TWO = ?";
+            SQL_BIND            = mysql.format(SQL, [uid, uid]);
+            const result        = await query(SQL_BIND);
+            let ListFriendIDs   = [];
+            for (const i of result) {
+                if (i.UID_ONE === uid) ListFriendIDs.push(i.UID_TWO);
+                if (i.UID_TWO === uid) ListFriendIDs.push(i.UID_ONE);
+            }
+
+            //Get your post after posted under 24 hours and friends posts + reactions
+            if (ListFriendIDs.length === 0) {
+                SQL             = "SELECT a.*, b.FIRST_NAME, b.LAST_NAME, b.AVATAR_LINK, b.USERNAME, c.REACT_UID, c.TYPE, c.REACT_ID FROM POSTS a JOIN USERS b ON a.AUTHOR_ID = b.UID LEFT JOIN POST_REACTIONS c ON a.POST_ID = c.POST_ID WHERE (a.AUTHOR_ID = ? AND TIMESTAMPDIFF(HOUR, a.CREATED_AT, NOW()) < 24) ORDER BY a.CREATED_AT DESC LIMIT ?,?";
+                SQL_BIND        = mysql.format(SQL, [uid, offset, limit]);
+            } else {
+                SQL             = "SELECT a.*, b.FIRST_NAME, b.LAST_NAME, b.AVATAR_LINK, b.USERNAME, c.REACT_UID, c.TYPE, c.REACT_ID FROM POSTS a JOIN USERS b ON a.AUTHOR_ID = b.UID LEFT JOIN POST_REACTIONS c ON a.POST_ID = c.POST_ID WHERE (a.AUTHOR_ID = ? AND TIMESTAMPDIFF(HOUR, a.CREATED_AT, NOW()) < 24) OR (a.AUTHOR_ID IN ?) ORDER BY a.CREATED_AT DESC LIMIT ?,?";
+                SQL_BIND        = mysql.format(SQL, [uid, [ListFriendIDs], offset, limit]);
+            }
+            const result1   = await query(SQL_BIND);
+            return DB_RESP(200, result1);
         }
-        if (ListFriendIDs.length === 0) return DB_RESP(200, []);
-        //Get your post after posted under 24 hours and friends posts + reactions
-        SQL             = "SELECT a.*, b.FIRST_NAME, b.LAST_NAME, b.AVATAR_LINK, b.USERNAME, c.REACT_UID, c.TYPE, c.REACT_ID FROM POSTS a JOIN USERS b ON a.AUTHOR_ID = b.UID LEFT JOIN POST_REACTIONS c ON a.POST_ID = c.POST_ID WHERE (a.AUTHOR_ID = ? AND TIMESTAMPDIFF(HOUR, a.CREATED_AT, NOW()) < 24) OR (a.AUTHOR_ID IN ?) ORDER BY a.CREATED_AT DESC LIMIT ?,?";
-        SQL_BIND        = mysql.format(SQL, [uid, [ListFriendIDs], offset, limit]);
-        const result1   = await query(SQL_BIND);
-        return DB_RESP(200, result1);
     } catch (e) {
         DB_ERR(FUNC_NAME, SQL_BIND, e.message);
         return DB_RESP(503, e.message);

@@ -11,7 +11,7 @@
 - [x] Đăng bài (ảnh, chữ, video)
 - [ ] Thả reaction, comment
 - [ ] Tìm bạn bè qua sdt hoặc email, username(tìm, kết bạn)
-- [x] Quên mk
+- [ ] Quên mk
 
 # Incoming (fee apply)
  - [ ] Change password

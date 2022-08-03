@@ -9,9 +9,6 @@ module.exports = {
         ignore_watch : ["node_modules", "public"],
         env_production: {
             NODE_ENV: "production"
-        },
-        env_development: {
-          NODE_ENV: "development"
         }
     }]
 }

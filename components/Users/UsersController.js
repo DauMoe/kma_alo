@@ -24,7 +24,7 @@ const FILE_NAME = " - UsersController.js";
 
 exports.VerifyAccount = async(req, resp) => {
     try {
-        const uuid      = GetString(req.params, "uuid");
+        const uuid      = GetString(req.query, "id");
         const result    = await ActiveAccountDAO(uuid);
         if (result.code === 200) {
             resp.send(`
@@ -58,9 +58,9 @@ exports.NewLocalUser = async (req, resp) => {
                 from    : process.env.EMAIL,
                 to      : email,
                 subject : "XÁC THỰC TÀI KHOẢN",
-                html    : `<h1>HALO</h1><p>Click </p><a href="${HOST_ADDRESS}verify/${result.msg}" target="_blank">here</a><p> to active your account</p><h3>We're very happy when you're a part of our network!</h3><h2>~ Be happy <3 ~</h2>`
+                html    : `<h1 style="color: #23ced3">HALO</h1><p>Click <a href="${HOST_ADDRESS}verify?id=${result.msg}" target="_blank">here</a> to active your account</p><h3>We're very happy when you're a part of our network!</h3><h2>~ Be happy <3 ~</h2>`
             });
-            SuccessResp(resp, "Check mail to active account!");
+            SuccessResp(resp, undefined, "Check mail to active account!");
         } else {
             RespCustomCode(resp, undefined, result.msg, result.code);
         }

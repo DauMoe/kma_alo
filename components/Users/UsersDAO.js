@@ -20,7 +20,7 @@ exports.NewLocalUserDAO = async (first_name, last_name, username, mobile, email,
             const {insertId}    = await query(SQL_BIND);
             SQL                 = "UPDATE USERS SET VERIFY_EMAIL_ID = ? WHERE UID = ?";
             const cf_id         = uuidv4();
-            SQL_BIND            = mysql.format(SQL, [insertId, cf_id]);
+            SQL_BIND            = mysql.format(SQL, [cf_id, insertId]);
             await query(SQL_BIND);
             return DB_RESP(200, cf_id);
         }
@@ -66,7 +66,7 @@ exports.ActiveAccountDAO = async(uuid) => {
     const FUNC_NAME = `ActiveAccountDAO${FILE_NAME}`;
     let SQL, SQL_BIND;
     try {
-        SQL         = "UPDATE USERS SET EMAIL_CONFIRMED = 1 WHERE VERIFY_EMAIL_ID = ?";
+        SQL         = "UPDATE USERS SET EMAIL_CONFIRMED = 1, VERIFY_EMAIL_ID = '' WHERE VERIFY_EMAIL_ID = ?";
         SQL_BIND    = mysql.format(SQL, [uuid]);
         await query(SQL_BIND);
         return DB_RESP(200, "Success");

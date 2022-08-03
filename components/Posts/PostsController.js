@@ -1,7 +1,7 @@
 //Write base64 to image: https://stackoverflow.com/questions/6926016/how-can-i-save-a-base64-encoded-image-to-disk
 
 const {CatchErr, writeFile, SuccessResp, RespCustomCode} = require("../../Utils/UtilsFunction");
-const {GetString, GetStringArray, GetNumber, GetJSONArray} = require("../../Utils/GetValue");
+const {GetString, GetStringArray, GetNumber, GetJSONArray, GetBoolean} = require("../../Utils/GetValue");
 const fs = require("fs");
 const path = require("path");
 const {CreatePostDAO, DeletePostDAO, GetPostDAO, ReactionDAO} = require("./PostsDAO");
@@ -59,7 +59,8 @@ exports.GetPost = async(req, resp) => {
     try {
         const offset    = GetNumber(reqData, "offset");
         const limit     = GetNumber(reqData, "limit");
-        const result    = await GetPostDAO(uid, offset, limit);
+        const ownPost   = GetBoolean(reqData, "own_post", false);
+        const result    = await GetPostDAO(uid, offset, limit, ownPost);
         if (result.code === 200) {
             let respData = [], existedPostId = [];
             for (const i of result.msg) {

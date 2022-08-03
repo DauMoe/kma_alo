@@ -7,11 +7,14 @@ const passport      = require("passport");
 const io            = require("socket.io")(httpServer);
 const fs            = require("fs");
 const { HOST_PORT, HOST_ADDRESS } = require("./Utils/UtilsFunction");
-const { PrivateChatSocket, RoomChatSocket } = require("./components/Chat/ChatSocket");
+const { PrivateChatSocket, RoomChatSocket, PrivateCallSocket} = require("./components/Chat/ChatSocket");
 const UsersRouter = require("./components/Users/UsersRouter");
 const PrivateChatRouter = require("./components/Chat/PrivateChat/PrivateChatRouter");
 const FriendsRouter = require("./components/Friends/FriendsRouter");
 const PostsRouter = require("./components/Posts/PostsRouter");
+const {VerifyAccount} = require("./components/Users/UsersController");
+const {ExpressPeerServer} = require("peer");
+
 require("dotenv").config();
 
 if (!fs.existsSync("public/avatar")) {
@@ -28,6 +31,8 @@ RootNSP.use(function(socket, next) {
 });
 
 PrivateChatSocket(io);
+// VideoCallSocket(io);
+PrivateCallSocket(io);
 RoomChatSocket(io);
 
 app.use(cors());
@@ -41,10 +46,30 @@ app.get("/is_ok", (req, resp) => {
     resp.send("We good");
 });
 
+const customGenerationFunction = () => (Math.random().toString(36) + '0000000000000000000').substr(2, 16);
+
+const peerServer = ExpressPeerServer(httpServer, {
+    path: '/private',
+    debug: true,
+    generateClientId: customGenerationFunction
+});
+//
+// peerServer.on("connection", client => {
+//     console.log("Connection");
+// });
+//
+// peerServer.on("disconnect", client => {
+//     console.log("Disconnect: " + client);
+// })
+
+app.use("/peer", peerServer);
+
 app.use("/users", UsersRouter);
 app.use("/private_chat", PrivateChatRouter);
 app.use("/friends", FriendsRouter);
 app.use("/posts", PostsRouter);
+app.get("/verify", VerifyAccount);
+
 
 httpServer.listen(HOST_PORT, function() {
     console.log(`Host IP: '${HOST_ADDRESS}'`);

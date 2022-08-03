@@ -25,6 +25,7 @@
     "passport": "^0.6.0",
     "passport-json": "^1.2.0",
     "passport-local": "^1.0.0",
+    "peer": "^0.6.1",
     "socket.io": "^4.5.1",
     "uuid": "^8.3.2"
   }
