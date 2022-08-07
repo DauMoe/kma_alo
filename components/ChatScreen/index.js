@@ -1,7 +1,7 @@
 import React, {Fragment, useEffect, useRef, useState} from "react";
 import {View, Text, ScrollView, TextInput, TouchableHighlight, Dimensions, Image} from "react-native";
 import styled from "styled-components/native";
-import {Avatar, Button, IconButton} from "react-native-paper";
+import { Avatar, Button, IconButton, withTheme } from "react-native-paper";
 import {useDispatch, useSelector} from "react-redux";
 import io from "socket.io-client";
 import uuid from "react-native-uuid";
@@ -12,6 +12,7 @@ import {GET_CHAT_HISTORY} from "../API_Definition";
 import jwt_decode from "jwt-decode";
 import {useIsFocused} from "@react-navigation/native";
 import Authenticator from "../ReduxSaga/Authenticator/Reducers";
+import { VIDEO_CALL_SCREEN } from "../Definition";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -97,6 +98,7 @@ const MessageState = {
 const ChatScreen = function(props) {
     // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIsImVtYWlsIjoiaG9hbmduZUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImRhdW1vZSIsImlhdCI6MTY1NjI1NjA5NywiZXhwIjoxODcyMjU2MDk3fQ.cotV9sFZeH5p3w-iu25mE2FGxw2id0VOfEwWCVmNQy4";
     const { route, navigation }     = props;
+    const { colors }                = props.theme;
     const { token }                 = useSelector(state => state.Authenticator);
     const { chatInfo }              = route.params;
     const limitMessage              = 20; //Load 20 message each time
@@ -112,7 +114,10 @@ const ChatScreen = function(props) {
         uid: -1,
         username: ""
     });
+    const scrollViewRef = useRef();
     const { receiver_avatar, receiver_avatar_text, room_chat_id, receiver_first_name, receiver_last_name, type, receiver_uid, receiver_username } = chatInfo;
+
+    console.log(chatInfo);
 
     const HandleScrollTop = function(e) {
         if (e.nativeEvent.contentOffset.y === 0 && !conversationAction.current.loading) LoadChatHistory()
@@ -121,6 +126,12 @@ const ChatScreen = function(props) {
     const DecodeJWT = function() {
         const jwtData = jwt_decode(token);
         setJwtInfo(jwtData);
+    }
+
+    const Go2CallScreen = function() {
+        navigation.push(VIDEO_CALL_SCREEN, {
+            chatInfo: chatInfo
+        });
     }
 
     useEffect(() => {
@@ -177,13 +188,21 @@ const ChatScreen = function(props) {
     const ChatHeadSection = function() {
         return(
             <ChatHeadWrapper>
-                <IconButton icon="chevron-left" size={35} onPress={() => navigation.goBack()} color={Theme.primaryTextColor}/>
+                <IconButton icon="chevron-left" size={35} onPress={() => {if (navigation.canGoBack()) navigation.goBack()}} color={Theme.primaryTextColor}/>
                 <ChatHeadUsername>{chatInfo.receiver_first_name} {chatInfo.receiver_last_name}</ChatHeadUsername>
-                {
-                    chatInfo.receiver_avatar === ""
-                        ? <Avatar.Text size={30} label={chatInfo.receiver_avatar_text} style={{marginRight: 10}}/>
-                        : <Image source={{uri: DEFAULT_BASE_URL + chatInfo.receiver_avatar}} style={{width: 30, height: 30, borderRadius: 9999, marginRight: 10}}/>
-                }
+                <View style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+                    <IconButton
+                      onPress={Go2CallScreen}
+                      style={{marginRight: 10}}
+                      icon={"phone"}
+                      color={colors.positiveBgColor}
+                    />
+                    {
+                        chatInfo.receiver_avatar === ""
+                          ? <Avatar.Text size={30} label={chatInfo.receiver_avatar_text} style={{marginRight: 10}}/>
+                          : <Image source={{uri: DEFAULT_BASE_URL + chatInfo.receiver_avatar}} style={{width: 30, height: 30, borderRadius: 9999, marginRight: 10}}/>
+                    }
+                </View>
             </ChatHeadWrapper>
         );
     }
@@ -191,7 +210,7 @@ const ChatScreen = function(props) {
     const ChatSection = function() {
         return(
             <ChatScreenWrapper>
-                <ScrollView onScroll={HandleScrollTop}>
+                <ScrollView onScroll={HandleScrollTop} onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })} ref={scrollViewRef}>
                     {Array.isArray(Conversation) && Conversation.map(function(v, index) {
                         return (
                             <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.sender_id === Conversation[index-1].sender_id)}>
@@ -256,4 +275,4 @@ const ChatScreen = function(props) {
     );
 }
 
-export default ChatScreen;
+export default withTheme(ChatScreen);

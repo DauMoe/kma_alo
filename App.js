@@ -4,12 +4,12 @@ import LoadingScreen from "./components/LoadingScreen";
 import LoginScreen from './components/LoginScreen/index';
 import MainScreen from './components/MainScreen/index';
 import {
-    CHAT_SCREEN, CREATE_ACCOUNT_SCREEN, CREATE_POST_SCREEN, EDIT_USER_PROFILE_SCREEN,
-    FORGET_PASSWORD_SCREEN, FRIENDS_SCREEN,
-    LIST_CHATS_SCREEN,
-    LOADING_SCREEN,
-    LOGIN_SCREEN,
-    MAIN_SCREEN, PROFILE_SCREEN
+  CHAT_SCREEN, CREATE_ACCOUNT_SCREEN, CREATE_POST_SCREEN, EDIT_USER_PROFILE_SCREEN,
+  FORGET_PASSWORD_SCREEN, FRIENDS_SCREEN,
+  LIST_CHATS_SCREEN,
+  LOADING_SCREEN,
+  LOGIN_SCREEN,
+  MAIN_SCREEN, PROFILE_SCREEN, VIDEO_CALL_SCREEN,
 } from "./components/Definition";
 import SetIPModal from "./components/SetIPModal";
 import ForgetPasswordScreen from "./components/ForgetPasswordScreen";
@@ -21,6 +21,7 @@ import {StatusBar} from "react-native";
 import EditProfileScreen from "./components/UserProfileScreen/EditProfileScreen";
 import CreateAccountScreen from "./components/CreateAccountScreen";
 import CreatePostScreen from "./components/NewsFeedScreen/CreatePostScreen";
+import VideoCallScreen from "./components/VideoCallScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -92,6 +93,10 @@ const App = function(props) {
                     animation: "none"
                 }}
             />
+          <Stack.Screen
+            name={VIDEO_CALL_SCREEN}
+            component={VideoCallScreen}
+          />
       </Stack.Navigator>
       {/*<SetIPModal/>*/}
     </>

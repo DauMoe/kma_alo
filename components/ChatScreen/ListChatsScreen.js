@@ -133,7 +133,7 @@ const ListChatsScreen = function(props) {
     const isMount = useRef();
 
     const GotoChatScreen = function(chatInfo) {
-        navigation.navigate(CHAT_SCREEN, {
+        navigation.push(CHAT_SCREEN, {
             chatInfo: chatInfo
         });
     }
