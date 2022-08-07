@@ -7,7 +7,7 @@ import {
     SINGING_IN,
     SIGNING_UP,
     TOKEN_IS_EXIST,
-    TOKEN_IS_NOT_EXIST, INIT_SIGN_UP_STATE
+    TOKEN_IS_NOT_EXIST, INIT_SIGN_UP_STATE, SIGNING_OUT,
 } from "./ActionTypes";
 
 export function LocalLoginAction(username, password) {
@@ -87,5 +87,11 @@ export function TokenIsExist(token) {
     return {
         type: TOKEN_IS_EXIST,
         data: token
+    }
+}
+
+export function SignOutAction() {
+    return {
+        type: SIGNING_OUT
     }
 }

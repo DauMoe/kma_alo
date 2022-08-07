@@ -153,7 +153,7 @@ const CreateAccountScreen = function(props) {
                 .then(r => {
                     setMsg({
                         isErr: false,
-                        value: r.data.data
+                        value: r.data.description
                     });
                 })
                 .catch(e => {
