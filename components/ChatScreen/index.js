@@ -163,6 +163,7 @@ const ChatScreen = function(props) {
     }
 
     const HandleChatSocket = function(receiveData) {
+        console.log("R: ", receiveData);
         const newMessage = {
             ...receiveData,
             sender: receiveData.sender_id === jwtInfo.uid

@@ -2,20 +2,23 @@ import React, { useEffect, useState } from "react";
 import { Button, IconButton, withTheme } from "react-native-paper";
 import { mediaDevices, RTCPeerConnection, RTCView } from "react-native-webrtc";
 import { Dimensions, Text, View } from "react-native";
-import { DEFAULT_BASE_URL } from "../ReduxSaga/AxiosConfig";
+import { DEFAULT_BASE_URL, HOST, PORT } from "../ReduxSaga/AxiosConfig";
 import io from "socket.io-client";
 import { useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
+import Peer from "react-native-peerjs";
 
 const VideoCallScreen = function(props) {
   const { colors }                          = props.theme;
-  const { route }                           = props;
-  const { chatInfo }                        = route.params;
+  // const { route }                           = props;
+  // const { chatInfo }                        = route.params;
   const localViewHeightPercent              = 0.4;
   const { width, height }                   = Dimensions.get("window");
-  const { token }                           = useSelector(state => state.Authenticator);
+  // const { token }                           = useSelector(state => state.Authenticator);
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIxLCJlbWFpbCI6ImxlaHV5aG9hbmcxMTExOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF1bW9lMSIsImlhdCI6MTY2MDMxMDQwMSwiZXhwIjoxODc2MzEwNDAxfQ.kfiEslIiHS2oaap86PtXpV_GI3g0ADhw46MjHc0Uiu4"
   const navigation                          = useNavigation();
-  const [socket, setSocket]                 = useState(null);
+  const [callSocket, setCallSocket]         = useState(null);
+  const [peerConnection, setPeer]           = useState(null);
   const [localStreamState, setStreamState]  = useState({
     camera: true,
     audio : true,
@@ -25,9 +28,9 @@ const VideoCallScreen = function(props) {
     localStream: null,
     remoteStreams: []
   });
-  const { receiver_avatar, receiver_avatar_text, room_chat_id, receiver_first_name, receiver_last_name, type, receiver_uid, receiver_username } = chatInfo;
+  // const { receiver_avatar, receiver_avatar_text, room_chat_id, receiver_first_name, receiver_last_name, type, receiver_uid, receiver_username } = chatInfo;
 
-  const initPeerConnection = (videoCallSocket) => {
+  const initUserMedia = (callback) => {
     let deviceId = null, localStream = undefined;
     mediaDevices.enumerateDevices()
       .then(devices => {
@@ -49,20 +52,21 @@ const VideoCallScreen = function(props) {
               optional: deviceId
             }
           })
-            .then(media => {
-              setStream({
-                ...localStream,
-                localStream: media
-              });
-              console.log("emitting");
-              videoCallSocket.emit("emit_stream", room_chat_id, media, chatInfo, receiver_uid);
-            })
+            .then(callback)
             .catch(e => console.error("getUserMedia: ", e));
         }
       })
       .catch(e => {
           console.error("enumerateDevices: ", e);
       });
+  }
+
+  const JoinCall = () => {
+    console.log("START JOIN CALL");
+    callSocket.emit("user_join_call", "c553e560-fae4-11ec-84ac-215988e5b60c", peerConnection.id);
+    peerConnection.on('error', function(e) {
+      console.error("PEER: ", e);
+    });
   }
 
   const ToggleCamera = async() => {
@@ -74,45 +78,67 @@ const VideoCallScreen = function(props) {
     }
   }
 
-  // const ToggleCameraState = async() => {
-  //   try {
-  //     const videoTrack = await streams.localStream.getVideoTracks();
-  //     console.log(videoTrack);
-  //     const cameraState = !localStreamState.camera;
-  //     videoTrack.enabled = cameraState;
-  //     setStreamState({
-  //       ...localStreamState,
-  //       camera: cameraState
-  //     });
-  //   } catch (e) {
-  //     console.error("ToggleCameraState: ", e);
-  //   }
-  // }
-
-  const HandleVideoCallSocket = function(receiveData) {
-    console.log("VC: ", receiveData);
-  }
-
   useEffect(function() {
-    // initPeerConnection();
-  }, []);
-
-  useEffect(function () {
-    // console.log("Room name: ", room_chat_id);
-
-    const newSocket = io(`${DEFAULT_BASE_URL}/video_call`, {
+    const socket = io(`${DEFAULT_BASE_URL}/private_call`, {
       extraHeaders: {
         Authorization: `Bearer ${token}`
       }
     });
-    newSocket.emit("join_call", {room_name: room_chat_id});
-    newSocket.on("listen_add_stream", HandleVideoCallSocket);
-    setSocket(newSocket);
-    initPeerConnection(newSocket);
+    socket.emit("join_call", {
+      // room_name: room_chat_id
+      room_name: "c553e560-fae4-11ec-84ac-215988e5b60c"
+    });
+    setCallSocket(socket);
     return function() {
-      newSocket.close();
+      socket.close();
     }
-  }, [setSocket]);
+  }, [setCallSocket]);
+
+  useEffect(() => {
+    if (callSocket) {
+      callSocket.on("new_user_joined", (peerID) => {
+        initUserMedia(stream => {
+          const call = peerConnection.call(peerID, stream);
+          call.on("stream", remoteStream => {
+            setStream({
+              localStream: stream,
+              remoteStreams: [remoteStream]
+            })
+          })
+        });
+      });
+    }
+  }, [peerConnection]);
+
+  useEffect(function() {
+    const peer = new Peer(undefined, {
+      host: HOST,
+      port: "4000",
+      secure: false,
+      path: "/peer/private/",
+      debug: 1
+    });
+    setPeer(peer);
+    // initUserMedia(stream => {
+    //   setStream({
+    //     ...streams,
+    //     localStream: stream
+    //   })
+    // });
+    peer.on("call", call => {
+      console.log("Target device: ", peer.id);
+      initUserMedia(stream => {
+        call.answer(stream);
+        call.on("stream", remoteStream => {
+          console.log("Call come");
+          setStream({
+            localStream: stream,
+            remoteStreams: [remoteStream]
+          });
+        });
+      });
+    });
+  }, []);
 
   const NoCameraView = function(props) {
     const { localStream, hasCamera } = props;
@@ -130,6 +156,9 @@ const VideoCallScreen = function(props) {
 
   return(
     <>
+      <Text style={{color: "black"}}>PeerID: {peerConnection ? peerConnection.id : "Loading..."}</Text>
+      <Button onPress={JoinCall}>Call</Button>
+
       {
         streams.localStream === null
           ? <NoCameraView localStream/>
@@ -176,16 +205,17 @@ const VideoCallScreen = function(props) {
                   {/*/>*/}
                 </View>
               </View>
-              {Array.isArray(streams.remoteStreams) && streams.remoteStreams.map((stream, index) => {
-                <RTCView
-                  key={"_video_stream_" + index}
-                  mirror={true}
-                  objectFit={'contain'}
-                  streamURL={stream.toURL()}
-                  zOrder={1}
-                  style={{height: height * 0.8, width: width}}
-                />
-              })}
+              <View>
+                {Array.isArray(streams.remoteStreams) &&
+                  <RTCView
+                    mirror={true}
+                    objectFit={'cover'}
+                    streamURL={streams.remoteStreams[0].toURL()}
+                    zOrder={1}
+                    style={{height: height * localViewHeightPercent, width: width}}
+                  />
+                }
+              </View>
             </>
       }
     </>
