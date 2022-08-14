@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button, IconButton, withTheme } from "react-native-paper";
 import { mediaDevices, RTCPeerConnection, RTCView } from "react-native-webrtc";
 import { Dimensions, Text, View } from "react-native";
@@ -7,6 +7,7 @@ import io from "socket.io-client";
 import { useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import Peer from "react-native-peerjs";
+import DeviceInfo from "react-native-device-info";
 
 const VideoCallScreen = function(props) {
   const { colors }                          = props.theme;
@@ -26,12 +27,28 @@ const VideoCallScreen = function(props) {
   });
   const [streams, setStream]                = useState({
     localStream: null,
-    remoteStreams: []
+    remoteStreams: [],
+    ended: false,
+    comingCall: false
   });
+  const room_chat_id = "c553e560-fae4-11ec-84ac-215988e5b60c";
+  const [deviceID, setID] = useState(null);
   // const { receiver_avatar, receiver_avatar_text, room_chat_id, receiver_first_name, receiver_last_name, type, receiver_uid, receiver_username } = chatInfo;
 
-  const initUserMedia = (callback) => {
-    let deviceId = null, localStream = undefined;
+  const initUserMedia = (callback, options) => {
+    const defaultOptions = {audio: localStreamState.audio,
+      video: {
+        mandatory: {
+          minWidth: 500,
+          minHeight: 300,
+          minFrameRate: 60,
+        },
+        facingMode: localStreamState.camera ? 'user' : 'environment',
+        optional: deviceId
+      }
+    };
+    options = options ? options : defaultOptions;
+    let deviceId = null;
     mediaDevices.enumerateDevices()
       .then(devices => {
         devices.map(device => {
@@ -40,18 +57,7 @@ const VideoCallScreen = function(props) {
           }
         });
         if (deviceId) {
-          mediaDevices.getUserMedia({
-            audio: localStreamState.audio,
-            video: {
-              mandatory: {
-                minWidth: 500,
-                minHeight: 300,
-                minFrameRate: 60,
-              },
-              facingMode: localStreamState.camera ? 'user' : 'environment',
-              optional: deviceId
-            }
-          })
+          mediaDevices.getUserMedia(options)
             .then(callback)
             .catch(e => console.error("getUserMedia: ", e));
         }
@@ -63,7 +69,7 @@ const VideoCallScreen = function(props) {
 
   const JoinCall = () => {
     console.log("START JOIN CALL");
-    callSocket.emit("user_join_call", "c553e560-fae4-11ec-84ac-215988e5b60c", peerConnection.id);
+    callSocket.emit("user_join_call", room_chat_id, peerConnection.id);
     peerConnection.on('error', function(e) {
       console.error("PEER: ", e);
     });
@@ -78,37 +84,20 @@ const VideoCallScreen = function(props) {
     }
   }
 
-  useEffect(function() {
-    const socket = io(`${DEFAULT_BASE_URL}/private_call`, {
-      extraHeaders: {
-        Authorization: `Bearer ${token}`
-      }
+  const EndCall = () => {
+    peerConnection.destroy();
+    streams.localStream.getTracks().map(track => track.stop());
+    setStream({
+      localStream: null,
+      remoteStreams: null,
+      ended: true
     });
-    socket.emit("join_call", {
-      // room_name: room_chat_id
-      room_name: "c553e560-fae4-11ec-84ac-215988e5b60c"
-    });
-    setCallSocket(socket);
-    return function() {
-      socket.close();
-    }
-  }, [setCallSocket]);
+    callSocket.emit("end_call", room_chat_id);
+  }
 
-  useEffect(() => {
-    if (callSocket) {
-      callSocket.on("new_user_joined", (peerID) => {
-        initUserMedia(stream => {
-          const call = peerConnection.call(peerID, stream);
-          call.on("stream", remoteStream => {
-            setStream({
-              localStream: stream,
-              remoteStreams: [remoteStream]
-            })
-          })
-        });
-      });
-    }
-  }, [peerConnection]);
+  useEffect(function() {
+
+  }, [setCallSocket]);
 
   useEffect(function() {
     const peer = new Peer(undefined, {
@@ -118,27 +107,78 @@ const VideoCallScreen = function(props) {
       path: "/peer/private/",
       debug: 1
     });
-    setPeer(peer);
-    // initUserMedia(stream => {
-    //   setStream({
-    //     ...streams,
-    //     localStream: stream
-    //   })
-    // });
-    peer.on("call", call => {
-      console.log("Target device: ", peer.id);
-      initUserMedia(stream => {
-        call.answer(stream);
+    initUserMedia(stream => {
+      const socket = io(`${DEFAULT_BASE_URL}/private_call`, {
+        extraHeaders: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      socket.emit("join_call", {
+        room_name: room_chat_id
+      });
+      socket.on("end_call_remote_side", function() {
+        peer.destroy();
+        stream.getTracks().map(track => track.stop());
+        setStream({
+          localStream: null,
+          remoteStreams: null,
+          ended: true
+        });
+      });
+      setCallSocket(socket);
+      setStream({
+        localStream: stream,
+        remoteStreams: null
+      });
+      setPeer(peer);
+    });
+    DeviceInfo.getDevice()
+      .then(device => setID(device))
+      .catch(e => console.error("DEVICE: ", e));
+  }, [setCallSocket]);
+
+  useEffect(() => {
+    if (peerConnection) {
+      peerConnection.on("call", call => {
+        console.log("Target device: ", deviceID);
+        // setStream({
+        //   ...streams,
+        //   comingCall: true
+        // })
+        call.answer(streams.localStream);
         call.on("stream", remoteStream => {
-          console.log("Call come");
           setStream({
-            localStream: stream,
+            ...streams,
             remoteStreams: [remoteStream]
           });
         });
       });
-    });
-  }, []);
+    }
+
+    if (callSocket) {
+      callSocket.on("new_user_joined", (peerID) => {
+        initUserMedia(stream => {
+          const call = peerConnection.call(peerID, stream);
+          call.on("stream", remoteStream => {
+            setStream({
+              localStream: stream,
+              remoteStreams: [remoteStream]
+            })
+          });
+          call.on("close", () => {
+            console.log("Close in device: ", deviceID);
+            peerConnection.destroy();
+            stream.getTracks().map(track => track.stop());
+            setStream({
+              localStream: null,
+              remoteStreams: null,
+              ended: true
+            });
+          });
+        })
+      });
+    }
+  }, [peerConnection]);
 
   const NoCameraView = function(props) {
     const { localStream, hasCamera } = props;
@@ -154,9 +194,41 @@ const VideoCallScreen = function(props) {
     );
   }
 
+  const CallEndScreen = function(props) {
+    return(
+      <View style={{height: height, width: width, display: "flex", justifyContent: "center", alignItems: "center"}}>
+        <Text style={{fontFamily: "NunitoBold", fontSize: 40, color: "#1785a6"}}>Ops! Call ended</Text>
+        <Text style={{fontFamily: "NunitoSemiBold", fontSize: 15, color: "#33a7c7", marginTop: 10}}>Hoping you had a wonder time</Text>
+        <Text style={{fontFamily: "NunitoSemiBold", fontStyle: "italic", fontSize: 10, color: "black", marginTop: 10}}>Now, we're preparing to go back!</Text>
+      </View>
+    );
+  }
+
+  const ComingCallScreen = function() {
+    return(
+      <View style={{height: height, width: width, display: "flex", justifyContent: "center", alignItems: "center"}}>
+        <Text style={{fontFamily: "NunitoBold", fontSize: 30, color: "#af1b95"}}>A call is coming!</Text>
+      </View>
+    )
+  }
+
+  if (streams.comingCall) return (
+    <>
+      <Text style={{color: "black"}}>DeviceID: {deviceID}</Text>
+      <ComingCallScreen/>
+    </>
+  )
+
+  if (streams.ended) return(
+    <>
+      <Text style={{color: "black"}}>DeviceID: {deviceID}</Text>
+      <CallEndScreen/>
+    </>
+  )
+
   return(
     <>
-      <Text style={{color: "black"}}>PeerID: {peerConnection ? peerConnection.id : "Loading..."}</Text>
+      <Text style={{color: "black"}}>DeviceID: {deviceID}</Text>
       <Button onPress={JoinCall}>Call</Button>
 
       {
@@ -190,7 +262,7 @@ const VideoCallScreen = function(props) {
                     style={{backgroundColor: "#757575"}}
                   />
                   <IconButton
-                    onPress={() => {if(navigation.canGoBack()) navigation.goBack()}}
+                    onPress={EndCall}
                     icon={"phone-hangup"}
                     size={30}
                     color={"white"}
@@ -206,7 +278,7 @@ const VideoCallScreen = function(props) {
                 </View>
               </View>
               <View>
-                {Array.isArray(streams.remoteStreams) &&
+                {Array.isArray(streams.remoteStreams) && streams.remoteStreams.length > 0 &&
                   <RTCView
                     mirror={true}
                     objectFit={'cover'}

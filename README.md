@@ -12,7 +12,7 @@
 - [ ] Save current offset in new feeds when refresh or load more post
 - [x] **Confirm delete post modal**
 - [ ] **Show notification in bottom navigation when having new message**
-- [ ] **can NOT get peerID for now**
+
 ## Design  
  - [NewsFeed Design](https://dribbble.com/tags/newsfeed)
  - [Login Screen Design](https://thumbs.dreamstime.com/z/mockup-screen-login-form-welcome-page-your-mobile-app-interface-design-login-page-mockup-screen-login-form-welcome-199562898.jpg)
