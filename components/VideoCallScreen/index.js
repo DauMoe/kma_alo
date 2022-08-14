@@ -18,8 +18,12 @@ const VideoCallScreen = function(props) {
   // const { token }                           = useSelector(state => state.Authenticator);
   const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIxLCJlbWFpbCI6ImxlaHV5aG9hbmcxMTExOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF1bW9lMSIsImlhdCI6MTY2MDMxMDQwMSwiZXhwIjoxODc2MzEwNDAxfQ.kfiEslIiHS2oaap86PtXpV_GI3g0ADhw46MjHc0Uiu4"
   const navigation                          = useNavigation();
-  const [callSocket, setCallSocket]         = useState(null);
-  const [peerConnection, setPeer]           = useState(null);
+  const [sv, setSv] = useState({
+    peer: null,
+    socket: null
+  })
+  // const [callSocket, setCallSocket]         = useState(null);
+  // const [peerConnection, setPeer]           = useState(null);
   const [localStreamState, setStreamState]  = useState({
     camera: true,
     audio : true,
@@ -69,8 +73,8 @@ const VideoCallScreen = function(props) {
 
   const JoinCall = () => {
     console.log("START JOIN CALL");
-    callSocket.emit("user_join_call", room_chat_id, peerConnection.id);
-    peerConnection.on('error', function(e) {
+    sv.socket.emit("user_join_call", room_chat_id, sv.peer.id);
+    sv.peer.on('error', function(e) {
       console.error("PEER: ", e);
     });
   }
@@ -85,90 +89,73 @@ const VideoCallScreen = function(props) {
   }
 
   const EndCall = () => {
-    peerConnection.destroy();
-    streams.localStream.getTracks().map(track => track.stop());
+    sv.socket.emit("end_call", room_chat_id);
+    HandleEndCall(sv.peer, streams.localStream);
+  }
+
+  const HandleEndCall = (peer, stream) => {
+    peer.destroy();
+    stream.getTracks().map(track => track.stop());
     setStream({
       localStream: null,
       remoteStreams: null,
       ended: true
     });
-    callSocket.emit("end_call", room_chat_id);
+    setTimeout(function() {
+      if (navigation.canGoBack()) navigation.goBack();
+    }, 3000);
   }
 
   useEffect(function() {
-
-  }, [setCallSocket]);
-
-  useEffect(function() {
-    const peer = new Peer(undefined, {
-      host: HOST,
-      port: "4000",
-      secure: false,
-      path: "/peer/private/",
-      debug: 1
+    const socket = io(`${DEFAULT_BASE_URL}/private_call`, {
+      extraHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    // const peer = new Peer(undefined, {
+    //   host: HOST,
+    //   port: PORT,
+    //   secure: false,
+    //   path: "/peer/private/",
+    //   debug: 1
+    // });
+    const peer = new Peer(undefined);
+    socket.emit("join_call", {
+      room_name: room_chat_id
     });
     initUserMedia(stream => {
-      const socket = io(`${DEFAULT_BASE_URL}/private_call`, {
-        extraHeaders: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      socket.emit("join_call", {
-        room_name: room_chat_id
-      });
-      socket.on("end_call_remote_side", function() {
-        peer.destroy();
-        stream.getTracks().map(track => track.stop());
-        setStream({
-          localStream: null,
-          remoteStreams: null,
-          ended: true
-        });
-      });
-      setCallSocket(socket);
+      console.log("Already init local stream");
       setStream({
+        ...streams,
+        localStream: stream,
+        remoteStreams: null
+      })
+    });
+
+    DeviceInfo.getDevice()
+      .then(device => {
+        setID(device);
+      })
+      .catch(e => console.error("DEVICE: ", e));
+    initUserMedia(stream => {
+      setStream({
+        ...streams,
         localStream: stream,
         remoteStreams: null
       });
-      setPeer(peer);
-    });
-    DeviceInfo.getDevice()
-      .then(device => setID(device))
-      .catch(e => console.error("DEVICE: ", e));
-  }, [setCallSocket]);
-
-  useEffect(() => {
-    if (peerConnection) {
-      peerConnection.on("call", call => {
-        console.log("Target device: ", deviceID);
-        // setStream({
-        //   ...streams,
-        //   comingCall: true
-        // })
-        call.answer(streams.localStream);
-        call.on("stream", remoteStream => {
-          setStream({
-            ...streams,
-            remoteStreams: [remoteStream]
-          });
-        });
-      });
-    }
-
-    if (callSocket) {
-      callSocket.on("new_user_joined", (peerID) => {
-        initUserMedia(stream => {
-          const call = peerConnection.call(peerID, stream);
+      peer.on("call", call => {
+        initUserMedia(stream1 => {
+          call.answer(stream1);
           call.on("stream", remoteStream => {
             setStream({
-              localStream: stream,
+              ...streams,
+              localStream: stream1,
               remoteStreams: [remoteStream]
-            })
+            });
           });
-          call.on("close", () => {
-            console.log("Close in device: ", deviceID);
-            peerConnection.destroy();
-            stream.getTracks().map(track => track.stop());
+          socket.on("end_call_remote_side", function() {
+            peer.destroy();
+            stream1.getTracks().map(track => track.stop());
             setStream({
               localStream: null,
               remoteStreams: null,
@@ -177,13 +164,32 @@ const VideoCallScreen = function(props) {
           });
         })
       });
-    }
-  }, [peerConnection]);
+      socket.on("new_user_joined", (peerID) => {
+        console.log("New user joined: ", peerID);
+        const call = peer.call(peerID, stream);
+        call.on("stream", remoteStream => {
+          setStream({
+            localStream: stream,
+            remoteStreams: [remoteStream]
+          })
+        });
+        call.on("close", () => {
+          console.log("Close in device: ", deviceID);
+          HandleEndCall(peer, stream);
+        });
+      });
+    })
+    setSv({
+      peer: peer,
+      socket: socket
+    });
+    return(() => socket.close());
+  }, []);
 
   const NoCameraView = function(props) {
-    const { localStream, hasCamera } = props;
+    const {isConnecting, avatar_link, avatar_text} = props;
     return(
-      <View style={{width: width, height: localStream ? height * localViewHeightPercent : height * 0.2, display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "gray"}}>
+      <View style={{width: '100%', height: '100%', display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "#5ad0da"}}>
         <IconButton
           icon="camera-off"
           size={60}
@@ -196,10 +202,10 @@ const VideoCallScreen = function(props) {
 
   const CallEndScreen = function(props) {
     return(
-      <View style={{height: height, width: width, display: "flex", justifyContent: "center", alignItems: "center"}}>
-        <Text style={{fontFamily: "NunitoBold", fontSize: 40, color: "#1785a6"}}>Ops! Call ended</Text>
-        <Text style={{fontFamily: "NunitoSemiBold", fontSize: 15, color: "#33a7c7", marginTop: 10}}>Hoping you had a wonder time</Text>
-        <Text style={{fontFamily: "NunitoSemiBold", fontStyle: "italic", fontSize: 10, color: "black", marginTop: 10}}>Now, we're preparing to go back!</Text>
+      <View style={{width: '100%', height: '100%', display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "#5ad0da"}}>
+        <Text style={{fontFamily: "NunitoBold", fontSize: 40, color: "#ffffff"}}>Call ended</Text>
+        <Text style={{fontFamily: "NunitoSemiBold", fontSize: 15, color: "#ffffff", marginTop: 10}}>Hoping you had a wonderful time</Text>
+        <Text style={{fontFamily: "NunitoSemiBold", fontStyle: "italic", fontSize: 10, color: "#ffffff", marginTop: 10}}>Now, we're preparing to go back after 3 seconds!</Text>
       </View>
     );
   }
@@ -214,28 +220,96 @@ const VideoCallScreen = function(props) {
 
   if (streams.comingCall) return (
     <>
-      <Text style={{color: "black"}}>DeviceID: {deviceID}</Text>
+      {__DEV__ && <Text style={{color: "black"}}>DeviceID: {deviceID}</Text>}
       <ComingCallScreen/>
     </>
   )
 
   if (streams.ended) return(
     <>
-      <Text style={{color: "black"}}>DeviceID: {deviceID}</Text>
+      {__DEV__ && <Text style={{color: "black"}}>DeviceID: {deviceID}</Text>}
       <CallEndScreen/>
     </>
   )
 
   return(
+    <View style={{height: '100%', width: width}}>
+      <View style={{position: "absolute", top: 20, right: 20, zIndex: 1000, height: height * 0.25, width: width * 0.3}}>
+        {streams.localStream !== null
+          ? <RTCView
+              mirror={true}
+              objectFit={"cover"}
+              streamURL={streams.localStream.toURL()}
+              zOrder={1000}
+              style={{ height: height * 0.25, width: width * 0.3 }}
+            />
+          : <NoCameraView/>
+        }
+      </View>
+
+      <View style={{position: "relative", height: '100%', width: '100%', zIndex: 1}}>
+        {(Array.isArray(streams.remoteStreams) && streams.remoteStreams.length > 0)
+           ? <RTCView
+              mirror={true}
+              objectFit={"cover"}
+              streamURL={streams.remoteStreams[0].toURL()}
+              zOrder={1}
+              style={{height: '100%', width: '100%'}}
+            />
+          : <NoCameraView/>
+        }
+      </View>
+
+      <View style={{
+        position: "absolute",
+        bottom: 20,
+        right: 10,
+        zIndex: 2,
+        display: "flex",
+        flexDirection: "row"
+      }}>
+        <IconButton
+          onPress={ToggleCamera}
+          icon="camera-flip"
+          size={30}
+          color={"white"}
+          style={{backgroundColor: "#757575"}}
+        />
+        <IconButton
+          onPress={EndCall}
+          icon={"phone-hangup"}
+          size={30}
+          color={"white"}
+          style={{backgroundColor: "#d22c2c"}}
+        />
+        <IconButton
+          onPress={JoinCall}
+          icon={"phone"}
+          size={30}
+          color={"white"}
+          style={{backgroundColor: "#1d6bcc"}}
+        />
+        {/*<IconButton*/}
+        {/*  onPress={ToggleCameraState}*/}
+        {/*  icon={!localStreamState.camera ? "camera" : "camera-off"}*/}
+        {/*  size={30}*/}
+        {/*  color={"white"}*/}
+        {/*  style={{backgroundColor: "#757575"}}*/}
+        {/*/>*/}
+      </View>
+    </View>
+  );
+
+  return(
     <>
-      <Text style={{color: "black"}}>DeviceID: {deviceID}</Text>
-      <Button onPress={JoinCall}>Call</Button>
+      {__DEV__ && <Text style={{color: "black"}}>DeviceID: {deviceID}</Text>}
+      {/*<Button onPress={JoinCall}>Call</Button>*/}
 
       {
         streams.localStream === null
           ? <NoCameraView localStream/>
           : <>
-              <View style={{height: height * localViewHeightPercent, width: width}}>
+              <View style={{position: "absolute", top: 10, right: 10}}>
                 {
                   localStreamState.camera
                    ? <RTCView
@@ -243,7 +317,7 @@ const VideoCallScreen = function(props) {
                       objectFit={'cover'}
                       streamURL={streams.localStream.toURL()}
                       zOrder={1}
-                      style={{height: height * localViewHeightPercent, width: width}}
+                      style={{height: height * 0.25, width: width * 0.3}}
                     />
                   : <NoCameraView localStream/>
                 }

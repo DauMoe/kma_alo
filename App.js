@@ -38,7 +38,7 @@ const App = function(props) {
             screenOptions={{
                 headerShown: false
             }}
-            initialRouteName={VIDEO_CALL_SCREEN}>
+            initialRouteName={LOADING_SCREEN}>
             <Stack.Screen
                 name={CREATE_POST_SCREEN}
                 component={CreatePostScreen}

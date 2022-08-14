@@ -2,10 +2,12 @@ import axios from "axios";
 import { HOST_TABLE, HOST_TB_CREATE_AT, HOST_TB_VALUE, TOKEN_TABLE, TOKEN_TB_VALUE } from "../Definition";
 import { _db } from '../Utils';
 
+const sv = 2;
+
 const PRODUCTION_URL                = "20.89.94.38";
 const TEST_URL                      = "192.168.1.7";
-export const PORT                   = __DEV__ ? 4000 : 8000;
-export const HOST                   = __DEV__ ? TEST_URL : PRODUCTION_URL;
+export const PORT                   = sv === 1 ? 4000 : 8000;
+export const HOST                   = sv === 1 ? TEST_URL : PRODUCTION_URL;
 export const DEFAULT_BASE_URL       = "http://" + HOST + ":" + PORT;
 
 export const clearToken = function(token) {
