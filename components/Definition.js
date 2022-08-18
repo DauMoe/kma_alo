@@ -8,6 +8,7 @@ export const CHAT_SCREEN                = "ChatScreen";
 export const LIST_CHATS_SCREEN          = "ListChatsScreen";
 export const FRIENDS_SCREEN             = "FriendsScreen";
 export const PROFILE_SCREEN             = "ProfileScreen";
+export const USER_PROFILE_SCREEN        = "UserProfileScreen";
 export const EDIT_USER_PROFILE_SCREEN   = "EditUserProfileScreen";
 export const CREATE_POST_SCREEN         = "CreatePostScreen";
 export const VIDEO_CALL_SCREEN          = "VideoCallScreen";

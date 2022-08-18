@@ -1,9 +1,9 @@
 import React, {useEffect, useRef, useState} from "react";
-import {View, ScrollView, Dimensions, Text, TouchableOpacity, FlatList} from "react-native";
+import {View, ScrollView, Dimensions, Text, TouchableOpacity, FlatList, InteractionManager} from "react-native";
 import SingleNews from "./SingleNews";
 import styled from 'styled-components/native';
 import CommentsScreen from "./CommentScreen";
-import {useIsFocused, useNavigation} from "@react-navigation/native";
+import {useFocusEffect, useIsFocused, useNavigation} from "@react-navigation/native";
 import {CREATE_POST_SCREEN, EDIT_USER_PROFILE_SCREEN, LOGIN_SCREEN} from "../Definition";
 import {Button, FAB, HelperText, Modal, Portal, Provider, withTheme} from "react-native-paper";
 import {WebView} from "react-native-webview";
@@ -54,7 +54,9 @@ const NewsFeedScreen = function(props) {
 
     const FetchPost = function(refresh = false) {
         if (refresh) setLoading(true);
+        const controller = new AbortController();
         axiosConfig(GET_POSTS, "get", {
+            signal: controller.signal,
             params: {
                 offset  : refresh ? 0 : currentState.current.offset,
                 limit   : refresh ? 10: currentState.current.limit
@@ -71,11 +73,12 @@ const NewsFeedScreen = function(props) {
             })
             .catch(e => {
                 // console.error(Object.keys(e));
-                console.error(e.response)
+                console.error(e)
             })
             .finally(() => {
                 if (refresh) setLoading(false)
             });
+        return controller;
     }
 
     const setModalState = (modalState, postId) => {
@@ -100,9 +103,21 @@ const NewsFeedScreen = function(props) {
             })
     }
 
-    useEffect(function() {
-        FetchPost(true);
-    }, [isFocus]);
+    useFocusEffect(React.useCallback(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            const controller = FetchPost(true);
+        });
+        return(() => {
+            task.cancel();
+        });
+    }, []));
+
+    // useEffect(function() {
+    //     const controller = FetchPost(true);
+    //     return(() => {
+    //         controller.abort();
+    //     });
+    // }, [isFocus]);
 
     return(
         <>

@@ -2,7 +2,7 @@ import axios from "axios";
 import { HOST_TABLE, HOST_TB_CREATE_AT, HOST_TB_VALUE, TOKEN_TABLE, TOKEN_TB_VALUE } from "../Definition";
 import { _db } from '../Utils';
 
-const sv = 2;
+const sv = 1;
 
 const PRODUCTION_URL                = "20.89.94.38";
 const TEST_URL                      = "192.168.1.7";
@@ -43,13 +43,14 @@ export const setBaseUrl = function(baseURL) {
 }
 
 export const axiosConfig = function(endpoint, method, config) {
-    // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIsImVtYWlsIjoiaG9hbmduZUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImRhdW1vZSIsImlhdCI6MTY1NjI1NjA5NywiZXhwIjoxODcyMjU2MDk3fQ.cotV9sFZeH5p3w-iu25mE2FGxw2id0VOfEwWCVmNQy4";
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIxLCJlbWFpbCI6ImxlaHV5aG9hbmcxMTExOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF1bW9lMSIsImlhdCI6MTY2MDgzNTg3NCwiZXhwIjoxODc2ODM1ODc0fQ.E-whu03YrSH9KOrqxBIP5aoL6bkDxNX6mvv7qe9yeJM";
     const instance = axios.create({
         baseURL: DEFAULT_BASE_URL
     });
-    if (TOKEN) {
-        instance.defaults.headers.common['Authorization'] = `Bearer ${TOKEN}`;
-    }
+    instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    // if (TOKEN) {
+    //     instance.defaults.headers.common['Authorization'] = `Bearer ${TOKEN}`;
+    // }
     switch(method.toUpperCase()) {
         case "GET":
             return instance.get(endpoint, config);

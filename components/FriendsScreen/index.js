@@ -12,6 +12,7 @@ const FriendsScreen = function(props) {
     const { colors } = props.theme;
     const [contacts, setContacts] = useState([]);
     const [listFriends, setListFriends] = useState([]);
+    const [listRecommendFriends, setRecommends] = useState([]);
     const [isLoading, setLoading] = useState(true);
     const isFocus = useIsFocused();
     const { width, height } = Dimensions.get("window");
@@ -21,7 +22,8 @@ const FriendsScreen = function(props) {
     `;
 
     const FriendsWrapper = styled(View)`
-      padding: 0 10px;
+      padding: 0 20px;
+      margin-top: 20px;
     `;
 
     const RecommendTitle = styled(Text)`
@@ -38,6 +40,7 @@ const FriendsScreen = function(props) {
          */
 
         if(__DEV__) {
+            const controller = new AbortController();
             PermissionsAndroid.request(
                 PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
                 {
@@ -52,13 +55,17 @@ const FriendsScreen = function(props) {
                 Contacts.getAll()
                     .then(c => {
                         setContacts(c);
-                        const GetListFriends      = axiosConfig(GET_LIST_FRIENDS, "get");
+                        const GetListFriends      = axiosConfig(GET_LIST_FRIENDS, "get", {
+                            signal: controller.signal
+                        });
                         const GetRecommendFriends = axiosConfig(GET_RECOMMEND_FRIENDS, "post", {
-                            list_contacts: []
+                            list_contacts: [],
+                            signal: controller.signal
                         });
                         Promise.all([GetListFriends, GetRecommendFriends])
                             .then(r => {
                                 setListFriends(r[0].data.data.list_friends);
+                                setRecommends(r[1].data.data.recommend_friends);
                             })
                             .catch(e => {
                                 console.error(e.response);
@@ -73,6 +80,9 @@ const FriendsScreen = function(props) {
                 console.error("Grant per err: ", e);
                 setLoading(false);
             });
+            return(() => {
+                controller.abort();
+            })
         }
     }, [isFocus]);
 
@@ -91,28 +101,30 @@ const FriendsScreen = function(props) {
 
     return(
         <ScrollView>
-            <RecommendWrapper>
-                <Text style={{color: colors.text, fontFamily: "NunitoBold", fontSize: 18}}>Maybe you know:</Text>
-                {Array(2).fill(1).map((value, index) => {
-                    return(
-                        <View key={"_recommend_friend_" + index} style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
-                            <Avatar.Text size={50} label={"DM"} style={{marginRight: 15}}/>
-                            <View>
-                                <Text style={{fontFamily: "NunitoBold", fontSize: 16, color: colors.text}}>Daumoe</Text>
-                                <View style={{display: "flex", flexDirection: "row", marginTop: 5}}>
-                                    <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: colors.positiveBgColor, marginRight: 15}} color={colors.positiveTextColor} mode="text">
-                                        Add friend
-                                    </Button>
-                                    <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: colors.negativeBgColor}} color={colors.negativeTextColor} mode="text">
-                                        Remove
-                                    </Button>
+            {listRecommendFriends.length > 0 &&
+                <RecommendWrapper>
+                    <Text style={{color: colors.text, fontFamily: "NunitoBold", fontSize: 18}}>Maybe you know:</Text>
+                    {listRecommendFriends.map((value, index) => {
+                        return(
+                            <View key={"_recommend_friend_" + index} style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
+                                <Avatar.Text size={50} label={"DM"} style={{marginRight: 15}}/>
+                                <View>
+                                    <Text style={{fontFamily: "NunitoBold", fontSize: 16, color: colors.text}}>Daumoe</Text>
+                                    <View style={{display: "flex", flexDirection: "row", marginTop: 5}}>
+                                        <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: colors.positiveBgColor, marginRight: 15}} color={colors.positiveTextColor} mode="text">
+                                            Add friend
+                                        </Button>
+                                        <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: colors.negativeBgColor}} color={colors.negativeTextColor} mode="text">
+                                            Remove
+                                        </Button>
+                                    </View>
                                 </View>
                             </View>
-                        </View>
-                    )
-                })}
-                <Button uppercase={false} style={{marginTop: 10}} onPress={ShowMoreRecommendFriend} mode="text">See more</Button>
-            </RecommendWrapper>
+                        )
+                    })}
+                    <Button uppercase={false} style={{marginTop: 10}} onPress={ShowMoreRecommendFriend} mode="text">See more</Button>
+                </RecommendWrapper>
+            }
             <FriendsWrapper>
                 <Text style={{color: colors.text, fontFamily: "NunitoBold", fontSize: 18}}>Friends:</Text>
                 {listFriends.map((friend, index) => {

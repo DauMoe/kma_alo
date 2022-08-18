@@ -75,7 +75,7 @@ const ProfileSkeleton = function({width, height}) {
     )
 }
 
-const ProfileScreen = function(props) {
+const UserProfileScreen = function(props) {
     const navigation                = useNavigation();
     const isFocus                   = useIsFocused();
     const dispatch                  = useDispatch();
@@ -227,9 +227,11 @@ const ProfileScreen = function(props) {
 
     useEffect(function() {
         setLoading(true);
-        axiosConfig(GET_USER_PROFILE, "get")
+        const controller = new AbortController();
+        axiosConfig(GET_USER_PROFILE, "get", {
+            signal: controller.signal
+        })
             .then(r => {
-                setProfile(r.data.data.user_data);
                 setAvatar({
                     ready: true,
                     value: DEFAULT_BASE_URL + r.data.data.user_data.avatar_link
@@ -238,7 +240,10 @@ const ProfileScreen = function(props) {
             .catch(e => console.error(e))
             .finally(() => {
                 setLoading(false);
-            })
+            });
+        return(() => {
+           controller.abort();
+        });
     }, [props, isFocus]);
 
     if (isLoading) return (<ProfileSkeleton width={width} height={height}/>);
@@ -327,4 +332,4 @@ const ProfileScreen = function(props) {
     );
 }
 
-export default ProfileScreen;
+export default UserProfileScreen;

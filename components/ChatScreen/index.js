@@ -120,7 +120,7 @@ const ChatScreen = function(props) {
     console.log(chatInfo);
 
     const HandleScrollTop = function(e) {
-        if (e.nativeEvent.contentOffset.y === 0 && !conversationAction.current.loading) LoadChatHistory()
+        // if (e.nativeEvent.contentOffset.y === 0 && !conversationAction.current.loading) LoadChatHistory()
     }
 
     const DecodeJWT = function() {
@@ -136,18 +136,23 @@ const ChatScreen = function(props) {
 
     useEffect(() => {
         DecodeJWT();
-        LoadChatHistory();
+        const controller = LoadChatHistory();
+        return(() => {
+           controller.abort();
+        });
     }, [props, token, isFocus]);
 
     const LoadChatHistory = function() {
         // dispatch(GetChatHistory(offset, limitMessage));
         conversationAction.current.loading = true;
+        const controller = new AbortController();
         const options = {
             params: {
                 offset: conversationAction.current.offset,
                 limit: limitMessage,
                 receiver_id: receiver_uid
-            }
+            },
+            signal: controller.signal
         }
         axiosConfig(GET_CHAT_HISTORY, "get", options)
             .then(r => {
@@ -160,6 +165,7 @@ const ChatScreen = function(props) {
             .finally(() => {
                 conversationAction.current.loading = false;
             });
+        return controller;
     }
 
     const HandleChatSocket = function(receiveData) {
@@ -211,7 +217,8 @@ const ChatScreen = function(props) {
     const ChatSection = function() {
         return(
             <ChatScreenWrapper>
-                <ScrollView onScroll={HandleScrollTop} onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })} ref={scrollViewRef}>
+                {/*<ScrollView onScroll={HandleScrollTop} onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })} ref={scrollViewRef}>*/}
+                <ScrollView onScroll={HandleScrollTop}>
                     {Array.isArray(Conversation) && Conversation.map(function(v, index) {
                         return (
                             <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.sender_id === Conversation[index-1].sender_id)}>

@@ -4,24 +4,25 @@ import LoadingScreen from "./components/LoadingScreen";
 import LoginScreen from './components/LoginScreen/index';
 import MainScreen from './components/MainScreen/index';
 import {
-  CHAT_SCREEN, CREATE_ACCOUNT_SCREEN, CREATE_POST_SCREEN, EDIT_USER_PROFILE_SCREEN,
-  FORGET_PASSWORD_SCREEN, FRIENDS_SCREEN,
-  LIST_CHATS_SCREEN,
-  LOADING_SCREEN,
-  LOGIN_SCREEN,
-  MAIN_SCREEN, PROFILE_SCREEN, VIDEO_CALL_SCREEN,
+    CHAT_SCREEN, CREATE_ACCOUNT_SCREEN, CREATE_POST_SCREEN, EDIT_USER_PROFILE_SCREEN,
+    FORGET_PASSWORD_SCREEN, FRIENDS_SCREEN,
+    LIST_CHATS_SCREEN,
+    LOADING_SCREEN,
+    LOGIN_SCREEN,
+    MAIN_SCREEN, PROFILE_SCREEN, USER_PROFILE_SCREEN, VIDEO_CALL_SCREEN,
 } from "./components/Definition";
 import SetIPModal from "./components/SetIPModal";
 import ForgetPasswordScreen from "./components/ForgetPasswordScreen";
 import ChatScreen from "./components/ChatScreen";
 import ListChatsScreen from "./components/ChatScreen/ListChatsScreen";
 import FriendsScreen from "./components/FriendsScreen";
-import ProfileScreen from "./components/UserProfileScreen";
+import UserProfileScreen from "./components/UserProfileScreen";
 import {StatusBar} from "react-native";
 import EditProfileScreen from "./components/UserProfileScreen/EditProfileScreen";
 import CreateAccountScreen from "./components/CreateAccountScreen";
 import CreatePostScreen from "./components/NewsFeedScreen/CreatePostScreen";
 import VideoCallScreen from "./components/VideoCallScreen";
+import ProfileScreen from "./components/ProfileScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -38,7 +39,7 @@ const App = function(props) {
             screenOptions={{
                 headerShown: false
             }}
-            initialRouteName={LOADING_SCREEN}>
+            initialRouteName={PROFILE_SCREEN}>
             <Stack.Screen
                 name={CREATE_POST_SCREEN}
                 component={CreatePostScreen}
@@ -76,8 +77,8 @@ const App = function(props) {
                 component={FriendsScreen}
             />
             <Stack.Screen
-                name={PROFILE_SCREEN}
-                component={ProfileScreen}
+                name={USER_PROFILE_SCREEN}
+                component={UserProfileScreen}
             />
             <Stack.Screen
                 name={EDIT_USER_PROFILE_SCREEN}
@@ -89,6 +90,13 @@ const App = function(props) {
             <Stack.Screen
                 name={CREATE_ACCOUNT_SCREEN}
                 component={CreateAccountScreen}
+                options={{
+                    animation: "none"
+                }}
+            />
+            <Stack.Screen
+                name={PROFILE_SCREEN}
+                component={ProfileScreen}
                 options={{
                     animation: "none"
                 }}

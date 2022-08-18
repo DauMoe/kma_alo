@@ -1,5 +1,15 @@
 import React, {useEffect, useRef, useState} from "react";
-import {View, ScrollView, Text, Button, TextInput, Dimensions, TouchableOpacity, Image} from "react-native";
+import {
+    View,
+    ScrollView,
+    Text,
+    Button,
+    TextInput,
+    Dimensions,
+    TouchableOpacity,
+    Image,
+    InteractionManager
+} from "react-native";
 import styled from "styled-components/native";
 import {Avatar, IconButton, TextInput as TextInputRNP} from "react-native-paper";
 import {useDispatch, useSelector} from "react-redux";
@@ -7,7 +17,7 @@ import {GetListChats} from "../ReduxSaga/Chat/Actions";
 import {CHAT_SCREEN} from "../Definition";
 import 'moment-timezone';
 import moment from "moment";
-import {useNavigation} from "@react-navigation/native";
+import {useFocusEffect, useIsFocused, useNavigation} from "@react-navigation/native";
 import lodash from "lodash";
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import { axiosConfig, DEFAULT_BASE_URL } from "../ReduxSaga/AxiosConfig";
@@ -163,22 +173,36 @@ const ListChatsScreen = function(props) {
     }
 
     useEffect(function() {
-        if (!isMount.current) {
-            dispatch(GetListChats());
-            isMount.current = true;
-        } else {
-            if (loaded && !error) {
-                setListChat(data);
+        const task = InteractionManager.runAfterInteractions(() => {
+            if (!isMount.current) {
+                dispatch(GetListChats());
+                isMount.current = true;
+            } else {
+                if (loaded && !error) {
+                    setListChat(data);
+                }
             }
-        }
+        });
+        return () => task.cancel();
     }, [data]);
 
-    useEffect(function() {
-        const unsub = navigation.addListener('focus', () => {
-            dispatch(GetListChats());
-        });
-        return unsub;
-    }, [navigation]);
+
+
+    // useFocusEffect(() => {
+    //     React.useCallback(() => {
+    //         const task = InteractionManager.runAfterInteractions(() => {
+    //             if (!isMount.current) {
+    //                 dispatch(GetListChats());
+    //                 isMount.current = true;
+    //             } else {
+    //                 if (loaded && !error) {
+    //                     setListChat(data);
+    //                 }
+    //             }
+    //         });
+    //         return () => task.cancel();
+    //     }, [data]);
+    // });
 
     if (!loaded) return <LoadingChatScreen/>
 

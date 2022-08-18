@@ -3,7 +3,7 @@ import {BottomNavigation} from 'react-native-paper';
 import NewsFeedScreen from '../NewsFeedScreen/index';
 import FriendsScreen from '../FriendsScreen';
 import ListChatsScreen from '../ChatScreen/ListChatsScreen';
-import ProfileScreen from '../UserProfileScreen';
+import UserProfileScreen from '../UserProfileScreen';
 
 const MainScreen = function (props) {
   const [CurrentTab, setTab] = useState(0);
@@ -18,7 +18,7 @@ const MainScreen = function (props) {
     news_feed: NewsFeedScreen,
     friends: FriendsScreen,
     chat: ListChatsScreen,
-    profile: ProfileScreen,
+    profile: UserProfileScreen,
   });
 
   return (
