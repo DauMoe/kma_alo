@@ -1,16 +1,18 @@
 import React, { useState } from "react";
 import {ActivityIndicator, Avatar, Button, withTheme} from "react-native-paper";
-import { Dimensions, ScrollView, View, Text, Image, ImageBackground } from "react-native";
+import { Dimensions, ScrollView, View, Text, Image, ImageBackground, FlatList } from "react-native";
 import styled from "styled-components";
 import { useFocusEffect } from "@react-navigation/native";
 import { axiosConfig, DEFAULT_BASE_URL } from "../ReduxSaga/AxiosConfig";
-import { GET_USER_PROFILE } from "../API_Definition";
+import { GET_POSTS, GET_USER_PROFILE } from "../API_Definition";
+import SingleNews from "../NewsFeedScreen/SingleNews";
 
 const ProfileScreen = function(props) {
     const { width, height }     = Dimensions.get("window");
     const { colors }            = props.theme;
     const [profileInfo, setProfile]   = useState({});
     const [listPost, setPost]   = useState([]);
+  const [openComment, setOpen]    = useState(false);
 
     const UserProfileScreen = styled(View)`
         display: flex;
@@ -39,40 +41,86 @@ const ProfileScreen = function(props) {
 
     const FetchUserInfo = () => {
         const controller = new AbortController();
-        axiosConfig(GET_USER_PROFILE, "get", {
+        const fetch = axiosConfig(GET_USER_PROFILE, "get", {
             signal: controller.signal
-        })
-          .then(r => {
-              setProfile(r.data.data.user_data);
-          })
-          .catch(e => {
-              console.error(e.response)
-          });
-        return controller;
+        });
+        return { controller, fetch };
+    }
+
+    const GetListPost = () => {
+      const controller= new AbortController();
+      const fetch =  axiosConfig(GET_POSTS, "get", {
+        params: {
+          offset: 0,
+          limit: 10,
+          own_post: true
+        },
+        signal: controller.signal
+      })
+      return { controller, fetch };
     }
 
     useFocusEffect(
       React.useCallback(() => {
-          const ctrl1 = FetchUserInfo();
+          const p1 = FetchUserInfo();
+          const p2 = GetListPost();
+          Promise.all([p1.fetch, p2.fetch])
+            .then(r => {
+              setProfile(r[0].data.data.user_data);
+              setPost(r[1].data.data.list_post);
+            })
+            .catch(e => {
+              console.error("E: ", e);
+            })
           return(() => {
-              ctrl1.abort();
+            p1.controller.abort();
+            p2.controller.abort();
           })
       }, [])
     )
 
+  const [openModal, setOpenModal] = useState({
+    state: false,
+    post_id: -1
+  });
+
+  const setModalState = (modalState, postId) => {
+    setOpenModal({
+      state: modalState,
+      post_id: postId
+    });
+  }
+
+  const openCommentScreen = function(show) {
+    setOpen(show);
+  }
+
     return(
         <View style={{height: height, width: width}}>
-            <ScrollView>
-                <UserProfileScreen>
-                    <ForeignBackground link={profileInfo.avatar_link}/>
-                    {
-                        profileInfo.avatar_link
-                          ? <Image source={{uri: DEFAULT_BASE_URL + profileInfo.avatar_link}} style={{width: 120, height: 120, borderRadius: 99999, borderWidth: 3, borderColor: "white"}}/>
-                          : <Avatar.Text size={120} label={profileInfo.avatar_text} style={{borderWidth: 3, borderColor: "white"}}/>
-                    }
-                    <UsernameProfile>{profileInfo.first_name} {profileInfo.last_name}</UsernameProfile>
-                </UserProfileScreen>
-            </ScrollView>
+              <UserProfileScreen>
+                  <ForeignBackground link={profileInfo.avatar_link}/>
+                  {
+                      profileInfo.avatar_link
+                        ? <Image source={{uri: DEFAULT_BASE_URL + profileInfo.avatar_link}} style={{width: 120, height: 120, borderRadius: 99999, borderWidth: 3, borderColor: "white"}}/>
+                        : <Avatar.Text size={120} label={profileInfo.avatar_text} style={{borderWidth: 3, borderColor: "white"}}/>
+                  }
+                  <UsernameProfile>{profileInfo.first_name} {profileInfo.last_name}</UsernameProfile>
+              </UserProfileScreen>
+
+            <FlatList
+              style={{marginTop: 20}}
+              data={listPost}
+              keyExtractor={(item, index) => "_self_post_" + index}
+              renderItem={({ item, index }) => (
+                <SingleNews
+                  width={width}
+                  height={height}
+                  data={item}
+                  showComment={openCommentScreen}
+                  openDeleteModal={setModalState}
+                />
+              )}
+            />
         </View>
     );
 }

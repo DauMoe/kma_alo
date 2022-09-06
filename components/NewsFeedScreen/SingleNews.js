@@ -84,7 +84,8 @@ const SingleNews = function(props) {
     const { width, height, showComment, data, ConfirmDeletePost, openDeleteModal }  = props;
     const { colors }                            = props.theme;
     const dispatch                              = useDispatch();
-    const { token }                             = useSelector(state => state.Authenticator);
+    // const { token }                             = useSelector(state => state.Authenticator);
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIxLCJlbWFpbCI6ImxlaHV5aG9hbmcxMTExOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF1bW9lMSIsImlhdCI6MTY2MDgzNTg3NCwiZXhwIjoxODc2ODM1ODc0fQ.E-whu03YrSH9KOrqxBIP5aoL6bkDxNX6mvv7qe9yeJM";
     const { uid, email, username }              = jwt_decode(token);
 
     const LoadComments = function(postId) {
@@ -102,7 +103,7 @@ const SingleNews = function(props) {
                 <AvatarWrapper theme={colors}>
                     {
                         data.avatar === ""
-                            ? <Avatar.Text size={40} label="DM" style={{marginRight: 10}}/>
+                            ? <Avatar.Text size={40} label={data.avatar_text} style={{marginRight: 10}}/>
                             : <Image source={{uri: DEFAULT_BASE_URL + data.avatar}} style={{width: 40, height: 40, borderRadius: 9999, marginRight: 10}}/>
                     }
                     {/*<ActiveStatusDot active={false}/>*/}
@@ -169,7 +170,7 @@ const SingleNews = function(props) {
                     color: black
                   }
                 `}
-                source={{html: GenContent(data.content)}}
+                source={{html: GenContent(data.title ? `<h3 style="margin-bottom: 2px">${data.title}</h3>${data.content}` : data.content)}}
             />
 
             <NewsInteractive>
