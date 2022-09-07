@@ -3,13 +3,12 @@
 - [x] Đăng ký account (có xác thực mail)
 - [x] Xem toàn bộ các cuộc trò truyện
 - [x] Private Chat
-- [ ] **PENDING** Group chat 
 - [ ] Video call
 - [ ] Xem danh sách bạn bè + gợi ý bạn bè từ danh bạ
 - [x] Cập nhật thông tin cá nhân (username, email, sdt, ho  và tên)
 - [ ] Cập nhật thông tin danh bạ
 - [x] Đăng bài (ảnh, chữ, video)
-- [ ] Thả reaction, comment
+- [x] Thả reaction, comment
 - [ ] Tìm bạn bè qua sdt hoặc email, username(tìm, kết bạn)
 - [ ] Quên mk
 
