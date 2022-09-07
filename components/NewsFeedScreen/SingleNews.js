@@ -4,9 +4,10 @@ import {Avatar, Button, IconButton, Modal, Portal, Provider, withTheme} from "re
 import {useDispatch, useSelector} from "react-redux";
 import styled from "styled-components/native";
 import AutoHeightWebView from "react-native-autoheight-webview";
-import {DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
+import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 import moment from "moment";
 import jwt_decode from "jwt-decode";
+import {REACT_POST} from "../API_Definition";
 
 const NewsWrapper = styled(View)`
     padding: 20px;
@@ -81,11 +82,11 @@ const CommentButton = styled(Button)`
 `;
 
 const SingleNews = function(props) {
-    const { width, height, showComment, data, ConfirmDeletePost, openDeleteModal }  = props;
+    const { width, height, showComment, data, ConfirmDeletePost, openDeleteModal, reactionPost }  = props;
     const { colors }                            = props.theme;
     const dispatch                              = useDispatch();
-    // const { token }                             = useSelector(state => state.Authenticator);
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIxLCJlbWFpbCI6ImxlaHV5aG9hbmcxMTExOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF1bW9lMSIsImlhdCI6MTY2MDgzNTg3NCwiZXhwIjoxODc2ODM1ODc0fQ.E-whu03YrSH9KOrqxBIP5aoL6bkDxNX6mvv7qe9yeJM";
+    const { token }                             = useSelector(state => state.Authenticator);
+  // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIxLCJlbWFpbCI6ImxlaHV5aG9hbmcxMTExOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF1bW9lMSIsImlhdCI6MTY2MDgzNTg3NCwiZXhwIjoxODc2ODM1ODc0fQ.E-whu03YrSH9KOrqxBIP5aoL6bkDxNX6mvv7qe9yeJM";
     const { uid, email, username }              = jwt_decode(token);
 
     const LoadComments = function(postId) {
@@ -95,6 +96,18 @@ const SingleNews = function(props) {
 
     const GenContent = function(content) {
         return `<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body>${content}</body></html>`
+    }
+
+    const LikePost = function (post_id, type) {
+        axiosConfig(REACT_POST, "post", {
+            data: {
+                post_id, type
+            }
+        })
+            .then(r => {
+
+            })
+            .catch(e => console.log(e));
     }
 
     return(
@@ -174,7 +187,7 @@ const SingleNews = function(props) {
             />
 
             <NewsInteractive>
-                <ReactionButton onPress={e => console.log("Like")} onLongPress={e => console.log("Hold to choose")} uppercase={false} icon='thumb-up'>{data.reactions.length} {data.reactions.length < 2 ? "like" : "likes"}</ReactionButton>
+                <ReactionButton onPress={() => reactionPost(data.post_id, 3)} onLongPress={e => console.log("Hold to choose")} uppercase={false} icon='thumb-up'>{data.reactions.length} {data.reactions.length < 2 ? "like" : "likes"}</ReactionButton>
                 {/*<CommentButton onPress={_ => LoadComments(1)} uppercase={false} icon='message-reply'>0 comment</CommentButton>*/}
                 <CommentButton onPress={_ => console.log("comment")} uppercase={false} icon='message-reply'>0 comment</CommentButton>
             </NewsInteractive>

@@ -2,7 +2,7 @@ import axios from "axios";
 import { HOST_TABLE, HOST_TB_CREATE_AT, HOST_TB_VALUE, TOKEN_TABLE, TOKEN_TB_VALUE } from "../Definition";
 import { _db } from '../Utils';
 
-const sv = 1;
+const sv = 2;
 
 const PRODUCTION_URL                = "20.89.94.38";
 const TEST_URL                      = "192.168.1.9";
@@ -27,12 +27,9 @@ import store from './RootReducer';
 let TOKEN, BASE_URL;
 store.subscribe(function() {
     const { token, baseUrl } = store.getState().Authenticator;
-    // console.log("TOKEN: ", token, baseUrl);
+    console.log("TOKEN: ", token);
     if (token)      TOKEN       = token;
     if (baseUrl)    BASE_URL    = baseUrl;
-
-    // if (token)      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    // if (baseUrl)    axios.defaults.baseURL = baseUrl;
 });
 
 export const setBaseUrl = function(baseURL) {
@@ -47,10 +44,10 @@ export const axiosConfig = function(endpoint, method, config) {
     const instance = axios.create({
         baseURL: DEFAULT_BASE_URL
     });
-    instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    // if (TOKEN) {
-    //     instance.defaults.headers.common['Authorization'] = `Bearer ${TOKEN}`;
-    // }
+    // instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    if (TOKEN) {
+        instance.defaults.headers.common['Authorization'] = `Bearer ${TOKEN}`;
+    }
     switch(method.toUpperCase()) {
         case "GET":
             return instance.get(endpoint, config);

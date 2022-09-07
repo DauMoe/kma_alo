@@ -1,18 +1,19 @@
 import React, { useState } from "react";
-import {ActivityIndicator, Avatar, Button, withTheme} from "react-native-paper";
-import { Dimensions, ScrollView, View, Text, Image, ImageBackground, FlatList } from "react-native";
+import {ActivityIndicator, Avatar, Button, IconButton, withTheme} from "react-native-paper";
+import {Dimensions, ScrollView, View, Text, Image, ImageBackground, FlatList, TouchableOpacity} from "react-native";
 import styled from "styled-components";
-import { useFocusEffect } from "@react-navigation/native";
+import {useFocusEffect, useNavigation} from "@react-navigation/native";
 import { axiosConfig, DEFAULT_BASE_URL } from "../ReduxSaga/AxiosConfig";
 import { GET_POSTS, GET_USER_PROFILE } from "../API_Definition";
 import SingleNews from "../NewsFeedScreen/SingleNews";
 
 const ProfileScreen = function(props) {
-    const { width, height }     = Dimensions.get("window");
-    const { colors }            = props.theme;
-    const [profileInfo, setProfile]   = useState({});
-    const [listPost, setPost]   = useState([]);
-  const [openComment, setOpen]    = useState(false);
+    const { width, height }         = Dimensions.get("window");
+    const { colors }                = props.theme;
+    const navigation                = useNavigation();
+    const [profileInfo, setProfile] = useState({});
+    const [listPost, setPost]       = useState([]);
+    const [openComment, setOpen]    = useState(false);
 
     const UserProfileScreen = styled(View)`
         display: flex;
@@ -31,9 +32,14 @@ const ProfileScreen = function(props) {
     const ForeignBackground = function({link}) {
       if (link) {
             return(
-              <View style={{position: "absolute", left: 0, right: 0, top: 0, height: '70%'}}>
-                  <Image source={{uri: DEFAULT_BASE_URL + link}} style={{width: '100%', height: '100%'}}/>
-              </View>
+              <>
+                  <View style={{position: "absolute", left: 0, right: 0, top: 0, height: '70%'}}>
+                      <Image source={{uri: DEFAULT_BASE_URL + link}} style={{width: '100%', height: '100%'}}/>
+                  </View>
+                  <View style={{position: "absolute", left: 10, top: 10, borderRadius: 999999999, backgroundColor: "white"}}>
+                      <IconButton icon="chevron-left" size={20} onPress={() => {if (navigation.canGoBack()) navigation.goBack()}} color={colors.primaryTextColor}/>
+                  </View>
+              </>
             )
         }
       return <View style={{position: "absolute", left: 0, right: 0, top: 0, height: '70%', backgroundColor: colors.primary}}></View>

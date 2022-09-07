@@ -9,7 +9,7 @@ import {Button, FAB, HelperText, Modal, Portal, Provider, withTheme} from "react
 import {WebView} from "react-native-webview";
 import AutoHeightWebView from "react-native-autoheight-webview";
 import {axiosConfig} from "../ReduxSaga/AxiosConfig";
-import {DELETE_POSTS, GET_POSTS} from "../API_Definition";
+import {DELETE_POSTS, GET_POSTS, REACT_POST} from "../API_Definition";
 
 const NewsFeedWrapper = styled(View)`
     //height: ${props => props.height + "px"};
@@ -103,6 +103,16 @@ const NewsFeedScreen = function(props) {
             })
     }
 
+    const reactionPost = function(post_id, type) {
+        axiosConfig(REACT_POST, "post", {
+            post_id, type
+        })
+            .then(r => {
+                console.log(r.data)
+            })
+            .catch(e => console.error(e.response));
+    }
+
     useFocusEffect(React.useCallback(() => {
         const task = InteractionManager.runAfterInteractions(() => {
             const controller = FetchPost(true);
@@ -111,13 +121,6 @@ const NewsFeedScreen = function(props) {
             task.cancel();
         });
     }, []));
-
-    // useEffect(function() {
-    //     const controller = FetchPost(true);
-    //     return(() => {
-    //         controller.abort();
-    //     });
-    // }, [isFocus]);
 
     return(
         <>
@@ -138,6 +141,7 @@ const NewsFeedScreen = function(props) {
                       data={item}
                       showComment={openCommentScreen}
                       openDeleteModal={setModalState}
+                      reactionPost={reactionPost}
                     />
                   )}
                 />

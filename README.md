@@ -1,16 +1,18 @@
 ## TODO Jun 26 2022:
-- [x] **IMPORTANT! Find a way to update offset without re-render**: (redux JUST SAVE THIS DATA from current call, update to **conversation** state and update **offset**)
-- [x] Use local DB stores host IP
-- [x] Create chat UI
-- [x] Create Profile UI
-- [x] Create search friend UI
+- [x] ~~**IMPORTANT! Find a way to update offset without re-render**: (redux JUST SAVE THIS DATA from current call, update to **conversation** state and update **offset**)~~
+- [x] ~~Use local DB stores host IP~~
+- [x] ~~Create chat UI~~
+- [x] ~~Create Profile UI~~
+- [x] ~~Create search friend UI~~
 - [ ] Create comments UI
-- [x] Create Profile UI (when user click a name -> Show all post of this person);
+- [x] ~~Create Profile UI (when user click a name -> Show all post of this person);~~
 - [ ] Call UI
-- [x] Create Signup UI
-- [x] **Complete login scenario**
+- [x] ~~Create Signup UI~~
+- [x] ~~**Complete login scenario**~~
 - [ ] Save current offset in new feeds when refresh or load more post
-- [x] **Confirm delete post modal**
+- [ ] **Create new API get user info and post with UID**
+- [ ] **Like and comment**: (BE - add liked field in GetListPort Response)
+- [x] ~~**Confirm delete post modal**~~
 - [ ] **Show notification in bottom navigation when having new message**
 
 ## Design  
@@ -31,3 +33,4 @@
  - [x] **(CURRENT)** Use `rooms` to make private chat
  - **Password keystone**: 1234567
  - Build APK: assembleRelease
+ - Kill process at port: `sudo kill -9 $(sudo lsof -t -i:${PORT})`

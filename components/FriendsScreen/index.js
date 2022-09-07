@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from "react";
-import {View, Text, TextInput, PermissionsAndroid, ScrollView, Image, Dimensions} from "react-native";
+import {View, Text, TextInput, PermissionsAndroid, ScrollView, Image, Dimensions, TouchableOpacity} from "react-native";
 import styled from "styled-components/native";
 import Contacts from "react-native-contacts";
 import {ActivityIndicator, Avatar, Button, withTheme} from "react-native-paper";
 import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 import {GET_LIST_FRIENDS, GET_RECOMMEND_FRIENDS} from "../API_Definition";
-import { useIsFocused } from "@react-navigation/native";
+import {useIsFocused, useNavigation} from "@react-navigation/native";
 import FriendSkeleton from "./FriendSkeleton";
+import {PROFILE_SCREEN} from "../Definition";
 
 const FriendsScreen = function(props) {
     const { colors } = props.theme;
@@ -15,6 +16,7 @@ const FriendsScreen = function(props) {
     const [listRecommendFriends, setRecommends] = useState([]);
     const [isLoading, setLoading] = useState(true);
     const isFocus = useIsFocused();
+    const navigation = useNavigation();
     const { width, height } = Dimensions.get("window");
 
     const RecommendWrapper = styled(View)`
@@ -39,64 +41,62 @@ const FriendsScreen = function(props) {
          * @Second: display new contact from response data
          */
 
-        if(__DEV__) {
-            const controller = new AbortController();
-            PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
-                {
-                    title: "Contacts Permission",
-                    message:
-                        "This app would like to view your contacts.",
-                    buttonNeutral: "Ask Me Later",
-                    buttonNegative: "Cancel",
-                    buttonPositive: "Allow"
-                }
-            ).then(r => {
-                Contacts.getAll()
-                    .then(c => {
-                        setContacts(c);
-                        const GetListFriends      = axiosConfig(GET_LIST_FRIENDS, "get", {
-                            signal: controller.signal
-                        });
-                        const GetRecommendFriends = axiosConfig(GET_RECOMMEND_FRIENDS, "post", {
-                            list_contacts: [],
-                            signal: controller.signal
-                        });
-                        Promise.all([GetListFriends, GetRecommendFriends])
-                            .then(r => {
-                                setListFriends(r[0].data.data.list_friends);
-                                setRecommends(r[1].data.data.recommend_friends);
-                            })
-                            .catch(e => {
-                                console.error(e.response);
-                            })
-                            .finally(() => setLoading(false));
-                    })
-                    .catch(e => {
-                        console.error("C: ", e);
-                        setLoading(false);
-                    })
-            }).catch(e => {
-                console.error("Grant per err: ", e);
-                setLoading(false);
-            });
-            return(() => {
-                controller.abort();
-            })
-        }
+        const controller = new AbortController();
+        PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
+            {
+                title: "Contacts Permission",
+                message:
+                    "This app would like to view your contacts.",
+                buttonNeutral: "Ask Me Later",
+                buttonNegative: "Cancel",
+                buttonPositive: "Allow"
+            }
+        ).then(r => {
+            Contacts.getAll()
+                .then(c => {
+                    setContacts(c);
+                    const GetListFriends      = axiosConfig(GET_LIST_FRIENDS, "get", {
+                        signal: controller.signal
+                    });
+                    const GetRecommendFriends = axiosConfig(GET_RECOMMEND_FRIENDS, "post", {
+                        list_contacts: [],
+                        signal: controller.signal
+                    });
+                    Promise.all([GetListFriends, GetRecommendFriends])
+                        .then(r => {
+                            setListFriends(r[0].data.data.list_friends);
+                            setRecommends(r[1].data.data.recommend_friends);
+                        })
+                        .catch(e => {
+                            console.error(e.response);
+                        })
+                        .finally(() => setLoading(false));
+                })
+                .catch(e => {
+                    console.error("C: ", e);
+                    setLoading(false);
+                })
+        }).catch(e => {
+            console.error("Grant per err: ", e);
+            setLoading(false);
+        });
+        return(() => {
+            controller.abort();
+        })
     }, [isFocus]);
 
     const ShowMoreRecommendFriend = function() {
 
     }
 
-  if (!__DEV__) {
-      return (
-          <View style={{display: "flex", alignItems: "center", justifyContent: "center", height: height}}>
-              <Text style={{fontFamily: "NunitoSemiBold", color: "black"}}>Sorry, this feature is developing!</Text>
-          </View>
-      )
-  }
+    const Go2Profile = function(friend_data) {
+        console.log("DATA: ", friend_data);
+        navigation.push(PROFILE_SCREEN, {
+            uid: friend_data.uid
+        });
+    }
+
     if (isLoading) return <FriendSkeleton/>;
 
     return(
@@ -134,7 +134,9 @@ const FriendsScreen = function(props) {
                                 ? <Avatar.Text size={50} label={friend.avatar_text} style={{marginRight: 15}}/>
                                 : <Image source={{uri: DEFAULT_BASE_URL + friend.avatar_link}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>}
                             <View>
-                                <Text style={{fontFamily: "NunitoBold", fontSize: 18, color: colors.text}}>{friend.display_name}</Text>
+                                <TouchableOpacity onPress={() => Go2Profile(friend)}>
+                                    <Text style={{fontFamily: "NunitoBold", fontSize: 18, color: colors.text}}>{friend.display_name}</Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
                     )

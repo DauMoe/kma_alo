@@ -12,3 +12,4 @@ export const DELETE_POSTS           = "/posts/delete";
 export const GET_LIST_FRIENDS       = "/friends/list";
 export const GET_RECOMMEND_FRIENDS  = "/friends/recommend_new_friends";
 export const SEARCH_FRIEND          = "/friends/search";
+export const REACT_POST             = "/posts/reaction";
