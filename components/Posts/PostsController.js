@@ -54,9 +54,9 @@ exports.DeletePost = async(req, resp) => {
 
 exports.GetPost = async(req, resp) => {
     const FUNC_NAME = "GetPost" + FILE_NAME;
-    const uid       = req.app.locals.uid;
     const reqData   = req.query;
     try {
+        const uid       = GetNumber(reqData, "uid", false) || req.app.locals.uid;
         const offset    = GetNumber(reqData, "offset");
         const limit     = GetNumber(reqData, "limit");
         const ownPost   = GetBoolean(reqData, "own_post", false);
@@ -70,7 +70,6 @@ exports.GetPost = async(req, resp) => {
                 }
                 const reactionsIndex = existedPostId.indexOf(i.POST_ID);
                 if (reactionsIndex === -1) {
-                    //Post is not gone through
                     const item = {
                         post_id     : i.POST_ID         === null ? -1 : i.POST_ID,
                         author_id   : i.AUTHOR_ID       === null ? -1 : i.AUTHOR_ID,
@@ -98,7 +97,6 @@ exports.GetPost = async(req, resp) => {
                     respData.push(item);
                     existedPostId.push(i.POST_ID);
                 } else {
-                    //Already go through this post
                     if (i.TYPE !== null) {
                         respData[reactionsIndex].reactions.push({
                             type    : i.TYPE,
