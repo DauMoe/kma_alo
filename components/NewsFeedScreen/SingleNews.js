@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {memo, useState} from "react";
 import { View, Text, Image } from "react-native";
 import {Avatar, Button, IconButton, Modal, Portal, Provider, withTheme} from "react-native-paper";
 import {useDispatch, useSelector} from "react-redux";
@@ -68,10 +68,10 @@ const NewsInteractive = styled(View)`
 `;
 
 const ReactionButton = styled(Button)`
-    flex: 1;
-    background-color: white;
-    margin-right: 5px;
-    border-radius: 5px;
+  flex: 1;
+  background-color: ${props => props.liked ? "#77cfff" : "white"};
+  margin-right: 5px;
+  border-radius: 5px;
 `;
 
 const CommentButton = styled(Button)`
@@ -91,7 +91,7 @@ const SingleNews = function(props) {
 
     const LoadComments = function(postId) {
         // dispatch(GetComments(postId));
-        showComment(true);
+        showComment(true, postId);
     }
 
     const GenContent = function(content) {
@@ -187,12 +187,16 @@ const SingleNews = function(props) {
             />
 
             <NewsInteractive>
-                <ReactionButton onPress={() => reactionPost(data.post_id, 3)} onLongPress={e => console.log("Hold to choose")} uppercase={false} icon='thumb-up'>{data.reactions.length} {data.reactions.length < 2 ? "like" : "likes"}</ReactionButton>
+                <ReactionButton liked={data.reacted} onPress={() => reactionPost(data.post_id, 3)} color={data.reacted ? "white" : undefined} onLongPress={e => console.log("Hold to choose")} uppercase={false} icon='thumb-up'>
+                    {data.reactions.length} {data.reactions.length < 2 ? "like" : "likes"}
+                </ReactionButton>
                 {/*<CommentButton onPress={_ => LoadComments(1)} uppercase={false} icon='message-reply'>0 comment</CommentButton>*/}
-                <CommentButton onPress={_ => console.log("comment")} uppercase={false} icon='message-reply'>0 comment</CommentButton>
+                <CommentButton onPress={_ => showComment(true)} uppercase={false} icon='message-reply'>Comments</CommentButton>
             </NewsInteractive>
         </NewsWrapper>
     );
 }
 
-export default withTheme(SingleNews);
+export default withTheme(memo(SingleNews, (prevProps, nextProps) => {
+    return prevProps.reacted !== nextProps.reacted
+}));

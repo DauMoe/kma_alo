@@ -20,7 +20,8 @@
  - [Login Screen Design](https://thumbs.dreamstime.com/z/mockup-screen-login-form-welcome-page-your-mobile-app-interface-design-login-page-mockup-screen-login-form-welcome-199562898.jpg)
  - [Chat Screen Design 1](https://assets.materialup.com/uploads/2c557a48-77e8-4ccc-9573-97a2509f3b07/preview.png)
  - [Chat Screen Design 2](https://i.pinimg.com/736x/1f/b9/49/1fb94995bae04dc1103c8174956ac70c.jpg)
-
+ - [Comments Screen Design](https://cdn.dribbble.com/users/1723105/screenshots/14711373/media/46652e6e05f26b43a7c089f6c6e234f5.png?compress=1&resize=1090x1280)
+ - 
 ## Documentation
  - [RN Navigation](https://reactnative.dev/docs/navigation)
  - [RN Paper Icons](https://materialdesignicons.com/)

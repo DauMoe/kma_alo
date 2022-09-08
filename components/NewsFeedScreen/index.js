@@ -9,7 +9,10 @@ import {Button, FAB, HelperText, Modal, Portal, Provider, withTheme} from "react
 import {WebView} from "react-native-webview";
 import AutoHeightWebView from "react-native-autoheight-webview";
 import {axiosConfig} from "../ReduxSaga/AxiosConfig";
+import lodash from "lodash";
+import jwt_decode from "jwt-decode";
 import {DELETE_POSTS, GET_POSTS, REACT_POST} from "../API_Definition";
+import {useSelector} from "react-redux";
 
 const NewsFeedWrapper = styled(View)`
     //height: ${props => props.height + "px"};
@@ -26,8 +29,13 @@ const CreatePostWrapper = styled(TouchableOpacity)`
 const NewsFeedScreen = function(props) {
     const { colors }                = props.theme;
     const navigation                = useNavigation();
+    const { token }                 = useSelector(state => state.Authenticator);
+    const jwtData                   = jwt_decode(token);
     const { width, height }         = Dimensions.get("window");
-    const [openComment, setOpen]    = useState(false);
+    const [openComment, setOpen]    = useState({
+        show: false,
+        post_id: -1
+    });
     const [listPost, setPost]       = useState([]);
     const isFocus                   = useIsFocused();
     const [isLoading, setLoading]   = useState(false);
@@ -40,8 +48,11 @@ const NewsFeedScreen = function(props) {
         limit   : 10
     });
 
-    const openCommentScreen = function(show) {
-        setOpen(show);
+    const openCommentScreen = function(show, post_id) {
+        setOpen({
+            post_id: post_id,
+            show: show
+        });
     }
 
     const Go2CreatePost = function() {
@@ -63,10 +74,19 @@ const NewsFeedScreen = function(props) {
             }
         })
             .then(r => {
+                const ListPost = [];
+                for(const post of r.data.data.list_post) {
+                    const item = post;
+                    item.reacted = false;
+                    if (lodash.find(post.reactions, v => v.uid === jwtData.uid)) {
+                        item.reacted = true;
+                    }
+                    ListPost.push(item);
+                }
                 if (refresh) {
-                    setPost(r.data.data.list_post);
+                    setPost(ListPost);
                 } else {
-                    setPost([...listPost, ...r.data.data.list_post]);
+                    setPost([...listPost, ...ListPost]);
                 }
                 currentState.current.offset = r.data.data.offset;
                 currentState.current.limit  = r.data.data.limit;
@@ -108,7 +128,23 @@ const NewsFeedScreen = function(props) {
             post_id, type
         })
             .then(r => {
-                console.log(r.data)
+                const index = lodash.findIndex(listPost, v => v.post_id === post_id);
+                const CloneListPost = [...listPost];
+                const ModifyItem = {...CloneListPost[index]};
+                if (r.data.data.mode === "delete") {
+                    ModifyItem.reacted = false;
+                    lodash.remove(ModifyItem.reactions, v => v.uid === jwtData.uid);
+                    CloneListPost.splice(index, 1, ModifyItem);
+                } else if (r.data.data.mode === "insert") {
+                    ModifyItem.reacted = true;
+                    ModifyItem.reactions.push({
+                       post_id: post_id,
+                       type: type,
+                       uid: jwtData.uid
+                    });
+                    CloneListPost.splice(index, 1, ModifyItem);
+                }
+                setPost(CloneListPost);
             })
             .catch(e => console.error(e.response));
     }
@@ -145,7 +181,7 @@ const NewsFeedScreen = function(props) {
                     />
                   )}
                 />
-                <CommentsScreen show={openComment}/>
+                <CommentsScreen showComment={openCommentScreen} show={openComment.show} post_id={openComment.post_id}/>
                 <FAB
                     small
                     icon="pencil"
