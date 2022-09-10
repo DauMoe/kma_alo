@@ -14,3 +14,4 @@ export const GET_RECOMMEND_FRIENDS  = "/friends/recommend_new_friends";
 export const SEARCH_FRIEND          = "/friends/search";
 export const REACT_POST             = "/posts/reaction";
 export const GET_COMMENTS           = "/posts/get_comment";
+export const NEW_COMMENTS           = "/posts/new_comment";

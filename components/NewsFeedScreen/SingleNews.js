@@ -82,7 +82,7 @@ const CommentButton = styled(Button)`
 `;
 
 const SingleNews = function(props) {
-    const { width, height, showComment, data, ConfirmDeletePost, openDeleteModal, reactionPost }  = props;
+    const { width, height, showComment, post_id, data, ConfirmDeletePost, openDeleteModal, reactionPost }  = props;
     const { colors }                            = props.theme;
     const dispatch                              = useDispatch();
     const { token }                             = useSelector(state => state.Authenticator);
@@ -191,7 +191,7 @@ const SingleNews = function(props) {
                     {data.reactions.length} {data.reactions.length < 2 ? "like" : "likes"}
                 </ReactionButton>
                 {/*<CommentButton onPress={_ => LoadComments(1)} uppercase={false} icon='message-reply'>0 comment</CommentButton>*/}
-                <CommentButton onPress={_ => showComment(true)} uppercase={false} icon='message-reply'>Comments</CommentButton>
+                <CommentButton onPress={_ => showComment(true, post_id)} uppercase={false} icon='message-reply'>Comments</CommentButton>
             </NewsInteractive>
         </NewsWrapper>
     );

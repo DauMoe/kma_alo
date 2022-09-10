@@ -11,7 +11,7 @@
 - [x] ~~**Complete login scenario**~~
 - [ ] Save current offset in new feeds when refresh or load more post
 - [ ] **Create new API get user info and post with UID**
-- [ ] **Like and comment**: (BE - add liked field in GetListPort Response)
+- [ ] **Like and comment**
 - [x] ~~**Confirm delete post modal**~~
 - [ ] **Show notification in bottom navigation when having new message**
 

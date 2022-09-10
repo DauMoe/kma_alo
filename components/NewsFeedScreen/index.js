@@ -175,6 +175,7 @@ const NewsFeedScreen = function(props) {
                       width={width}
                       height={height}
                       data={item}
+                      post_id={item.post_id}
                       showComment={openCommentScreen}
                       openDeleteModal={setModalState}
                       reactionPost={reactionPost}
