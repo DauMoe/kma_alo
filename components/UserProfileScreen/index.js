@@ -232,10 +232,12 @@ const UserProfileScreen = function(props) {
             signal: controller.signal
         })
             .then(r => {
+                console.log(r);
                 setAvatar({
                     ready: true,
                     value: DEFAULT_BASE_URL + r.data.data.user_data.avatar_link
                 });
+                setProfile(r.data.data.user_data);
             })
             .catch(e => console.error(e))
             .finally(() => {
