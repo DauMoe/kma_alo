@@ -115,7 +115,7 @@ exports.GetCommentDAO = async(post_id) => {
     const FUNC_NAME = `GetCommentDAO${FILE_NAME}`;
     let SQL, SQL_BIND = "";
     try {
-        SQL             = "SELECT * FROM POST_COMMENTS a JOIN USERS b ON a.UID = b.UID WHERE a.POST_ID = ?";
+        SQL             = "SELECT a.*, b.UID, b.FIRST_NAME, b.USERNAME, b.LAST_NAME, b.EMAIL, b.AVATAR_LINK FROM POST_COMMENTS a JOIN USERS b ON a.UID = b.UID WHERE a.POST_ID = ? ORDER BY a.CREATED_AT DESC";
         SQL_BIND        = mysql.format(SQL, [post_id]);
         const result    = await query(SQL_BIND);
         return DB_RESP(200, result);
