@@ -150,12 +150,12 @@ const NewsFeedScreen = function(props) {
     }
 
     useFocusEffect(React.useCallback(() => {
-        const task = InteractionManager.runAfterInteractions(() => {
-            const controller = FetchPost(true);
-        });
-        return(() => {
-            task.cancel();
-        });
+      const task = InteractionManager.runAfterInteractions(() => {
+        const controller = FetchPost(true);
+      });
+      return(() => {
+        task.cancel();
+      });
     }, []));
 
     return(

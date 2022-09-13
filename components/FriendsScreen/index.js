@@ -96,14 +96,6 @@ const FriendsScreen = function(props) {
 
     }
 
-    const FetchUserInfo = function() {
-      const controller = new AbortController();
-      const fetch = axiosConfig(GET_USER_PROFILE, "get", {
-        signal: controller.signal
-      });
-      return { controller, fetch };
-    }
-
     const Go2Profile = function(friend_data) {
       navigation.push(PROFILE_SCREEN, {
         uid: friend_data.uid
