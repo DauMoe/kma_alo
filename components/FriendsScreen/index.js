@@ -11,17 +11,18 @@ import {PROFILE_SCREEN} from "../Definition";
 
 const FriendsScreen = function(props) {
     const { colors } = props.theme;
-    const [contacts, setContacts] = useState([]);
     const [listFriends, setListFriends] = useState([]);
+    const [pendingRequest, setListPendingRequest] = useState([]);
     const [listRecommendFriends, setRecommends] = useState([]);
     const [userInfo, setUserInfo] = useState({});
     const [isLoading, setLoading] = useState(true);
     const isFocus = useIsFocused();
     const navigation = useNavigation();
+    const [triggerReRender, setReRender] = useState(false);
     const { width, height } = Dimensions.get("window");
 
     const RecommendWrapper = styled(View)`
-      padding: 20px 10px;
+      padding: 20px 0px;
     `;
 
     const FriendsWrapper = styled(View)`
@@ -36,63 +37,71 @@ const FriendsScreen = function(props) {
     `;
 
     useEffect(function() {
-        /***
-         * @TODO
-         * @First: create action with side effects to check new contact
-         * @Second: display new contact from response data
-         */
+      /***
+       * @TODO
+       * @First: create action with side effects to check new contact
+       * @Second: display new contact from response data
+       */
 
-        const controller = new AbortController();
-        PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
-          {
-            title: "Contacts Permission",
-            message:
-                "This app would like to view your contacts.",
-            buttonNeutral: "Ask Me Later",
-            buttonNegative: "Cancel",
-            buttonPositive: "Allow"
-          }
-        ).then(r => {
-            Contacts.getAll()
-            .then(c => {
-              setContacts(c);
-              const GetListFriends = axiosConfig(GET_LIST_FRIENDS, "get", {
-                signal: controller.signal
-              });
-              const GetRecommendFriends = axiosConfig(GET_RECOMMEND_FRIENDS, "post", {
-                list_contacts: [],
-                signal: controller.signal
-              });
-              const GetUserInfo = axiosConfig(GET_USER_PROFILE, "get", {
-                signal: controller.signal
-              });
-              Promise.all([GetListFriends, GetRecommendFriends, GetUserInfo])
-                .then(r => {
-                  console.log(r[2].data);
-                  setListFriends(r[0].data.data.list_friends);
-                  setRecommends(r[1].data.data.recommend_friends);
-                  setUserInfo(r[2].data.data.user_data);
-                })
-                .catch(e => {
-                  console.error(e.response);
-                })
-                .finally(() => setLoading(false));
-            })
-            .catch(e => {
-                console.error("C: ", e);
-                setLoading(false);
-            })
-        }).catch(e => {
-            console.error("Grant per err: ", e);
-            setLoading(false);
-        });
-        return(() => {
-            controller.abort();
-        })
-    }, [isFocus]);
+      const controller = new AbortController();
+      PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
+        {
+          title: "Contacts Permission",
+          message:
+              "This app would like to view your contacts.",
+          buttonNeutral: "Ask Me Later",
+          buttonNegative: "Cancel",
+          buttonPositive: "Allow"
+        }
+      ).then(r => {
+        Contacts.getAll()
+          .then(contacts => {
+            const ListContact = [];
+            for (const contact of contacts) {
+              if (contact.phoneNumbers[0]?.number) {
+                ListContact.push({
+                  mobile: contact.phoneNumbers[0].number.replace(/ /g,''),
+                });
+              }
+            }
+            // console.log(ListContact);
+            const GetListFriends = axiosConfig(GET_LIST_FRIENDS, "get", {
+              signal: controller.signal
+            });
+            const GetRecommendFriends = axiosConfig(GET_RECOMMEND_FRIENDS, "post", {
+              list_contacts: ListContact,
+              signal: controller.signal
+            });
+            const GetUserInfo = axiosConfig(GET_USER_PROFILE, "get", {
+              signal: controller.signal
+            });
+            Promise.all([GetListFriends, GetRecommendFriends, GetUserInfo])
+              .then(r => {
+                setListFriends(r[0].data.data.list_friends);
+                setListPendingRequest(r[0].data.data.pending_request);
+                setRecommends(r[1].data.data.recommend_friends);
+                setUserInfo(r[2].data.data.user_data);
+              })
+              .catch(e => {
+                console.error(e.response.data);
+              })
+              .finally(() => setLoading(false));
+          })
+          .catch(e => {
+              console.error("C: ", e);
+              setLoading(false);
+          })
+      }).catch(e => {
+        console.error("Grant per err: ", e);
+        setLoading(false);
+      });
+      return(() => {
+        controller.abort();
+      })
+    }, [isFocus, triggerReRender]);
 
-    const ShowMoreRecommendFriend = function() {
+    const AddFriend = function(uid) {
 
     }
 
@@ -107,42 +116,71 @@ const FriendsScreen = function(props) {
     return(
       <>
         <FriendsWrapper>
-            <Text style={{color: colors.text, fontFamily: "NunitoBold", fontSize: 18}}>You:</Text>
-            <View style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
-                {userInfo.avatar_link === ""
-                    ? <Avatar.Text size={50} label={userInfo.avatar_text} style={{marginRight: 15}}/>
-                    : <Image source={{uri: DEFAULT_BASE_URL + userInfo.avatar_link}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>}
-                <View>
-                    <TouchableOpacity onPress={() => Go2Profile(userInfo)}>
-                        <Text style={{fontFamily: "NunitoBold", fontSize: 18, color: colors.text}}>{userInfo.first_name + " " + userInfo.last_name}</Text>
-                    </TouchableOpacity>
-                </View>
+          <Text style={{color: colors.text, fontFamily: "NunitoBold", fontSize: 18}}>You:</Text>
+          <View style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
+            {userInfo.avatar_link === ""
+              ? <Avatar.Text size={50} label={userInfo.avatar_text} style={{marginRight: 15}}/>
+              : <Image source={{uri: DEFAULT_BASE_URL + userInfo.avatar_link}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>}
+            <View>
+              <TouchableOpacity onPress={() => Go2Profile(userInfo)}>
+                <Text style={{fontFamily: "NunitoBold", fontSize: 18, color: colors.text}}>{userInfo.first_name + " " + userInfo.last_name}</Text>
+              </TouchableOpacity>
             </View>
+          </View>
         </FriendsWrapper>
-        <ScrollView>
-          {listRecommendFriends.length > 0 &&
-            <RecommendWrapper>
-              <Text style={{color: colors.text, fontFamily: "NunitoBold", fontSize: 18}}>Maybe you know:</Text>
-              {listRecommendFriends.map((value, index) => {
+        <ScrollView style={{height: 300}}>
+          {(listRecommendFriends.length > 0 || pendingRequest.length > 0) &&
+            <FriendsWrapper>
+              <Text style={{color: colors.text, fontFamily: "NunitoBold", fontSize: 18}}>May you know:</Text>
+              {pendingRequest.map((data, index) => {
                 return(
-                  <View key={"_recommend_friend_" + index} style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
-                    <Avatar.Text size={50} label={"DM"} style={{marginRight: 15}}/>
+                  <View key={"_pending_friend_" + index} style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
+                    {data.avatar_link === ""
+                      ? <Avatar.Text size={50} label={data.avatar_text} style={{marginRight: 15}}/>
+                      : <Image source={{uri: DEFAULT_BASE_URL + data.avatar_link}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>}
                     <View>
-                      <Text style={{fontFamily: "NunitoBold", fontSize: 16, color: colors.text}}>Daumoe</Text>
+                      <TouchableOpacity onPress={() => Go2Profile(data)}>
+                        <View style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+                          <Text style={{fontFamily: "NunitoBold", fontSize: 16, color: colors.text}}>
+                            {data.first_name} {data.last_name}&nbsp;
+                          </Text>
+                          <Text style={{fontFamily: "NunitoRegular", fontSize: 10, color: colors.text}}>(Pending request)</Text>
+                        </View>
+                      </TouchableOpacity>
                       <View style={{display: "flex", flexDirection: "row", marginTop: 5}}>
-                        <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: colors.positiveBgColor, marginRight: 15}} color={colors.positiveTextColor} mode="text">
-                          Add friend
-                        </Button>
-                        <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: colors.negativeBgColor}} color={colors.negativeTextColor} mode="text">
-                          Remove
+                        <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: "#e875d4"}} color={colors.negativeTextColor} mode="text">
+                          Cancel request
                         </Button>
                       </View>
                     </View>
                   </View>
                 )
               })}
-              <Button uppercase={false} style={{marginTop: 10}} onPress={ShowMoreRecommendFriend} mode="text">See more</Button>
-            </RecommendWrapper>
+
+              {listRecommendFriends.map((data, index) => {
+                return(
+                  <View key={"_recommend_friend_" + index} style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
+                    {data.avatar_link === ""
+                      ? <Avatar.Text size={50} label={data.avatar_text} style={{marginRight: 15}}/>
+                      : <Image source={{uri: DEFAULT_BASE_URL + data.avatar_link}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>}
+                    <View>
+                      <TouchableOpacity onPress={() => Go2Profile(data)}>
+                        <Text style={{fontFamily: "NunitoBold", fontSize: 16, color: colors.text}}>{data.first_name} {data.last_name}</Text>
+                      </TouchableOpacity>
+                      <View style={{display: "flex", flexDirection: "row", marginTop: 5}}>
+                        <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: colors.positiveBgColor, marginRight: 15}} color={colors.positiveTextColor} mode="text" onPress={() => AddFriend(data.uid)}>
+                          Add friend
+                        </Button>
+                        {/*<Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: colors.negativeBgColor}} color={colors.negativeTextColor} mode="text">*/}
+                        {/*  Remove*/}
+                        {/*</Button>*/}
+                      </View>
+                    </View>
+                  </View>
+                )
+              })}
+              {/*<Button uppercase={false} style={{marginTop: 10}} onPress={ShowMoreRecommendFriend} mode="text">See more</Button>*/}
+            </FriendsWrapper>
           }
           <FriendsWrapper>
             <Text style={{color: colors.text, fontFamily: "NunitoBold", fontSize: 18}}>Friends:</Text>

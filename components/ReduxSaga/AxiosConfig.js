@@ -2,7 +2,7 @@ import axios from "axios";
 import { HOST_TABLE, HOST_TB_CREATE_AT, HOST_TB_VALUE, TOKEN_TABLE, TOKEN_TB_VALUE } from "../Definition";
 import { _db } from '../Utils';
 
-const sv = 2;
+const sv = 1;
 
 const PRODUCTION_URL                = "20.89.94.38";
 const TEST_URL                      = "192.168.1.9";
@@ -25,6 +25,7 @@ export const clearToken = function(token) {
 
 import store from './RootReducer';
 let TOKEN, BASE_URL;
+
 store.subscribe(function() {
     const { token, baseUrl } = store.getState().Authenticator;
     console.log("TOKEN: ", token);
@@ -40,7 +41,7 @@ export const setBaseUrl = function(baseURL) {
 }
 
 export const axiosConfig = function(endpoint, method, config) {
-    // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIxLCJlbWFpbCI6ImxlaHV5aG9hbmcxMTExOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF1bW9lMSIsImlhdCI6MTY2MDgzNTg3NCwiZXhwIjoxODc2ODM1ODc0fQ.E-whu03YrSH9KOrqxBIP5aoL6bkDxNX6mvv7qe9yeJM";
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIxLCJlbWFpbCI6ImxlaHV5aG9hbmcxMTExOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF1bW9lMSIsImlhdCI6MTY2MDgzNTg3NCwiZXhwIjoxODc2ODM1ODc0fQ.E-whu03YrSH9KOrqxBIP5aoL6bkDxNX6mvv7qe9yeJM";
     const instance = axios.create({
         baseURL: DEFAULT_BASE_URL
     });
