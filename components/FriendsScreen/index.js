@@ -4,7 +4,7 @@ import styled from "styled-components/native";
 import Contacts from "react-native-contacts";
 import {ActivityIndicator, Avatar, Button, withTheme} from "react-native-paper";
 import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
-import {GET_LIST_FRIENDS, GET_RECOMMEND_FRIENDS} from "../API_Definition";
+import {GET_LIST_FRIENDS, GET_RECOMMEND_FRIENDS, GET_USER_PROFILE} from "../API_Definition";
 import {useIsFocused, useNavigation} from "@react-navigation/native";
 import FriendSkeleton from "./FriendSkeleton";
 import {PROFILE_SCREEN} from "../Definition";
@@ -14,6 +14,7 @@ const FriendsScreen = function(props) {
     const [contacts, setContacts] = useState([]);
     const [listFriends, setListFriends] = useState([]);
     const [listRecommendFriends, setRecommends] = useState([]);
+    const [userInfo, setUserInfo] = useState({});
     const [isLoading, setLoading] = useState(true);
     const isFocus = useIsFocused();
     const navigation = useNavigation();
@@ -43,40 +44,45 @@ const FriendsScreen = function(props) {
 
         const controller = new AbortController();
         PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
-            {
-                title: "Contacts Permission",
-                message:
-                    "This app would like to view your contacts.",
-                buttonNeutral: "Ask Me Later",
-                buttonNegative: "Cancel",
-                buttonPositive: "Allow"
-            }
+          PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
+          {
+            title: "Contacts Permission",
+            message:
+                "This app would like to view your contacts.",
+            buttonNeutral: "Ask Me Later",
+            buttonNegative: "Cancel",
+            buttonPositive: "Allow"
+          }
         ).then(r => {
             Contacts.getAll()
-                .then(c => {
-                    setContacts(c);
-                    const GetListFriends      = axiosConfig(GET_LIST_FRIENDS, "get", {
-                        signal: controller.signal
-                    });
-                    const GetRecommendFriends = axiosConfig(GET_RECOMMEND_FRIENDS, "post", {
-                        list_contacts: [],
-                        signal: controller.signal
-                    });
-                    Promise.all([GetListFriends, GetRecommendFriends])
-                        .then(r => {
-                            setListFriends(r[0].data.data.list_friends);
-                            setRecommends(r[1].data.data.recommend_friends);
-                        })
-                        .catch(e => {
-                            console.error(e.response);
-                        })
-                        .finally(() => setLoading(false));
+            .then(c => {
+              setContacts(c);
+              const GetListFriends = axiosConfig(GET_LIST_FRIENDS, "get", {
+                signal: controller.signal
+              });
+              const GetRecommendFriends = axiosConfig(GET_RECOMMEND_FRIENDS, "post", {
+                list_contacts: [],
+                signal: controller.signal
+              });
+              const GetUserInfo = axiosConfig(GET_USER_PROFILE, "get", {
+                signal: controller.signal
+              });
+              Promise.all([GetListFriends, GetRecommendFriends, GetUserInfo])
+                .then(r => {
+                  console.log(r[2].data);
+                  setListFriends(r[0].data.data.list_friends);
+                  setRecommends(r[1].data.data.recommend_friends);
+                  setUserInfo(r[2].data.data.user_data);
                 })
                 .catch(e => {
-                    console.error("C: ", e);
-                    setLoading(false);
+                  console.error(e.response);
                 })
+                .finally(() => setLoading(false));
+            })
+            .catch(e => {
+                console.error("C: ", e);
+                setLoading(false);
+            })
         }).catch(e => {
             console.error("Grant per err: ", e);
             setLoading(false);
@@ -91,58 +97,72 @@ const FriendsScreen = function(props) {
     }
 
     const Go2Profile = function(friend_data) {
-        console.log("DATA: ", friend_data);
-        navigation.push(PROFILE_SCREEN, {
-            uid: friend_data.uid
-        });
+      navigation.push(PROFILE_SCREEN, {
+        uid: friend_data.uid
+      });
     }
 
     if (isLoading) return <FriendSkeleton/>;
 
     return(
+      <>
+        <FriendsWrapper>
+            <Text style={{color: colors.text, fontFamily: "NunitoBold", fontSize: 18}}>You:</Text>
+            <View style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
+                {userInfo.avatar_link === ""
+                    ? <Avatar.Text size={50} label={userInfo.avatar_text} style={{marginRight: 15}}/>
+                    : <Image source={{uri: DEFAULT_BASE_URL + userInfo.avatar_link}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>}
+                <View>
+                    <TouchableOpacity onPress={() => Go2Profile(userInfo)}>
+                        <Text style={{fontFamily: "NunitoBold", fontSize: 18, color: colors.text}}>{userInfo.first_name + " " + userInfo.last_name}</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </FriendsWrapper>
         <ScrollView>
-            {listRecommendFriends.length > 0 &&
-                <RecommendWrapper>
-                    <Text style={{color: colors.text, fontFamily: "NunitoBold", fontSize: 18}}>Maybe you know:</Text>
-                    {listRecommendFriends.map((value, index) => {
-                        return(
-                            <View key={"_recommend_friend_" + index} style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
-                                <Avatar.Text size={50} label={"DM"} style={{marginRight: 15}}/>
-                                <View>
-                                    <Text style={{fontFamily: "NunitoBold", fontSize: 16, color: colors.text}}>Daumoe</Text>
-                                    <View style={{display: "flex", flexDirection: "row", marginTop: 5}}>
-                                        <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: colors.positiveBgColor, marginRight: 15}} color={colors.positiveTextColor} mode="text">
-                                            Add friend
-                                        </Button>
-                                        <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: colors.negativeBgColor}} color={colors.negativeTextColor} mode="text">
-                                            Remove
-                                        </Button>
-                                    </View>
-                                </View>
-                            </View>
-                        )
-                    })}
-                    <Button uppercase={false} style={{marginTop: 10}} onPress={ShowMoreRecommendFriend} mode="text">See more</Button>
-                </RecommendWrapper>
-            }
-            <FriendsWrapper>
-                <Text style={{color: colors.text, fontFamily: "NunitoBold", fontSize: 18}}>Friends:</Text>
-                {listFriends.map((friend, index) => {
-                    return(
-                        <View key={"_list_friend_" + index} style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
-                            {friend.avatar_link === ""
-                                ? <Avatar.Text size={50} label={friend.avatar_text} style={{marginRight: 15}}/>
-                                : <Image source={{uri: DEFAULT_BASE_URL + friend.avatar_link}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>}
-                            <View>
-                                <TouchableOpacity onPress={() => Go2Profile(friend)}>
-                                    <Text style={{fontFamily: "NunitoBold", fontSize: 18, color: colors.text}}>{friend.display_name}</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    )
-                })}
+          {listRecommendFriends.length > 0 &&
+            <RecommendWrapper>
+              <Text style={{color: colors.text, fontFamily: "NunitoBold", fontSize: 18}}>Maybe you know:</Text>
+              {listRecommendFriends.map((value, index) => {
+                return(
+                  <View key={"_recommend_friend_" + index} style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
+                    <Avatar.Text size={50} label={"DM"} style={{marginRight: 15}}/>
+                    <View>
+                      <Text style={{fontFamily: "NunitoBold", fontSize: 16, color: colors.text}}>Daumoe</Text>
+                      <View style={{display: "flex", flexDirection: "row", marginTop: 5}}>
+                        <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: colors.positiveBgColor, marginRight: 15}} color={colors.positiveTextColor} mode="text">
+                          Add friend
+                        </Button>
+                        <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: colors.negativeBgColor}} color={colors.negativeTextColor} mode="text">
+                          Remove
+                        </Button>
+                      </View>
+                    </View>
+                  </View>
+                )
+              })}
+              <Button uppercase={false} style={{marginTop: 10}} onPress={ShowMoreRecommendFriend} mode="text">See more</Button>
+            </RecommendWrapper>
+          }
+          <FriendsWrapper>
+            <Text style={{color: colors.text, fontFamily: "NunitoBold", fontSize: 18}}>Friends:</Text>
+              {listFriends.map((friend, index) => {
+                return(
+                  <View key={"_list_friend_" + index} style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
+                    {friend.avatar_link === ""
+                      ? <Avatar.Text size={50} label={friend.avatar_text} style={{marginRight: 15}}/>
+                      : <Image source={{uri: DEFAULT_BASE_URL + friend.avatar_link}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>}
+                    <View>
+                      <TouchableOpacity onPress={() => Go2Profile(friend)}>
+                        <Text style={{fontFamily: "NunitoBold", fontSize: 18, color: colors.text}}>{friend.display_name}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )
+              })}
             </FriendsWrapper>
         </ScrollView>
+      </>
     )
 }
 
