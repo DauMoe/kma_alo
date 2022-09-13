@@ -1,6 +1,8 @@
 const {CatchErr, SuccessResp, RespCustomCode, readFile} = require("../../Utils/UtilsFunction");
-const {GetJSONArray, GetString} = require("../../Utils/GetValue");
-const {RecommendNewFriendsDAO, GetListFriendsDAO, SearchFriendDAO} = require("./FriendsDAO");
+const {GetJSONArray, GetString, GetNumber} = require("../../Utils/GetValue");
+const {RecommendNewFriendsDAO, GetListFriendsDAO, SearchFriendDAO, AddFriendDAODAO, AddFriendDAO,
+    CancelFriendRequestDAO
+} = require("./FriendsDAO");
 const path = require("path");
 const FILE_NAME = " - FriendsController.js";
 
@@ -18,20 +20,19 @@ exports.RecommendNewFriends = async(req, resp) => {
         }
         let errMsg = ""
         for (const [index, contact] of ListContacts.entries()) {
-            if (!contact.hasOwnProperty("mobile") || !contact.hasOwnProperty("email")) {
-                errMsg += `item index ${index} must have 'mobile' AND 'email' properties, `;
+            if (!contact.hasOwnProperty("mobile")) {
+                errMsg += `item index ${index} must have 'mobile' properties, `;
             }
         }
         if (errMsg.length > 0) {
             errMsg = errMsg.substring(0, errMsg.length - 2);
             RespCustomCode(resp, undefined, errMsg, 400);
         } else {
-            let list_mobile = [], list_email = [];
+            let list_mobile = []
             for (const contact of ListContacts) {
-                if (contact.email.trim() !== "") list_email.push(contact.email);
                 if (contact.mobile.trim() !== "") list_mobile.push(contact.mobile);
             }
-            const result = await RecommendNewFriendsDAO(uid, list_mobile, list_email);
+            const result = await RecommendNewFriendsDAO(uid, list_mobile);
             const respData = [];
             if (result.code === 200) {
                 for (const i of result.msg) {
@@ -62,11 +63,10 @@ exports.GetListFriends = async(req, resp) => {
     const uid = req.app.locals.uid;
     try {
         const result = await GetListFriendsDAO(uid);
-        const respData = [];
+        const ListFriends = [], ListPendingRequest = [];
         if (result.code === 200) {
-            let ListPromises = [];
             for (const i of result.msg) {
-                respData.push({
+                const item = {
                     uid         : i.UID             === null ? -1 : i.UID,
                     first_name  : i.FIRST_NAME      === null ? "" : i.FIRST_NAME,
                     last_name   : i.LAST_NAME       === null ? "" : i.LAST_NAME,
@@ -78,14 +78,13 @@ exports.GetListFriends = async(req, resp) => {
                     type        : i.TYPE,
                     send_request: i.SEND_REQUEST_AT === null ? "" : i.SEND_REQUEST_AT,
                     accept_at   : i.ACCEPT_AT === null || i.TYPE != 'FRIEND' ? "" : i.ACCEPT_AT
-                });
-            }
-            const listAvatars = await Promise.all(ListPromises);
-            for (const [index, avatar] of listAvatars.entries()) {
-                respData[index].avatar = avatar;
+                };
+                if (i.TYPE === "FRIEND") ListFriends.push(item);
+                if (i.TYPE === "PENDING") ListPendingRequest.push(item);
             }
             SuccessResp(resp, {
-                list_friends: respData
+                list_friends: ListFriends,
+                pending_request: ListPendingRequest
             });
         } else {
             RespCustomCode(resp, undefined, result.msg, result.code);
@@ -119,6 +118,40 @@ exports.SearchFriend = async(req, resp) => {
             SuccessResp(resp, {
                 result: respData
             });
+        } else {
+            RespCustomCode(resp, undefined, result.msg, result.code);
+        }
+    } catch(e) {
+        CatchErr(resp, e, FUNC_NAME);
+    }
+}
+
+exports.AddFriend = async(req, resp) => {
+    const FUNC_NAME = "AddFriend" + FILE_NAME;
+    const uid       = req.app.locals.uid;
+    const reqData   = req.body;
+    try {
+        const target_uid    = GetString(reqData, "uid");
+        const result        = await AddFriendDAO(uid, target_uid);
+        if (result.code === 200) {
+            SuccessResp(resp);
+        } else {
+            RespCustomCode(resp, undefined, result.msg, result.code);
+        }
+    } catch(e) {
+        CatchErr(resp, e, FUNC_NAME);
+    }
+}
+
+exports.CancelRequest = async(req, resp) => {
+    const FUNC_NAME = "CancelRequest" + FILE_NAME;
+    const uid       = req.app.locals.uid;
+    const reqData   = req.body;
+    try {
+        const target_uid    = GetNumber(reqData, "uid");
+        const result        = await CancelFriendRequestDAO(uid, target_uid);
+        if (result.code === 200) {
+            SuccessResp(resp);
         } else {
             RespCustomCode(resp, undefined, result.msg, result.code);
         }

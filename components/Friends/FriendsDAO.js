@@ -17,10 +17,13 @@ exports.RecommendNewFriendsDAO = async(uid, list_mobile, list_email) => {
             if (i.UID_ONE === uid) AlreadyHasRelation.push(i.UID_TWO);
             if (i.UID_TWO === uid) AlreadyHasRelation.push(i.UID_ONE);
         }
-        SQL             = "SELECT * FROM USERS WHERE UID NOT IN ? AND MOBILE IN ? AND EMAIL IN ? AND EMAIL_CONFIRMED = 1";
-        SQL_BIND        = mysql.format(SQL, [[AlreadyHasRelation], [list_mobile], [list_email]]);
-        const result1   = await query(SQL_BIND);
-        return DB_RESP(200, result1);
+        if (list_mobile.length > 0) {
+            SQL             = "SELECT * FROM USERS WHERE UID NOT IN ? AND MOBILE IN ? AND EMAIL_CONFIRMED = 1";
+            SQL_BIND        = mysql.format(SQL, [[AlreadyHasRelation], [list_mobile]]);
+            const result1   = await query(SQL_BIND);
+            return DB_RESP(200, result1);
+        }
+        return DB_RESP(200, []);
     } catch (e) {
         DB_ERR(FUNC_NAME, SQL_BIND, e.message);
         return DB_RESP(503, e.message);
@@ -95,6 +98,41 @@ exports.SearchFriendDAO = async(uid, q) => {
         SQL_BIND        = mysql.format(SQL, [[ListUID], `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`]);
         const result1   = await query(SQL_BIND);
         return DB_RESP(200, result1);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
+
+exports.AddFriendDAO = async(from_uid, to_uid) => {
+    const FUNC_NAME = `AddFriendDAO${FILE_NAME}`;
+    let SQL, SQL_BIND = "";
+    try {
+        SQL = "SELECT * FROM RELATIONS WHERE (UID_ONE = ? AND UID_TWO = ?) OR (UID_ONE = ? AND UID_TWO = ?)";
+        SQL_BIND = mysql.format(SQL, [from_uid, to_uid, to_uid, from_uid]);
+        const result = await query(SQL_BIND);
+        if (result.length === 0) {
+            SQL             = "INSERT INTO RELATIONS (UID_ONE, UID_TWO, TYPE) VALUES (?, ?, 'PENDING')";
+            SQL_BIND        = mysql.format(SQL, [from_uid, to_uid]);
+            await query(SQL_BIND);
+            return DB_RESP(200);
+        } else {
+            return DB_RESP(400, "You already send friend request or you're friend");
+        }
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
+
+exports.CancelFriendRequestDAO = async(from_uid, to_uid) => {
+    const FUNC_NAME = `CancelFriendRequestDAO${FILE_NAME}`;
+    let SQL, SQL_BIND = "";
+    try {
+        SQL             = "DELETE FROM RELATIONS WHERE (UID_ONE = ? AND UID_TWO = ?) OR (UID_ONE = ? AND UID_TWO = ?)";
+        SQL_BIND        = mysql.format(SQL, [from_uid, to_uid, to_uid, from_uid]);
+        await query(SQL_BIND);
+        return DB_RESP(200);
     } catch (e) {
         DB_ERR(FUNC_NAME, SQL_BIND, e.message);
         return DB_RESP(503, e.message);

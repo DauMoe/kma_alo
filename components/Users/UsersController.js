@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const { GetString } = require("../../Utils/GetValue");
+const { GetString, GetNumber} = require("../../Utils/GetValue");
 const { CatchErr, SuccessResp, RespCustomCode, SALT_ROUND, JWT_SECRET_KEY, HOST_ADDRESS, writeFile, CREATE_TRANSPORTER} = require("../../Utils/UtilsFunction");
 const { NewLocalUserDAO, GetUserInfoDAO, ActiveAccountDAO, UpdateUserInfoDAO,
     UpdateAvatarDAO, ForgetPasswordDAO
@@ -20,7 +20,6 @@ require("dotenv").config();
 // const avatarUpload =  multer({ storage: storage }).single("avatar");
 
 const FILE_NAME = " - UsersController.js";
-
 
 exports.VerifyAccount = async(req, resp) => {
     try {
@@ -97,9 +96,10 @@ exports.AuthenticateSuccess = async(req, resp) => {
 
 exports.GetUserInfo = async(req, resp) => {
     const FUNC_NAME = "GetUserInfo" + FILE_NAME;
-    const uid = req.app.locals.uid;
+    const reqData   =  req.query;
     try {
-        const result = await GetUserInfoDAO(uid);
+        const uid       = GetNumber(reqData, "uid", false) === -1 ? req.app.locals.uid : GetNumber(reqData, "uid");
+        const result    = await GetUserInfoDAO(uid);
         if (result.code === 200) {
             const data = result.msg[0];
             const UserData = {
