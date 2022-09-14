@@ -31,9 +31,7 @@ RootNSP.use(function(socket, next) {
 });
 
 PrivateChatSocket(io);
-// VideoCallSocket(io);
 PrivateCallSocket(io);
-RoomChatSocket(io);
 
 app.use(cors());
 app.use(express.json({

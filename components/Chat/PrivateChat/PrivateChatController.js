@@ -1,9 +1,6 @@
 const { GetNumber } = require("../../../Utils/GetValue");
-const { CatchErr, RespCustomCode, SuccessResp, readFile} = require("../../../Utils/UtilsFunction");
+const { CatchErr, RespCustomCode, SuccessResp, readFile, UNREAD} = require("../../../Utils/UtilsFunction");
 const { GetAllPrivateChatIDDAO, CreateNewPrivateChatDAO, SavePrivateMessageToDBDAO, GetMessageHistoryDAO} = require("./PrivateChatDAO");
-const fs = require("fs");
-const path = require("path");
-const util = require("util");
 
 const FILE_NAME = " - PrivateChatController.js";
 
@@ -15,10 +12,7 @@ exports.GetAllPrivateChatID = async(req, resp) => {
         const respResult    = [];
 
         if (result.code === 200) {
-            let ListPromise = [];
-
             for (const i of result.msg) {
-                // i.AVATAR_LINK === null ? ListPromise.push("") : ListPromise.push(readFile(path.join(__dirname, "..", "..", "..", "public", "avatar", i.AVATAR_LINK), "utf-8"));
                 respResult.push({
                     receiver_first_name : i.FIRST_NAME              === null ? "" : i.FIRST_NAME,
                     receiver_last_name  : i.LAST_NAME               === null ? "" : i.LAST_NAME,
@@ -33,12 +27,9 @@ exports.GetAllPrivateChatID = async(req, resp) => {
                     last_message_id     : i.PRIVATE_CHAT_MSG_ID     === null ? "" : i.PRIVATE_CHAT_MSG_ID,
                     message_type        : i.TYPE                    === null ? "" : i.TYPE,
                     sender_id           : (i.UID_ONE !== null &&i.UID_ONE === uid) ? i.UID_ONE : i.UID_TWO,
+                    status              : i.STATUS                  === null ? UNREAD : i.STATUS
                 });
             }
-            // const avatars = await Promise.all(ListPromise);
-            // for (const [index, avatar] of avatars.entries()) {
-            //     respResult[index].receiver_avatar = avatar;
-            // }
             SuccessResp(resp, respResult);
         } else {
             RespCustomCode(resp, undefined, result.msg, result.code);
@@ -65,10 +56,10 @@ exports.CreateNewPrivateChat = async(req, resp) => {
     }
 }
 
-exports.SavePrivateMessageToDB = async(room_name, sender_id, receiver_id, content) => {
+exports.SavePrivateMessageToDB = async(room_name, sender_id, receiver_id, content, status) => {
     const FUNC_NAME = "SavePrivateMessageToDB" + FILE_NAME;
     try {
-        const result = await SavePrivateMessageToDBDAO(room_name, sender_id, receiver_id, content);
+        const result = await SavePrivateMessageToDBDAO(room_name, sender_id, receiver_id, content, status);
         return result;
     } catch (e) {
         console.error(`${FUNC_NAME}: ${e.message}`);

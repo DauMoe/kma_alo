@@ -23,9 +23,11 @@
 > ALTER TABLE private_chat_message
   ADD COLUMN CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   ADD COLUMN UPDATED_AT DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
 # Hint code
 - [Room Socket.io](https://stackoverflow.com/questions/13143945/dynamic-namespaces-socket-io)
 - [Create Chat](https://stackoverflow.com/questions/24100218/socket-io-send-packet-to-sender-only)
+- [Config lower_case_table_names value on Ubuntu](https://askubuntu.com/questions/1261422/how-to-install-mysql-8-0-with-lower-case-table-names-1-on-ubuntu-server-20-04-lt)
 
 # Tip 
 - [Disable lower case check on Mariadb Ubuntu](https://stackoverflow.com/questions/55025847/how-to-set-lower-case-table-names-1-on-ubuntu-18-04-mariadb-mysql-5-7)
