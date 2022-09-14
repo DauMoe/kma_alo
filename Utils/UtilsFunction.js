@@ -111,13 +111,10 @@ exports.HOST_ADDRESS    = env !== "dev" ? "http://20.89.94.38:8000/" : `http:\/\
 exports.IMAGE_PATH      = IMAGE_PATH;
 exports.SALT_ROUND      = 5;
 exports.JWT_SECRET_KEY  = JWT_SECRET_KEY;
-exports.readFile = util.promisify(fs.readFile);
-exports.writeFile = util.promisify(fs.writeFile);
-exports.ChatEventKey    = {
-    SENDED  : "SENDED",
-    RECEIVED: "RECEIVED",
-    READED  : "READED",
-    CONN    : 'connect',
-    CONN_ERR: 'connect_error',
-    OPEN_CHAT_EMIT: 'new_private_chat'
-};
+exports.readFile        = util.promisify(fs.readFile);
+exports.writeFile       = util.promisify(fs.writeFile);
+exports.UNREAD          = "UNREAD";
+exports.FRIEND          = "FRIEND";
+exports.PENDING         = "PENDING";
+exports.SEEN            = "SEEN";
+exports.CONN            = "connection";

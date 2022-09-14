@@ -1,4 +1,4 @@
-const { SocketAuthenticate, ChatEventKey } = require("../../Utils/UtilsFunction");
+const { SocketAuthenticate, ChatEventKey, UNREAD, CONN} = require("../../Utils/UtilsFunction");
 const {SavePrivateMessageToDB} = require("./PrivateChat/PrivateChatController");
 
 exports.PrivateChatSocket = function(io) {
@@ -19,7 +19,7 @@ exports.PrivateChatSocket = function(io) {
         })
 
         socket.on("emit_private_chat", async function(room_name, msg, receiver_id, chatInfo) {
-            const result = await SavePrivateMessageToDB(room_name, socket.senderInfo.uid, receiver_id, msg);
+            const result = await SavePrivateMessageToDB(room_name, socket.senderInfo.uid, receiver_id, msg, UNREAD);
             if (result.code === 200) {
                 socket.to(room_name).emit("listen_private_chat", {
                     ...chatInfo,
@@ -48,7 +48,7 @@ exports.PrivateCallSocket = function(io) {
         console.log(`CALL: User ${id} joins room ${room}`);
     });
 
-    PrivateCallNSP.on("connection", function(socket) {
+    PrivateCallNSP.on(CONN, function(socket) {
         socket.on("join_call", function({room_name}) {
             socket.join(room_name);
         })
@@ -62,10 +62,4 @@ exports.PrivateCallSocket = function(io) {
             socket.to(room_name).emit("end_call_remote_side");
         });
     });
-}
-
-exports.RoomChatSocket = function(io) {
-    const RoomChatNSP = io.of("/room");
-    RoomChatNSP.use(SocketAuthenticate);
-    RoomChatNSP.on(ChatEventKey.CONN, function(socket) {});
 }
