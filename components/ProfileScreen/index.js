@@ -10,6 +10,7 @@ import lodash from "lodash";
 import {useSelector} from "react-redux";
 import jwt_decode from "jwt-decode";
 import CommentsScreen from "../NewsFeedScreen/CommentScreen";
+import {CHAT_SCREEN} from "../Definition";
 
 const ProfileScreen = function(props) {
   const { width, height }         = Dimensions.get("window");
@@ -135,6 +136,12 @@ const ProfileScreen = function(props) {
     });
   }
 
+  const Go2Chat = function() {
+    navigation.navigate(CHAT_SCREEN, {
+      uid: uid
+    })
+  }
+
   const reactionPost = function(post_id, type) {
     axiosConfig(REACT_POST, "post", {
       post_id, type
@@ -171,6 +178,7 @@ const ProfileScreen = function(props) {
             : <Avatar.Text size={120} label={profileInfo.avatar_text} style={{borderWidth: 3, borderColor: "white"}}/>
         }
         <UsernameProfile>{profileInfo.first_name} {profileInfo.last_name}</UsernameProfile>
+        <Button mode={"text"} uppercase={false} style={{backgroundColor: "gray"}} onPress={Go2Chat}>Message</Button>
       </UserProfileScreen>
 
       <FlatList
