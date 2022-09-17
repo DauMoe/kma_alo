@@ -1,6 +1,8 @@
 const { GetNumber } = require("../../../Utils/GetValue");
 const { CatchErr, RespCustomCode, SuccessResp, readFile, UNREAD} = require("../../../Utils/UtilsFunction");
-const { GetAllPrivateChatIDDAO, CreateNewPrivateChatDAO, SavePrivateMessageToDBDAO, GetMessageHistoryDAO} = require("./PrivateChatDAO");
+const { GetAllPrivateChatIDDAO, CreateNewPrivateChatDAO, SavePrivateMessageToDBDAO, GetMessageHistoryDAO,
+    GetChatInfoDAO
+} = require("./PrivateChatDAO");
 
 const FILE_NAME = " - PrivateChatController.js";
 
@@ -102,6 +104,39 @@ exports.GetMessageHistory = async(req, resp) => {
             RespCustomCode(resp, undefined, result.msg, result.code);
         }
     } catch (e) {
+        CatchErr(resp, e, FUNC_NAME);
+    }
+}
+
+exports.GetChatInfo = async(req, resp) => {
+    const FUNC_NAME = "GetChatInfo" + FILE_NAME;
+    const reqData = req.query;
+    try {
+        const own_uid = req.app.locals.uid;
+        const to_uid =  GetNumber(reqData, "to_uid");
+        const result = await GetChatInfoDAO(own_uid, to_uid);
+        if (result.code === 200) {
+            const i = result.msg;
+            const respData = {
+                room_chat_id        : i.ROOM_CHAT_ID            === null ? "" : i.ROOM_CHAT_ID,
+                sender_id           : i.SENDER_ID               === null ? -1 : i.SENDER_ID,
+                sender_first_name   : i.SENDER_FIRST_NAME       === null ? "" : i.SENDER_FIRST_NAME,
+                sender_last_name    : i.SENDER_LAST_NAME        === null ? "" : i.SENDER_LAST_NAME,
+                sender_username     : i.SENDER_USERNAME         === null ? "" : i.SENDER_USERNAME,
+                sender_avatar_link  : i.SENDER_AVATAR_LINK      === null ? "" : `/avatar/${i.SENDER_AVATAR_LINK}`,
+                sender_avatar_text  : i.SENDER_AVATAR_TEXT      === null ? "" : i.SENDER_ID,
+                receiver_id         : i.RECEIVER_ID             === null ? -1 : i.RECEIVER_ID,
+                receiver_first_name : i.RECEIVER_FIRST_NAME     === null ? "" : i.RECEIVER_FIRST_NAME,
+                receiver_last_name  : i.RECEIVER_LAST_NAME      === null ? "" : i.RECEIVER_LAST_NAME,
+                receiver_username   : i.RECEIVER_USERNAME       === null ? "" : i.RECEIVER_USERNAME,
+                receiver_avatar_link: i.RECEIVER_AVATAR_LINK    === null ? "" : `/avatar/${i.RECEIVER_AVATAR_LINK}`,
+                receiver_avatar_text: i.RECEIVER_AVATAR_TEXT    === null ? "" : i.RECEIVER_AVATAR_TEXT
+            };
+            SuccessResp(resp, respData);
+        } else {
+            RespCustomCode(resp, undefined, result.msg, result.code);
+        }
+    } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
     }
 }

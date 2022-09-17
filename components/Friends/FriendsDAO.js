@@ -85,7 +85,7 @@ exports.SearchFriendDAO = async(uid, q) => {
     const FUNC_NAME = `SearchFriendDAO${FILE_NAME}`;
     let SQL, SQL_BIND = "";
     try {
-        SQL             = "SELECT UID_ONE, UID_TWO FROM RELATIONS WHERE UID_ONE = ? OR UID_TWO = ? AND TYPE = 'FRIEND'";
+        SQL             = "SELECT UID_ONE, UID_TWO FROM RELATIONS WHERE UID_ONE = ? OR UID_TWO = ?";
         SQL_BIND        = mysql.format(SQL, [uid, uid]);
         const result    = await query(SQL_BIND);
         if (result.length === 0) return DB_RESP(200, []);
