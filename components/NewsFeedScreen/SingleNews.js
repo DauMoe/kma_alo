@@ -1,5 +1,5 @@
 import React, {memo, useState} from "react";
-import { View, Text, Image } from "react-native";
+import {View, Text, Image, TouchableOpacity} from "react-native";
 import {Avatar, Button, IconButton, Modal, Portal, Provider, withTheme} from "react-native-paper";
 import {useDispatch, useSelector} from "react-redux";
 import styled from "styled-components/native";
@@ -8,6 +8,8 @@ import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 import moment from "moment";
 import jwt_decode from "jwt-decode";
 import {REACT_POST} from "../API_Definition";
+import {PROFILE_SCREEN} from "../Definition";
+import {useNavigation} from "@react-navigation/native";
 
 const NewsWrapper = styled(View)`
     padding: 20px;
@@ -85,6 +87,7 @@ const SingleNews = function(props) {
     const { width, height, showComment, post_id, data, ConfirmDeletePost, openDeleteModal, reactionPost }  = props;
     const { colors }                            = props.theme;
     const dispatch                              = useDispatch();
+    const navigation                            = useNavigation();
     const { token }                             = useSelector(state => state.Authenticator);
   // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIxLCJlbWFpbCI6ImxlaHV5aG9hbmcxMTExOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF1bW9lMSIsImlhdCI6MTY2MDgzNTg3NCwiZXhwIjoxODc2ODM1ODc0fQ.E-whu03YrSH9KOrqxBIP5aoL6bkDxNX6mvv7qe9yeJM";
     const { uid, email, username }              = jwt_decode(token);
@@ -110,6 +113,12 @@ const SingleNews = function(props) {
             .catch(e => console.log(e));
     }
 
+    const Go2Profile = function(uid) {
+      navigation.push(PROFILE_SCREEN, {
+        uid: uid
+      })
+    }
+
     return(
         <NewsWrapper elevation={8}>
             <NewsHeader theme={colors}>
@@ -121,18 +130,20 @@ const SingleNews = function(props) {
                     }
                     {/*<ActiveStatusDot active={false}/>*/}
                 </AvatarWrapper>
-                <View style={{flex: 1}}>
+                <TouchableOpacity onPress={() => Go2Profile(data.author_id)}>
+                  <View style={{flex: 1}}>
                     <NewsUsername theme={colors}>{data.display_name}</NewsUsername>
                     {
-                        moment.duration(moment().diff(moment(data.created_at))).asMinutes() < 1
+                      moment.duration(moment().diff(moment(data.created_at))).asMinutes() < 1
                           ? <PostTimestamp>Just now</PostTimestamp>
-                            :moment.duration(moment().diff(moment(data.created_at))).asHours() < 1
-                          ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asMinutes())}m ago</PostTimestamp>
-                            : moment.duration(moment().diff(moment(data.created_at))).asHours() < 24
-                          ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asHours())}h ago</PostTimestamp>
-                            : <PostTimestamp theme={colors}>Posted at {moment(data.created_at).format("MMM DD hh:mm A")}</PostTimestamp>
+                          :moment.duration(moment().diff(moment(data.created_at))).asHours() < 1
+                              ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asMinutes())}m ago</PostTimestamp>
+                              : moment.duration(moment().diff(moment(data.created_at))).asHours() < 24
+                                  ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asHours())}h ago</PostTimestamp>
+                                  : <PostTimestamp theme={colors}>Posted at {moment(data.created_at).format("MMM DD hh:mm A")}</PostTimestamp>
                     }
-                </View>
+                  </View>
+                </TouchableOpacity>
                 {
                     data.author_id === uid &&
                     <View>
