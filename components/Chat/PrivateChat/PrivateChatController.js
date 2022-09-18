@@ -1,6 +1,8 @@
 const { GetNumber } = require("../../../Utils/GetValue");
 const { CatchErr, RespCustomCode, SuccessResp, readFile, UNREAD} = require("../../../Utils/UtilsFunction");
-const { GetAllPrivateChatIDDAO, CreateNewPrivateChatDAO, SavePrivateMessageToDBDAO, GetMessageHistoryDAO} = require("./PrivateChatDAO");
+const { GetAllPrivateChatIDDAO, CreateNewPrivateChatDAO, SavePrivateMessageToDBDAO, GetMessageHistoryDAO,
+    GetChatInfoDAO
+} = require("./PrivateChatDAO");
 
 const FILE_NAME = " - PrivateChatController.js";
 
@@ -9,11 +11,11 @@ exports.GetAllPrivateChatID = async(req, resp) => {
     try {
         const uid           = req.app.locals.uid;
         const result        = await GetAllPrivateChatIDDAO(uid);
-        const respResult    = [];
+        const respResult    = [], listUnReadMessage = [];
 
         if (result.code === 200) {
             for (const i of result.msg) {
-                respResult.push({
+                const item = {
                     receiver_first_name : i.FIRST_NAME              === null ? "" : i.FIRST_NAME,
                     receiver_last_name  : i.LAST_NAME               === null ? "" : i.LAST_NAME,
                     room_chat_id        : i.ROOM_CHAT_ID            === null ? "" : i.ROOM_CHAT_ID,
@@ -28,9 +30,14 @@ exports.GetAllPrivateChatID = async(req, resp) => {
                     message_type        : i.TYPE                    === null ? "" : i.TYPE,
                     sender_id           : (i.UID_ONE !== null &&i.UID_ONE === uid) ? i.UID_ONE : i.UID_TWO,
                     status              : i.STATUS                  === null ? UNREAD : i.STATUS
-                });
+                }
+                if (item.status === UNREAD && listUnReadMessage.indexOf(i.receiver_uid) === -1) listUnReadMessage.push(i.receiver_uid);
+                respResult.push(item);
             }
-            SuccessResp(resp, respResult);
+            SuccessResp(resp, {
+                list_chat   : respResult,
+                unread      : listUnReadMessage.length
+            });
         } else {
             RespCustomCode(resp, undefined, result.msg, result.code);
         }
@@ -102,6 +109,39 @@ exports.GetMessageHistory = async(req, resp) => {
             RespCustomCode(resp, undefined, result.msg, result.code);
         }
     } catch (e) {
+        CatchErr(resp, e, FUNC_NAME);
+    }
+}
+
+exports.GetChatInfo = async(req, resp) => {
+    const FUNC_NAME = "GetChatInfo" + FILE_NAME;
+    const reqData = req.query;
+    try {
+        const own_uid = req.app.locals.uid;
+        const to_uid =  GetNumber(reqData, "to_uid");
+        const result = await GetChatInfoDAO(own_uid, to_uid);
+        if (result.code === 200) {
+            const i = result.msg;
+            const respData = {
+                room_chat_id        : i.ROOM_CHAT_ID            === null ? "" : i.ROOM_CHAT_ID,
+                sender_uid          : i.SENDER_UID              === null ? -1 : i.SENDER_UID,
+                sender_first_name   : i.SENDER_FIRST_NAME       === null ? "" : i.SENDER_FIRST_NAME,
+                sender_last_name    : i.SENDER_LAST_NAME        === null ? "" : i.SENDER_LAST_NAME,
+                sender_username     : i.SENDER_USERNAME         === null ? "" : i.SENDER_USERNAME,
+                sender_avatar_link  : i.SENDER_AVATAR_LINK      === null ? "" : `/avatar/${i.SENDER_AVATAR_LINK}`,
+                sender_avatar_text  : i.SENDER_AVATAR_TEXT      === null ? "" : i.SENDER_AVATAR_TEXT,
+                receiver_uid        : i.RECEIVER_UID            === null ? -1 : i.RECEIVER_UID,
+                receiver_first_name : i.RECEIVER_FIRST_NAME     === null ? "" : i.RECEIVER_FIRST_NAME,
+                receiver_last_name  : i.RECEIVER_LAST_NAME      === null ? "" : i.RECEIVER_LAST_NAME,
+                receiver_username   : i.RECEIVER_USERNAME       === null ? "" : i.RECEIVER_USERNAME,
+                receiver_avatar_link: i.RECEIVER_AVATAR_LINK    === null ? "" : `/avatar/${i.RECEIVER_AVATAR_LINK}`,
+                receiver_avatar_text: i.RECEIVER_AVATAR_TEXT    === null ? "" : i.RECEIVER_AVATAR_TEXT
+            };
+            SuccessResp(resp, respData);
+        } else {
+            RespCustomCode(resp, undefined, result.msg, result.code);
+        }
+    } catch(e) {
         CatchErr(resp, e, FUNC_NAME);
     }
 }

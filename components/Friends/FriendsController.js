@@ -105,14 +105,13 @@ exports.SearchFriend = async(req, resp) => {
             const respData = [];
             for (const i of result.msg) {
                 respData.push({
-                    receiver_uid            : i.UID         === null ? -1 : i.UID,
-                    receiver_first_name     : i.FIRST_NAME  === null ? "" : i.FIRST_NAME,
-                    receiver_last_name      : i.LAST_NAME   === null ? "" : i.LAST_NAME,
-                    receiver_username       : i.USERNAME    === null ? "" : i.USERNAME,
-                    receiver_avatar_text    : `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
-                    receiver_avatar         : i.AVATAR_LINK === null ? "" : `/avatar/${i.AVATAR_LINK}`,
-                    display_name            : `${i.FIRST_NAME} ${i.LAST_NAME}`,
-                    sender_id               : uid
+                    uid            : i.UID         === null ? -1 : i.UID,
+                    first_name     : i.FIRST_NAME  === null ? "" : i.FIRST_NAME,
+                    last_name      : i.LAST_NAME   === null ? "" : i.LAST_NAME,
+                    username       : i.USERNAME    === null ? "" : i.USERNAME,
+                    avatar_text    : `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
+                    avatar_link    : i.AVATAR_LINK === null ? "" : `/avatar/${i.AVATAR_LINK}`,
+                    display_name   : `${i.FIRST_NAME} ${i.LAST_NAME}`
                 });
             }
             SuccessResp(resp, {

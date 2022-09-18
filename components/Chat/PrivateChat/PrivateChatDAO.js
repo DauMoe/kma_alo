@@ -9,7 +9,7 @@ const MessageType = {
     VIDEO: "VIDEO",
     VOICE: "VOICE"
 }
-exports.GetAllPrivateChatIDDAO = async(uid) => {
+const GetAllPrivateChatIDDAO = async(uid) => {
     const FUNC_NAME = "GetAllPrivateChatIDDAO" + FILE_NAME;
     let SQL, SQL_BIND;
     try {
@@ -29,7 +29,7 @@ exports.GetAllPrivateChatIDDAO = async(uid) => {
     }
 }
 
-exports.CreateNewPrivateChatDAO = async(fromUID, toUID) => {
+const CreateNewPrivateChatDAO = async(fromUID, toUID) => {
     const FUNC_NAME = "CreateNewPrivateChatDAO" + FILE_NAME;
     let SQL, SQL_BIND;
     try {
@@ -50,10 +50,16 @@ exports.CreateNewPrivateChatDAO = async(fromUID, toUID) => {
             return DB_RESP(401, "You already have a chat with this person");
         }
         //Insert new chat to DB
-        SQL         = "INSERT INTO PRIVATE_CHAT (EMIT_EVENT_ID, LISTEN_EVENT_ID, UID_ONE, UID_TWO) VALUES (?, ? , ?, ?)";
-        SQL_BIND    = mysql.format(SQL, [uuidv4(), uuidv3(), fromUID, toUID]);
+        const room_chat_id = uuidv4();
+        SQL         = "INSERT INTO PRIVATE_CHAT (ROOM_CHAT_ID, UID_ONE, UID_TWO) VALUES (?, ?, ?)";
+        SQL_BIND    = mysql.format(SQL, [room_chat_id, fromUID, toUID]);
         await query(SQL_BIND);
-        return DB_RESP(200);
+        SQL         = "INSERT INTO PRIVATE_CHAT_MESSAGE (PRIVATE_CHAT_MSG_ID, CONTENT, TYPE, SENDER_ID, RECEIVER_ID, ROOM_CHAT_ID, STATUS) VALUES (?, '*System*: You are connected', 'TEXT', ?, ?, ?, 'SEEN')";
+        SQL_BIND    = mysql.format(SQL, [uuidv4(), fromUID, toUID, room_chat_id]);
+        await query(SQL_BIND);
+        return DB_RESP(200, {
+            room_chat_id: room_chat_id
+        });
     } catch(e) {
         DB_ERR(FUNC_NAME, SQL_BIND, e.message);
         return DB_RESP(503, e.message);
@@ -78,8 +84,11 @@ exports.GetMessageHistoryDAO = async(uid, offset, limit, receiver_id) => {
     const FUNC_NAME = "GetMessageHistoryDAO" + FILE_NAME;
     let SQL, SQL_BIND;
     try {
-        SQL = "SELECT * FROM PRIVATE_CHAT_MESSAGE a JOIN USERS b ON a.RECEIVER_ID = b.UID WHERE (a.SENDER_ID = ? AND a.RECEIVER_ID = ?) OR (a.SENDER_ID = ? AND a.RECEIVER_ID = ?) ORDER BY a.CREATED_AT DESC LIMIT ?,?";
-        SQL_BIND = mysql.format(SQL, [uid, receiver_id, receiver_id, uid, offset, limit]);
+        SQL         = "UPDATE PRIVATE_CHAT_MESSAGE SET STATUS = 'SEEN' WHERE SENDER_ID = ? AND RECEIVER_ID = ?";
+        SQL_BIND    = mysql.format(SQL, [uid, receiver_id]);
+        await query(SQL_BIND);
+        SQL         = "SELECT * FROM PRIVATE_CHAT_MESSAGE a JOIN USERS b ON a.RECEIVER_ID = b.UID WHERE (a.SENDER_ID = ? AND a.RECEIVER_ID = ?) OR (a.SENDER_ID = ? AND a.RECEIVER_ID = ?) ORDER BY a.CREATED_AT DESC LIMIT ?,?";
+        SQL_BIND    = mysql.format(SQL, [uid, receiver_id, receiver_id, uid, offset, limit]);
         const result = await query(SQL_BIND);
         return DB_RESP(200, result);
     } catch (e) {
@@ -87,3 +96,63 @@ exports.GetMessageHistoryDAO = async(uid, offset, limit, receiver_id) => {
         return DB_RESP(503, e.message);
     }
 }
+
+exports.GetChatInfoDAO = async(own_uid, to_uid) => {
+    const FUNC_NAME = "GetChatInfoDAO" + FILE_NAME;
+    let SQL, SQL_BIND;
+    try {
+        SQL = "SELECT * FROM PRIVATE_CHAT b WHERE (b.UID_ONE = ? AND b.UID_TWO = ?) OR (b.UID_ONE = ? AND b.UID_TWO = ?)";
+        SQL_BIND = mysql.format(SQL, [own_uid, to_uid, to_uid, own_uid]);
+        const result = await query(SQL_BIND);
+        let room_chat_id;
+        if (result.length === 0) {
+            //No conversation before
+            const result1 = await CreateNewPrivateChatDAO(own_uid, to_uid);
+            if (result1.code !== 200) {
+                return DB_RESP(result1.code, result1.msg);
+            }
+            room_chat_id = result1.msg.room_chat_id;
+        } else {
+            room_chat_id = result[0].ROOM_CHAT_ID;
+        }
+        SQL = "SELECT * FROM USERS WHERE UID = ? OR UID = ?";
+        SQL_BIND = mysql.format(SQL, [own_uid, to_uid]);
+        const result2 = await query(SQL_BIND);
+        let respData = {
+            ROOM_CHAT_ID: room_chat_id
+        };
+        for (const user of result2) {
+            if (user.UID === own_uid) {
+                respData = {
+                    ...respData,
+                    SENDER_UID: user.UID,
+                    SENDER_FIRST_NAME: user.FIRST_NAME,
+                    SENDER_LAST_NAME: user.LAST_NAME,
+                    SENDER_USERNAME: user.USERNAME,
+                    SENDER_AVATAR_LINK: user.AVATAR_LINK,
+                    SENDER_DISPLAY_NAME: `${user.FIRST_NAME} ${user.LAST_NAME}`,
+                    SENDER_AVATAR_TEXT: `${user.FIRST_NAME[0]}${user.LAST_NAME[0]}`
+                }
+            }
+            if (user.UID === to_uid) {
+                respData = {
+                    ...respData,
+                    RECEIVER_UID: user.UID,
+                    RECEIVER_FIRST_NAME: user.FIRST_NAME,
+                    RECEIVER_LAST_NAME: user.LAST_NAME,
+                    RECEIVER_USERNAME: user.USERNAME,
+                    RECEIVER_AVATAR_LINK: user.AVATAR_LINK,
+                    RECEIVER_DISPLAY_NAME: `${user.FIRST_NAME} ${user.LAST_NAME}`,
+                    RECEIVER_AVATAR_TEXT: `${user.FIRST_NAME[0]}${user.LAST_NAME[0]}`
+                }
+            }
+        }
+        return DB_RESP(200, respData);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
+
+exports.GetAllPrivateChatIDDAO = GetAllPrivateChatIDDAO;
+exports.CreateNewPrivateChatDAO = CreateNewPrivateChatDAO;
