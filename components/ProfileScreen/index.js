@@ -168,6 +168,12 @@ const ProfileScreen = function(props) {
       .catch(e => console.error(e.response));
   }
 
+  const NewMessage = function(uid) {
+    navigation.push(CHAT_SCREEN, {
+      uid: uid
+    })
+  }
+
   return(
     <View style={{height: height, width: width}}>
       <UserProfileScreen>

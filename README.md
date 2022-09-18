@@ -33,5 +33,5 @@
 ## Socket idea:  
  - [x] **(CURRENT)** Use `rooms` to make private chat
  - **Password keystone**: 1234567
- - Build APK: assembleRelease
+ - Build APK: `cd android && ./gradlew assembleRelease`
  - Kill process at port: `sudo kill -9 $(sudo lsof -t -i:${PORT})`

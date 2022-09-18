@@ -8,9 +8,9 @@ import uuid from "react-native-uuid";
 import LinearGradient from "react-native-linear-gradient";
 import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 import {GetChatHistory} from "../ReduxSaga/Chat/Actions";
-import {GET_CHAT_HISTORY} from "../API_Definition";
+import { GET_CHAT_HISTORY, GET_CHAT_INFO } from "../API_Definition";
 import jwt_decode from "jwt-decode";
-import {useIsFocused} from "@react-navigation/native";
+import { useIsFocused, useNavigation, useRoute } from "@react-navigation/native";
 import Authenticator from "../ReduxSaga/Authenticator/Reducers";
 import { VIDEO_CALL_SCREEN } from "../Definition";
 
@@ -97,16 +97,18 @@ const MessageState = {
 
 const ChatScreen = function(props) {
     // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIsImVtYWlsIjoiaG9hbmduZUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImRhdW1vZSIsImlhdCI6MTY1NjI1NjA5NywiZXhwIjoxODcyMjU2MDk3fQ.cotV9sFZeH5p3w-iu25mE2FGxw2id0VOfEwWCVmNQy4";
-    const { route, navigation }     = props;
+    const navigation                = useNavigation();
+    const route                     = useRoute();
     const { colors }                = props.theme;
     const { token }                 = useSelector(state => state.Authenticator);
-    const { chatInfo }              = route.params;
+    const { uid }                   = route.params;
     const limitMessage              = 20; //Load 20 message each time
     const [socket, setSocket]       = useState(null);
     const [msg, setMsg]             = useState("");
     const [Conversation, setConversation] = useState([]);
-    const isFocus = useIsFocused();
-    const conversationAction = useRef({
+    const isFocus                   = useIsFocused();
+    const ChatInfo                  = useRef({});
+    const conversationAction        = useRef({
        offset: 0,
        loading: false
     });
@@ -115,9 +117,7 @@ const ChatScreen = function(props) {
         username: ""
     });
     const scrollViewRef = useRef();
-    const { receiver_avatar, receiver_avatar_text, room_chat_id, receiver_first_name, receiver_last_name, type, receiver_uid, receiver_username } = chatInfo;
-
-    console.log(chatInfo);
+    // const { receiver_avatar, receiver_avatar_text, room_chat_id, receiver_first_name, receiver_last_name, type, receiver_uid, receiver_username } = chatInfo;
 
     const HandleScrollTop = function(e) {
         // if (e.nativeEvent.contentOffset.y === 0 && !conversationAction.current.loading) LoadChatHistory()
@@ -130,27 +130,30 @@ const ChatScreen = function(props) {
 
     const Go2CallScreen = function() {
         navigation.push(VIDEO_CALL_SCREEN, {
-            chatInfo: chatInfo
+            chatInfo: ChatInfo.current
         });
     }
 
-    useEffect(() => {
-        DecodeJWT();
-        const controller = LoadChatHistory();
-        return(() => {
-           controller.abort();
+    const GetChatInfo = () => {
+        const controller = new AbortController();
+        const fetch = axiosConfig(GET_CHAT_INFO, "get", {
+            params: {
+                to_uid: uid
+            },
+            signal: controller.signal
         });
-    }, [props, token, isFocus]);
+        return { controller, fetch };
+    }
 
     const LoadChatHistory = function() {
-        // dispatch(GetChatHistory(offset, limitMessage));
+        console.log("F: ", ChatInfo.current);
         conversationAction.current.loading = true;
         const controller = new AbortController();
         const options = {
             params: {
                 offset: conversationAction.current.offset,
                 limit: limitMessage,
-                receiver_id: receiver_uid
+                receiver_id: ChatInfo.current?.receiver_uid
             },
             signal: controller.signal
         }
@@ -161,7 +164,7 @@ const ChatScreen = function(props) {
                 const chatHistory = Array.isArray(respData.chat_history) ? respData.chat_history : [];
                 setConversation(prevState => chatHistory.concat(prevState));
             })
-            .catch(e => console.error(e))
+            .catch(e => console.error(e.response.data))
             .finally(() => {
                 conversationAction.current.loading = false;
             });
@@ -180,7 +183,7 @@ const ChatScreen = function(props) {
     const sendMessage = function() {
         if (msg.trim() === "") return;
         const newMessage = {
-            ...chatInfo,
+            ...ChatInfo.current,
             sender_id: jwtInfo.uid,
             msgID   : uuid.v1(),
             msg     : msg,
@@ -189,14 +192,14 @@ const ChatScreen = function(props) {
         };
         setMsg("");
         setConversation(prevState => [...prevState, newMessage]);
-        socket.emit("emit_private_chat", room_chat_id, msg, receiver_uid, chatInfo);
+        socket.emit("emit_private_chat", ChatInfo.current?.room_chat_id, msg,  ChatInfo.current?.receiver_uid,  ChatInfo.current);
     }
 
     const ChatHeadSection = function() {
         return(
             <ChatHeadWrapper>
                 <IconButton icon="chevron-left" size={35} onPress={() => {if (navigation.canGoBack()) navigation.goBack()}} color={Theme.primaryTextColor}/>
-                <ChatHeadUsername>{chatInfo.receiver_first_name} {chatInfo.receiver_last_name}</ChatHeadUsername>
+                <ChatHeadUsername>{ChatInfo.current?.receiver_first_name} {ChatInfo.current?.receiver_last_name}</ChatHeadUsername>
                 <View style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
                     <IconButton
                       onPress={Go2CallScreen}
@@ -205,9 +208,9 @@ const ChatScreen = function(props) {
                       color={colors.positiveBgColor}
                     />
                     {
-                        chatInfo.receiver_avatar === ""
-                          ? <Avatar.Text size={30} label={chatInfo.receiver_avatar_text} style={{marginRight: 10}}/>
-                          : <Image source={{uri: DEFAULT_BASE_URL + chatInfo.receiver_avatar}} style={{width: 30, height: 30, borderRadius: 9999, marginRight: 10}}/>
+                        ChatInfo.current?.receiver_avatar === ""
+                          ? <Avatar.Text size={30} label={ChatInfo.current?.receiver_avatar_text} style={{marginRight: 10}}/>
+                          : <Image source={{uri: DEFAULT_BASE_URL + ChatInfo.current?.receiver_avatar}} style={{width: 30, height: 30, borderRadius: 9999, marginRight: 10}}/>
                     }
                 </View>
             </ChatHeadWrapper>
@@ -224,9 +227,9 @@ const ChatScreen = function(props) {
                             <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.sender_id === Conversation[index-1].sender_id)}>
                                 {/*<AvatarMessageUser size={35} label={v.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>*/}
                                 {
-                                    chatInfo.receiver_avatar === ""
-                                        ? <AvatarMessageUser size={35} label={chatInfo.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>
-                                        : <Image source={{uri: DEFAULT_BASE_URL + chatInfo.receiver_avatar}} style={{width: 35, height: 35, borderRadius: 9999, marginRight: 10, opacity: (!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id)) ? 1 : 0)}}/>
+                                    ChatInfo.current?.receiver_avatar === ""
+                                        ? <AvatarMessageUser size={35} label={ChatInfo.current?.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>
+                                        : <Image source={{uri: DEFAULT_BASE_URL + ChatInfo.current?.receiver_avatar}} style={{width: 35, height: 35, borderRadius: 9999, marginRight: 10, opacity: (!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id)) ? 1 : 0)}}/>
                                 }
                                 <ChatMessage sender={v.sender} onLongPress={() => console.log("Long press")}>
                                     <Text style={{color: "white"}}>{v.msg}</Text>
@@ -242,19 +245,34 @@ const ChatScreen = function(props) {
     }
 
     useEffect(function () {
-        console.log("Room name: ", room_chat_id);
-
-        const newSocket = io(`${DEFAULT_BASE_URL}/private`, {
-            extraHeaders: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-        newSocket.emit("join_chat", {room_name: room_chat_id});
-        newSocket.on("listen_private_chat", HandleChatSocket);
-        setSocket(newSocket);
-        return function() {
-            newSocket.close();
-        }
+        const p1 = GetChatInfo();
+        Promise.all([p1.fetch])
+          .then(r => {
+              console.log(r[0].data.data);
+              const ConversationInfo = r[0].data.data;
+              ChatInfo.current = {
+                  ...ChatInfo.current,
+                  ...ConversationInfo
+              };
+              console.log("ROOM CHAT ID: ", ConversationInfo.room_chat_id);
+              const newSocket = io(`${DEFAULT_BASE_URL}/private`, {
+                  extraHeaders: {
+                      Authorization: `Bearer ${token}`
+                  }
+              });
+              newSocket.emit("join_chat", {room_name: ConversationInfo.room_chat_id});
+              newSocket.on("listen_private_chat", HandleChatSocket);
+              setSocket(newSocket);
+              DecodeJWT();
+              const controller = LoadChatHistory();
+              return function() {
+                  newSocket.close();
+                  controller.abort();
+              }
+          })
+          .catch(e => {
+              console.error(e.response.data);
+          });
     }, [setSocket]);
 
     return (
