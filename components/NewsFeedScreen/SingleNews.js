@@ -84,12 +84,11 @@ const CommentButton = styled(Button)`
 `;
 
 const SingleNews = function(props) {
-    const { width, height, showComment, post_id, data, ConfirmDeletePost, openDeleteModal, reactionPost }  = props;
+    const { width, height, showComment, post_id, data, ConfirmDeletePost, openDeleteModal, reactionPost, disableClickProfile }  = props;
     const { colors }                            = props.theme;
     const dispatch                              = useDispatch();
     const navigation                            = useNavigation();
     const { token }                             = useSelector(state => state.Authenticator);
-  // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIxLCJlbWFpbCI6ImxlaHV5aG9hbmcxMTExOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF1bW9lMSIsImlhdCI6MTY2MDgzNTg3NCwiZXhwIjoxODc2ODM1ODc0fQ.E-whu03YrSH9KOrqxBIP5aoL6bkDxNX6mvv7qe9yeJM";
     const { uid, email, username }              = jwt_decode(token);
 
     const LoadComments = function(postId) {
@@ -114,6 +113,7 @@ const SingleNews = function(props) {
     }
 
     const Go2Profile = function(uid) {
+      if (disableClickProfile) return;
       navigation.push(PROFILE_SCREEN, {
         uid: uid
       })

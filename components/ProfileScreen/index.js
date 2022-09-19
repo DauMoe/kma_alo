@@ -45,7 +45,7 @@ const ProfileScreen = function(props) {
     if (link) {
       return(
         <>
-          <View style={{position: "absolute", left: 0, right: 0, top: 0, height: '70%'}}>
+          <View style={{position: "absolute", left: 0, right: 0, top: 0, height: '50%'}}>
             <Image source={{uri: DEFAULT_BASE_URL + link}} style={{width: '100%', height: '100%'}}/>
           </View>
           <View style={{position: "absolute", left: 10, top: 10, borderRadius: 999999999, backgroundColor: "white"}}>
@@ -56,7 +56,7 @@ const ProfileScreen = function(props) {
     }
     return (
       <>
-        <View style={{position: "absolute", left: 0, right: 0, top: 0, height: '70%', backgroundColor: colors.primary}}></View>
+        <View style={{position: "absolute", left: 0, right: 0, top: 0, height: '50%', backgroundColor: colors.primary}}></View>
         <View style={{position: "absolute", left: 10, top: 10, borderRadius: 999999999, backgroundColor: "white"}}>
           <IconButton icon="chevron-left" size={20} onPress={() => {if (navigation.canGoBack()) navigation.goBack()}} color={colors.primaryTextColor}/>
         </View>
@@ -184,7 +184,7 @@ const ProfileScreen = function(props) {
             : <Avatar.Text size={120} label={profileInfo.avatar_text} style={{borderWidth: 3, borderColor: "white"}}/>
         }
         <UsernameProfile>{profileInfo.first_name} {profileInfo.last_name}</UsernameProfile>
-        <Button mode={"text"} uppercase={false} style={{backgroundColor: "gray"}} onPress={Go2Chat}>Message</Button>
+        {jwtData.uid !== uid && <Button mode={"text"} uppercase={false} style={{backgroundColor: "rgba(192,240,250,0.73)", borderRadius: 10, minWidth: 200, marginTop: 10}} onPress={Go2Chat}>Message</Button>}
       </UserProfileScreen>
 
       <FlatList
@@ -194,6 +194,7 @@ const ProfileScreen = function(props) {
         keyExtractor={(item, index) => "_self_post_" + index}
         renderItem={({ item, index }) => (
           <SingleNews
+            disableClickProfile={true}
             width={width}
             height={height}
             data={item}

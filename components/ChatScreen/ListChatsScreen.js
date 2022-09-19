@@ -8,7 +8,7 @@ import {
     Dimensions,
     TouchableOpacity,
     Image,
-    InteractionManager
+    InteractionManager, FlatList,
 } from "react-native";
 import styled from "styled-components/native";
 import {Avatar, IconButton, TextInput as TextInputRNP} from "react-native-paper";
@@ -88,8 +88,9 @@ const PreviewMessageWrapper = styled(View)`
 
 const PreviewMessage = styled(Text)`
   font-family: "NunitoRegular";
-  color: ${Theme.secondaryTextColor};
-  flex: 1
+  color: ${props => props.unread ? "#464141" : Theme.secondaryTextColor};
+  flex: 1;
+  font-weight: ${props => props.unread ? 700 : 400};
 `;
 
 const MessageTime = styled(Text)`
@@ -134,129 +135,140 @@ const LoadingChatScreen = function() {
 }
 
 const ListChatsScreen = function(props) {
-    const navigation                            = useNavigation();
-    const { width, height }                     = Dimensions.get("window");
-    const dispatch                              = useDispatch();
-    const { loaded, error, error_msg, data }    = useSelector(state => state.Chats);
-    const [ListChat, setListChat]               = useState([]);
-    const [searchChat, setSearchChat]           = useState(undefined);
-    const isMount = useRef();
+  const navigation                            = useNavigation();
+  const { width, height }                     = Dimensions.get("window");
+  const dispatch                              = useDispatch();
+  const { loaded, error, error_msg, data }    = useSelector(state => state.Chats);
+  const [ListChat, setListChat]               = useState([]);
+  const [searchChat, setSearchChat]           = useState(undefined);
+  const isMount                               = useRef();
+  const isFocus                               = useIsFocused();
 
-    const GotoChatScreen = function(chatInfo) {
-        navigation.push(CHAT_SCREEN, {
-            chatInfo: chatInfo
-        });
-    }
+  const GotoChatScreen = function(chatInfo) {
+      navigation.push(CHAT_SCREEN, {
+          uid: chatInfo.receiver_uid
+      });
+  }
 
-    const SearchChat = function(e) {
-        setSearchChat(e??"");
-        if (__DEV__) {
-            const query = e  ?? "";
-            if (query === "") {
-                setListChat(data);
-                return;
-            }
-            axiosConfig(SEARCH_FRIEND, "get", {
-                params: {
-                    q: query
-                }
-            })
-                .then(r => {
-                    console.log(r.data.data);
-                    setListChat(r.data.data.result);
-                })
-                .catch(e => console.log(e.response));
-        } else {
-            const FilterChat = lodash.filter(data, chat => chat.display_name.toLowerCase().indexOf(e.toLowerCase()) > -1);
-            setListChat(FilterChat);
+  const SearchChat = function(e) {
+    setSearchChat(e??"");
+    if (__DEV__) {
+      const query = e  ?? "";
+      if (query === "") {
+        setListChat(data);
+        return;
+      }
+      axiosConfig(SEARCH_FRIEND, "get", {
+        params: {
+            q: query
         }
+      })
+        .then(r => {
+          console.log(r.data.data);
+          setListChat(r.data.data.result);
+        })
+        .catch(e => console.log(e.response));
+    } else {
+      const FilterChat = lodash.filter(data, chat => chat.display_name.toLowerCase().indexOf(e.toLowerCase()) > -1);
+      setListChat(FilterChat);
     }
+  }
 
-    useEffect(function() {
-        const task = InteractionManager.runAfterInteractions(() => {
-            if (!isMount.current) {
-                dispatch(GetListChats());
-                isMount.current = true;
-            } else {
-                if (loaded && !error) {
-                    setListChat(data);
+  useEffect(function() {
+    const task = InteractionManager.runAfterInteractions(() => {
+      if (!isMount.current) {
+        dispatch(GetListChats());
+        isMount.current = true;
+      } else {
+        if (loaded && !error) {
+          setListChat(data);
+        }
+      }
+    });
+    return () => task.cancel();
+  }, [data, isFocus]);
+
+  if (!loaded) return <LoadingChatScreen/>
+
+  if (loaded && !error) {
+    return(
+      <>
+        <View style={{
+          backgroundColor: Theme.primaryColor,
+          borderBottomLeftRadius: 20,
+          borderBottomRightRadius: 20,
+          paddingBottom: 10
+        }}>
+          <ChatHeadSectionWrapper>
+            <ChatHeadUsername>Message</ChatHeadUsername>
+          </ChatHeadSectionWrapper>
+          <SearchChatSectionWrapper>
+            <SearchChatInput placeholderTextColor={"#b4b4b4"} onChangeText={SearchChat} placeholder={"Search chat"}/>
+          </SearchChatSectionWrapper>
+        </View>
+
+        <FlatList
+          refreshing={!loaded}
+          onRefresh={_ => dispatch(GetListChats())}
+          ListEmptyComponent={<View style={{height: 200, display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center"}}><Text style={{color: "black", fontFamily: "NunitoSemiBold", fontSize: 16}}>Ops! No conversations</Text></View>}
+          data={ListChat}
+          renderItem={({item, index}) => (
+            <TouchableOpacity onPress={() => GotoChatScreen(item)} key={"__chat_no_" + index}>
+              <PreviewChatWrapper>
+                {item.receiver_avatar === ""
+                  ? <Avatar.Text size={50} label={item.receiver_avatar_text} style={{ marginRight: 15 }} />
+                  : <Image source={{ uri: DEFAULT_BASE_URL + item.receiver_avatar }} style={{ width: 50, height: 50, borderRadius: 99999, marginRight: 15 }} />
                 }
-            }
-        });
-        return () => task.cancel();
-    }, [data]);
+                {(searchChat !== "" || !__DEV__) &&
+                  <PreviewChatContent>
+                  <ChatUsername>{item.display_name}</ChatUsername>
+                  <PreviewMessageWrapper>
+                  <PreviewMessage unread={item.status === "UNREAD"}>{item.last_message}</PreviewMessage>
+                  <MessageTime>{moment(item.last_send).isValid() && moment(item.last_send).format("HH:MM")}</MessageTime>
+                  </PreviewMessageWrapper>
+                  </PreviewChatContent>
+                }
+                {/*<IconButton icon="check-circle" size={15} color={"gray"}/>*/}
+                {/*<IconButton icon="check-circle-outline" size={15} color={"gray"}/>*/}
+              </PreviewChatWrapper>
+            </TouchableOpacity>
+          )}
+        />
 
+        {/*<ListChatSectionWrapper>*/}
+        {/*    {Array.isArray(ListChat) && ListChat.map(function(chat, index) {*/}
+        {/*        return (*/}
+        {/*          <TouchableOpacity onPress={() => GotoChatScreen(chat)} key={"__chat_no_" + index}>*/}
+        {/*              <PreviewChatWrapper>*/}
+        {/*                  {chat.receiver_avatar === ""*/}
+        {/*                    ? <Avatar.Text size={50} label={chat.receiver_avatar_text} style={{ marginRight: 15 }} />*/}
+        {/*                    : <Image source={{ uri: DEFAULT_BASE_URL + chat.receiver_avatar }} style={{ width: 50, height: 50, borderRadius: 99999, marginRight: 15 }} />*/}
+        {/*                  }*/}
+        {/*                  {(searchChat !== "" || !__DEV__) &&*/}
+        {/*                    <PreviewChatContent>*/}
+        {/*                      <ChatUsername>{chat.display_name}</ChatUsername>*/}
+        {/*                      <PreviewMessageWrapper>*/}
+        {/*                          <PreviewMessage unread={chat.status === "UNREAD"}>{chat.last_message}</PreviewMessage>*/}
+        {/*                          <MessageTime>{moment(chat.last_send).isValid() && moment(chat.last_send).format("HH:MM")}</MessageTime>*/}
+        {/*                      </PreviewMessageWrapper>*/}
+        {/*                    </PreviewChatContent>*/}
+        {/*                  }*/}
+        {/*                  /!*<IconButton icon="check-circle" size={15} color={"gray"}/>*!/*/}
+        {/*                  /!*<IconButton icon="check-circle-outline" size={15} color={"gray"}/>*!/*/}
+        {/*              </PreviewChatWrapper>*/}
+        {/*          </TouchableOpacity>*/}
+        {/*        );*/}
+        {/*    })}*/}
+        {/*</ListChatSectionWrapper>*/}
+      </>
+    );
+  }
 
-
-    // useFocusEffect(() => {
-    //     React.useCallback(() => {
-    //         const task = InteractionManager.runAfterInteractions(() => {
-    //             if (!isMount.current) {
-    //                 dispatch(GetListChats());
-    //                 isMount.current = true;
-    //             } else {
-    //                 if (loaded && !error) {
-    //                     setListChat(data);
-    //                 }
-    //             }
-    //         });
-    //         return () => task.cancel();
-    //     }, [data]);
-    // });
-
-    if (!loaded) return <LoadingChatScreen/>
-
-    if (loaded && !error) {
-        return(
-            <>
-                <View style={{
-                    backgroundColor: Theme.primaryColor,
-                    borderBottomLeftRadius: 20,
-                    borderBottomRightRadius: 20,
-                    paddingBottom: 10
-                }}>
-                    <ChatHeadSectionWrapper>
-                        <ChatHeadUsername>Message</ChatHeadUsername>
-                    </ChatHeadSectionWrapper>
-                    <SearchChatSectionWrapper>
-                        <SearchChatInput placeholderTextColor={"#b4b4b4"} onChangeText={SearchChat} placeholder={"Search chat"}/>
-                    </SearchChatSectionWrapper>
-                </View>
-
-                <ListChatSectionWrapper>
-                    {Array.isArray(ListChat) && ListChat.map(function(chat, index) {
-                        return (
-                          <TouchableOpacity onPress={() => GotoChatScreen(chat)} key={"__chat_no_" + index}>
-                              <PreviewChatWrapper>
-                                  {chat.receiver_avatar === ""
-                                    ? <Avatar.Text size={50} label={chat.receiver_avatar_text} style={{ marginRight: 15 }} />
-                                    : <Image source={{ uri: DEFAULT_BASE_URL + chat.receiver_avatar }} style={{ width: 50, height: 50, borderRadius: 99999, marginRight: 15 }} />
-                                  }
-                                  {(searchChat !== "" || !__DEV__) &&
-                                    <PreviewChatContent>
-                                      <ChatUsername>{chat.display_name}</ChatUsername>
-                                      <PreviewMessageWrapper>
-                                          <PreviewMessage>{chat.last_message}</PreviewMessage>
-                                          <MessageTime>{moment(chat.last_send).isValid() && moment(chat.last_send).format("HH:MM")}</MessageTime>
-                                      </PreviewMessageWrapper>
-                                    </PreviewChatContent>
-                                  }
-                                  {/*<IconButton icon="check-circle" size={15} color={"gray"}/>*/}
-                                  {/*<IconButton icon="check-circle-outline" size={15} color={"gray"}/>*/}
-                              </PreviewChatWrapper>
-                          </TouchableOpacity>
-                        );
-                    })}
-                </ListChatSectionWrapper>
-            </>
-        );
-    }
-
-    if (error) {
-        return(
-            <View style={{height: height, display: "flex", alignContent: "center", alignItems: "center", justifyContent: "center"}}><Text style={{color: "red"}}>{error_msg}</Text></View>
-        );
-    }
+  if (error) {
+    return(
+      <View style={{height: height, display: "flex", alignContent: "center", alignItems: "center", justifyContent: "center"}}><Text style={{color: "red"}}>{error_msg}</Text></View>
+    );
+  }
 }
 
 export default ListChatsScreen;

@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import React from "react";
+import React, { useEffect } from "react";
 import LoadingScreen from "./components/LoadingScreen";
 import LoginScreen from './components/LoginScreen/index';
 import MainScreen from './components/MainScreen/index';
@@ -23,10 +23,25 @@ import CreateAccountScreen from "./components/CreateAccountScreen";
 import CreatePostScreen from "./components/NewsFeedScreen/CreatePostScreen";
 import VideoCallScreen from "./components/VideoCallScreen";
 import ProfileScreen from "./components/ProfileScreen";
+import io from "socket.io-client";
+import { DEFAULT_BASE_URL } from "./components/ReduxSaga/AxiosConfig";
+import { useSelector } from "react-redux";
 
 const Stack = createNativeStackNavigator();
 
 const App = function(props) {
+  const { token } = useSelector(state => state.Authenticator);
+  useEffect(() => {
+    const newSocket = io(`${DEFAULT_BASE_URL}/notification`, {
+      extraHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    return(() => {
+      newSocket.close();
+    });
+  }, []);
+
   return(
     <>
         <StatusBar
