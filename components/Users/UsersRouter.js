@@ -1,7 +1,7 @@
 const express = require("express");
 const { Authenticate } = require("../../Utils/UtilsFunction");
 const { NewLocalUser, CheckRequiredLoginField, AuthenticateSuccess, GetUserInfo, VerifyAccount, UpdateUserInfo,
-    UpdateAvatar, TokenValid, ForgetPassword
+    UpdateAvatar, TokenValid, ForgetPassword, ChangePassword
 } = require("./UsersController");
 const UsersRouter = express.Router();
 require("../Passport/PassportJsonInit");
@@ -17,5 +17,6 @@ UsersRouter.put("/user_info", Authenticate, UpdateUserInfo);
 UsersRouter.put("/avatar", Authenticate, UpdateAvatar);
 UsersRouter.get("/check_valid", Authenticate, TokenValid);
 UsersRouter.get("/forget_password", ForgetPassword);
+UsersRouter.post("/change_password", Authenticate, ChangePassword);
 
 module.exports = UsersRouter;

@@ -4,11 +4,7 @@ const { DB_RESP, DB_ERR } = require("../../../Utils/UtilsFunction");
 const { v4: uuidv4, v1: uuidv3 } = require("uuid");
 
 const FILE_NAME = " - PrivateChatDAO.js";
-const MessageType = {
-    TEXT: "TEXT",
-    VIDEO: "VIDEO",
-    VOICE: "VOICE"
-}
+
 const GetAllPrivateChatIDDAO = async(uid) => {
     const FUNC_NAME = "GetAllPrivateChatIDDAO" + FILE_NAME;
     let SQL, SQL_BIND;
@@ -66,12 +62,12 @@ const CreateNewPrivateChatDAO = async(fromUID, toUID) => {
     }
 }
 
-exports.SavePrivateMessageToDBDAO = async(room_name, sender_id, receiver_id, content, status) => {
+exports.SavePrivateMessageToDBDAO = async(room_name, sender_id, receiver_id, content, status, type) => {
     const FUNC_NAME = "SavePrivateMessageToDBDAO" + FILE_NAME;
     let SQL, SQL_BIND;
     try {
         SQL = "INSERT INTO PRIVATE_CHAT_MESSAGE (PRIVATE_CHAT_MSG_ID, CONTENT, TYPE, SENDER_ID, RECEIVER_ID, ROOM_CHAT_ID, STATUS) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        SQL_BIND = mysql.format(SQL, [uuidv4(), content, MessageType.TEXT, sender_id, receiver_id, room_name, status]);
+        SQL_BIND = mysql.format(SQL, [uuidv4(), content, type, sender_id, receiver_id, room_name, status]);
         await query(SQL_BIND);
         return DB_RESP(200);
     } catch (e) {

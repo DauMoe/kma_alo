@@ -2,6 +2,7 @@ const {query} = require("../../Utils/DB_connection");
 const mysql = require("mysql");
 const {v4: uuidv4} = require("uuid");
 const { DB_RESP, DB_ERR, CatchErr} = require("../../Utils/UtilsFunction");
+const bcrypt = require("bcrypt");
 
 const FILE_NAME = " - UsersDAO.js";
 
@@ -134,6 +135,32 @@ exports.ForgetPasswordDAO = async(email) => {
         SQL_BIND        = mysql.format(SQL, [link_id, email]);
         await query(SQL_BIND);
         return DB_RESP(200, link_id);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
+
+exports.ChangePasswordDAO = async(uid, current_password, new_hash_password) => {
+    const FUNC_NAME = `ChangePasswordDAO${FILE_NAME}`;
+    let SQL, SQL_BIND = "";
+    try {
+        SQL             = "SELECT PASSWORD FROM USERS WHERE UID = ?";
+        SQL_BIND        = mysql.format(SQL, [uid]);
+        const result    = await query(SQL_BIND);
+        if (result.length > 0) {
+            const match = await bcrypt.compare(current_password, result[0].PASSWORD);
+            if (match) {
+                SQL             = "UPDATE USERS SET PASSWORD = ? WHERE UID = ?";
+                SQL_BIND        = mysql.format(SQL, [new_hash_password, uid]);
+                await query(SQL_BIND);
+                return DB_RESP(200);
+            } else {
+                return DB_RESP(400, "Your current password is wrong!");
+            }
+        } else {
+            return DB_RESP(400, "'uid' is not exist");
+        }
     } catch (e) {
         DB_ERR(FUNC_NAME, SQL_BIND, e.message);
         return DB_RESP(503, e.message);

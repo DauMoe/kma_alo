@@ -25,6 +25,10 @@ if (!fs.existsSync("public/post")) {
     fs.mkdirSync("public/post");
 }
 
+if (!fs.existsSync("public/conversation")) {
+    fs.mkdirSync("public/conversation");
+}
+
 const RootNSP = io.of("/");
 RootNSP.use(function(socket, next) {
     next(new Error("Cannot connect to this namespace"));

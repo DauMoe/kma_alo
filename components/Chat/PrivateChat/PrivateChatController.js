@@ -1,8 +1,9 @@
-const { GetNumber } = require("../../../Utils/GetValue");
-const { CatchErr, RespCustomCode, SuccessResp, readFile, UNREAD} = require("../../../Utils/UtilsFunction");
+const { GetNumber, GetString} = require("../../../Utils/GetValue");
+const { CatchErr, RespCustomCode, SuccessResp, readFile, UNREAD, writeFile} = require("../../../Utils/UtilsFunction");
 const { GetAllPrivateChatIDDAO, CreateNewPrivateChatDAO, SavePrivateMessageToDBDAO, GetMessageHistoryDAO,
     GetChatInfoDAO
 } = require("./PrivateChatDAO");
+const path = require("path");
 
 const FILE_NAME = " - PrivateChatController.js";
 
@@ -63,11 +64,28 @@ exports.CreateNewPrivateChat = async(req, resp) => {
     }
 }
 
-exports.SavePrivateMessageToDB = async(room_name, sender_id, receiver_id, content, status) => {
+const MessageType = {
+    TEXT: "TEXT",
+    IMAGE: "IMAGE",
+    VIDEO: "VIDEO",
+    VOICE: "VOICE"
+}
+
+exports.MessageType = MessageType;
+
+exports.SavePrivateMessageToDB = async(room_name, sender_id, receiver_id, content, status, type = MessageType.TEXT) => {
     const FUNC_NAME = "SavePrivateMessageToDB" + FILE_NAME;
     try {
-        const result = await SavePrivateMessageToDBDAO(room_name, sender_id, receiver_id, content, status);
-        return result;
+        if (type === MessageType.IMAGE) {
+            const avatarBase64  = content;
+            const pathImage     = `_conversation_${room_name}_${new Date().getTime()}.jpg`;
+            await writeFile(path.join(__dirname, "..", "..", "public", "conversation", pathImage), avatarBase64.replace(/^data:image\/png;base64,/, ""), "base64");
+            const result = await SavePrivateMessageToDBDAO(room_name, sender_id, receiver_id, pathImage, status, type);
+            return result;
+        } else {
+            const result = await SavePrivateMessageToDBDAO(room_name, sender_id, receiver_id, content, status, type);
+            return result;
+        }
     } catch (e) {
         console.error(`${FUNC_NAME}: ${e.message}`);
     }
@@ -87,7 +105,7 @@ exports.GetMessageHistory = async(req, resp) => {
             for (const i of result.msg) {
                 respResult.push({
                     private_chat_msg_id : i.PRIVATE_CHAT_MSG_ID === null ? "" : i.PRIVATE_CHAT_MSG_ID,
-                    msg                 : i.CONTENT             === null ? "" : i.CONTENT,
+                    msg                 : i.CONTENT             === null ? "" : i.TYPE === MessageType.IMAGE ? `/conversation/${i.CONTENT}` : i.CONTENT,
                     type                : i.TYPE                === null ? "" : i.TYPE,
                     created_at          : i.CREATED_AT          === null ? "" : i.CREATED_AT,
                     receiver_id         : i.RECEIVER_ID         === null ? "" : i.RECEIVER_ID,

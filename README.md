@@ -3,17 +3,17 @@
 - [x] Đăng ký account (có xác thực mail)
 - [x] Xem toàn bộ các cuộc trò truyện
 - [x] Private Chat
-- [ ] Video call
-- [ ] Xem danh sách bạn bè + gợi ý bạn bè từ danh bạ
+- [x] Video call
+- [x] Xem danh sách bạn bè + gợi ý bạn bè từ danh bạ
 - [x] Cập nhật thông tin cá nhân (username, email, sdt, ho  và tên)
-- [ ] Cập nhật thông tin danh bạ
+- [x] Cập nhật thông tin danh bạ
 - [x] Đăng bài (ảnh, chữ, video)
 - [x] Thả reaction, comment
-- [ ] Tìm bạn bè qua sdt hoặc email, username(tìm, kết bạn)
-- [ ] Quên mk
-
-# Incoming (fee apply)
- - [ ] Change password
+- [x] Quên mk
+- [x] **Đổi mk**
+- [x] **Tìm bạn bè qua username, sdt, firstname + lastname**
+- [x] **Hủy kết bạn**
+- [x] **Gửi tin nhắn hình ảnh**
 
 # Command
 - SSH to Server: `ssh -i x.pem azureuser@20.39.198.111`

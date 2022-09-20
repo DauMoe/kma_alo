@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const { GetString, GetNumber} = require("../../Utils/GetValue");
 const { CatchErr, SuccessResp, RespCustomCode, SALT_ROUND, JWT_SECRET_KEY, HOST_ADDRESS, writeFile, CREATE_TRANSPORTER} = require("../../Utils/UtilsFunction");
 const { NewLocalUserDAO, GetUserInfoDAO, ActiveAccountDAO, UpdateUserInfoDAO,
-    UpdateAvatarDAO, ForgetPasswordDAO
+    UpdateAvatarDAO, ForgetPasswordDAO, ChangePasswordDAO
 } = require("./UsersDAO");
 const jwt = require("jsonwebtoken");
 const path = require("path");
@@ -214,6 +214,26 @@ exports.ForgetPassword = async(req, resp) => {
             SuccessResp(resp, undefined, "Reset password email has been sent to you!");
         } else {
             console.log("Here");
+            RespCustomCode(resp, undefined, result.msg, result.code);
+        }
+    } catch(e) {
+        CatchErr(resp, e, FUNC_NAME);
+    }
+}
+
+exports.ChangePassword = async(req, resp) => {
+    const FUNC_NAME = "ChangePassword" + FILE_NAME;
+    const uid       = req.app.locals.uid;
+    const reqData   = req.body;
+    try {
+        const currentPassword   = GetString(reqData, "current_password");
+        const newPassword       = GetString(reqData, "new_password");
+        const SALT              = bcrypt.genSaltSync(SALT_ROUND);
+        const hash_pass         = bcrypt.hashSync(newPassword, SALT);
+        const result            = await ChangePasswordDAO(uid, currentPassword, hash_pass);
+        if (result.code === 200) {
+            SuccessResp(resp);
+        } else {
             RespCustomCode(resp, undefined, result.msg, result.code);
         }
     } catch(e) {
