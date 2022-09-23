@@ -4,12 +4,13 @@ import LoadingScreen from "./components/LoadingScreen";
 import LoginScreen from './components/LoginScreen/index';
 import MainScreen from './components/MainScreen/index';
 import {
-    CHAT_SCREEN, CREATE_ACCOUNT_SCREEN, CREATE_POST_SCREEN, EDIT_USER_PROFILE_SCREEN,
-    FORGET_PASSWORD_SCREEN, FRIENDS_SCREEN,
-    LIST_CHATS_SCREEN,
-    LOADING_SCREEN,
-    LOGIN_SCREEN,
-    MAIN_SCREEN, PROFILE_SCREEN, USER_PROFILE_SCREEN, VIDEO_CALL_SCREEN,
+  CHANGE_PASS_SCREEN,
+  CHAT_SCREEN, CREATE_ACCOUNT_SCREEN, CREATE_POST_SCREEN, EDIT_USER_PROFILE_SCREEN,
+  FORGET_PASSWORD_SCREEN, FRIENDS_SCREEN,
+  LIST_CHATS_SCREEN,
+  LOADING_SCREEN,
+  LOGIN_SCREEN,
+  MAIN_SCREEN, PROFILE_SCREEN, USER_PROFILE_SCREEN, VIDEO_CALL_SCREEN,
 } from "./components/Definition";
 import SetIPModal from "./components/SetIPModal";
 import ForgetPasswordScreen from "./components/ForgetPasswordScreen";
@@ -26,6 +27,7 @@ import ProfileScreen from "./components/ProfileScreen";
 import io from "socket.io-client";
 import { DEFAULT_BASE_URL } from "./components/ReduxSaga/AxiosConfig";
 import { useSelector } from "react-redux";
+import ChangePassword from "./components/UserProfileScreen/ChangePassword";
 
 const Stack = createNativeStackNavigator();
 
@@ -119,6 +121,10 @@ const App = function(props) {
           <Stack.Screen
             name={VIDEO_CALL_SCREEN}
             component={VideoCallScreen}
+          />
+          <Stack.Screen
+            name={CHANGE_PASS_SCREEN}
+            component={ChangePassword}
           />
       </Stack.Navigator>
       {/*<SetIPModal/>*/}

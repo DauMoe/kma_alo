@@ -2,7 +2,7 @@ import axios from "axios";
 import { HOST_TABLE, HOST_TB_CREATE_AT, HOST_TB_VALUE, TOKEN_TABLE, TOKEN_TB_VALUE } from "../Definition";
 import { _db } from '../Utils';
 
-const sv = 1;
+const sv = 2;
 
 const PRODUCTION_URL                = "20.39.198.111";
 const TEST_URL                      = "192.168.1.9";

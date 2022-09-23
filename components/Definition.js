@@ -12,6 +12,7 @@ export const USER_PROFILE_SCREEN        = "UserProfileScreen";
 export const EDIT_USER_PROFILE_SCREEN   = "EditUserProfileScreen";
 export const CREATE_POST_SCREEN         = "CreatePostScreen";
 export const VIDEO_CALL_SCREEN          = "VideoCallScreen";
+export const CHANGE_PASS_SCREEN         = "ChangePasswordScreen";
 
 //Database definition
 export const DB_FILE_NAME           = "halo.db";
