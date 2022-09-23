@@ -4,16 +4,19 @@
 - [x] ~~Create chat UI~~
 - [x] ~~Create Profile UI~~
 - [x] ~~Create search friend UI~~
-- [ ] Create comments UI
+- [x] Create comments UI
 - [x] ~~Create Profile UI (when user click a name -> Show all post of this person);~~
 - [ ] Call UI
 - [x] ~~Create Signup UI~~
 - [x] ~~**Complete login scenario**~~
 - [ ] Save current offset in new feeds when refresh or load more post
-- [ ] **Create new API get user info and post with UID**
-- [ ] **Like and comment**
+- [x] **Create new API get user info and post with UID**
+- [x] **Like and comment**
 - [x] ~~**Confirm delete post modal**~~
-- [ ] **Show notification in bottom navigation when having new message**
+- [x] Đổi mk **(PENDING FOR TEST)**
+- [ ] Tìm bạn bè qua username, sdt, firstname + lastname **(PENDING FOR TEST)**
+- [ ] Hủy kết bạn
+- [ ] Gửi tin nhắn hình ảnh
 
 ## Design  
  - [NewsFeed Design](https://dribbble.com/tags/newsfeed)
