@@ -4,7 +4,14 @@ import styled from "styled-components/native";
 import Contacts from "react-native-contacts";
 import {ActivityIndicator, Avatar, Button, withTheme} from "react-native-paper";
 import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
-import {GET_LIST_FRIENDS, GET_RECOMMEND_FRIENDS, GET_USER_PROFILE} from "../API_Definition";
+import {
+  ACCEPT_FRIEND,
+  ADD_FRIEND,
+  CANCEL_FRIEND,
+  GET_LIST_FRIENDS,
+  GET_RECOMMEND_FRIENDS,
+  GET_USER_PROFILE,
+} from "../API_Definition";
 import {useIsFocused, useNavigation} from "@react-navigation/native";
 import FriendSkeleton from "./FriendSkeleton";
 import {PROFILE_SCREEN} from "../Definition";
@@ -102,7 +109,35 @@ const FriendsScreen = function(props) {
     }, [isFocus, triggerReRender]);
 
     const AddFriend = function(uid) {
+      axiosConfig(ADD_FRIEND, "post", {
+        uid: uid
+      })
+        .then(r => {
+          setReRender(!triggerReRender);
+        })
+        .catch(e => console.error(e));
+    }
 
+    const CancelFriendRequest = function(uid) {
+      axiosConfig(CANCEL_FRIEND, "delete", {
+        data: {
+          uid: uid
+        }
+      })
+        .then(r => {
+          setReRender(!triggerReRender);
+        })
+        .catch(e => console.error(e.response.data));
+    }
+
+    const AcceptFriendRequest = function(uid) {
+      axiosConfig(ACCEPT_FRIEND, "post", {
+        uid: uid
+      })
+        .then(r => {
+          setReRender(!triggerReRender);
+        })
+        .catch(e => console.error(e.response.data));
     }
 
     const Go2Profile = function(friend_data) {
@@ -148,9 +183,16 @@ const FriendsScreen = function(props) {
                         </View>
                       </TouchableOpacity>
                       <View style={{display: "flex", flexDirection: "row", marginTop: 5}}>
-                        <Button raised uppercase={false} style={{borderRadius: 5, backgroundColor: "#e875d4"}} color={colors.negativeTextColor} mode="text">
-                          Cancel request
-                        </Button>
+                        {
+                          data.type === "PENDING" ?
+                            <Button raised onPress={_ => CancelFriendRequest(data.uid)} uppercase={false} style={{borderRadius: 5, backgroundColor: colors.negativeBgColor}} color={colors.negativeTextColor} mode="text">
+                              Cancel request
+                            </Button>
+                          :
+                            <Button raised onPress={_ => AcceptFriendRequest(data.uid)} uppercase={false} style={{borderRadius: 5, backgroundColor: colors.acceptRequestColor}} color={colors.negativeTextColor} mode="text">
+                              Accept request
+                            </Button>
+                        }
                       </View>
                     </View>
                   </View>
@@ -184,20 +226,27 @@ const FriendsScreen = function(props) {
           }
           <FriendsWrapper>
             <Text style={{color: colors.text, fontFamily: "NunitoBold", fontSize: 18}}>Friends:</Text>
-              {listFriends.map((friend, index) => {
-                return(
-                  <View key={"_list_friend_" + index} style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
-                    {friend.avatar_link === ""
-                      ? <Avatar.Text size={50} label={friend.avatar_text} style={{marginRight: 15}}/>
-                      : <Image source={{uri: DEFAULT_BASE_URL + friend.avatar_link}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>}
-                    <View>
-                      <TouchableOpacity onPress={() => Go2Profile(friend)}>
-                        <Text style={{fontFamily: "NunitoBold", fontSize: 18, color: colors.text}}>{friend.display_name}</Text>
-                      </TouchableOpacity>
-                    </View>
+            {listFriends.length === 0 && <Text style={{
+              fontFamily: "NunitoSemiBold",
+              fontSize: 16,
+              color: colors.text,
+              textAlign: "center",
+              marginTop: 10
+            }}>Ops! Seem like you have no friend. Find someone!</Text>}
+            {listFriends.map((friend, index) => {
+              return(
+                <View key={"_list_friend_" + index} style={{display: "flex", flexDirection: "row", alignItems: "center", marginTop: 10, paddingLeft: 10}}>
+                  {friend.avatar_link === ""
+                    ? <Avatar.Text size={50} label={friend.avatar_text} style={{marginRight: 15}}/>
+                    : <Image source={{uri: DEFAULT_BASE_URL + friend.avatar_link}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>}
+                  <View>
+                    <TouchableOpacity onPress={() => Go2Profile(friend)}>
+                      <Text style={{fontFamily: "NunitoBold", fontSize: 18, color: colors.text}}>{friend.display_name}</Text>
+                    </TouchableOpacity>
                   </View>
-                )
-              })}
+                </View>
+              )
+            })}
             </FriendsWrapper>
         </ScrollView>
       </>

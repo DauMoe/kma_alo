@@ -4,7 +4,7 @@ import {Dimensions, ScrollView, View, Text, Image, ImageBackground, FlatList, To
 import styled from "styled-components";
 import {useFocusEffect, useNavigation, useRoute} from "@react-navigation/native";
 import { axiosConfig, DEFAULT_BASE_URL } from "../ReduxSaga/AxiosConfig";
-import {GET_POSTS, GET_USER_PROFILE, REACT_POST} from "../API_Definition";
+import { ADD_FRIEND, CANCEL_FRIEND, GET_CHAT_INFO, GET_POSTS, GET_USER_PROFILE, REACT_POST } from "../API_Definition";
 import SingleNews from "../NewsFeedScreen/SingleNews";
 import lodash from "lodash";
 import {useSelector} from "react-redux";
@@ -19,6 +19,7 @@ const ProfileScreen = function(props) {
   const route                     = useRoute();
   const {uid}                     = route.params;
   const [profileInfo, setProfile] = useState({});
+  const [triggerReRender, setReRender] = useState(false);
   const [listPost, setPost]       = useState([]);
   const [openComment, setOpen]    = useState({
     show: false,
@@ -66,10 +67,10 @@ const ProfileScreen = function(props) {
 
   const FetchUserInfo = () => {
     const controller = new AbortController();
-    const fetch = axiosConfig(GET_USER_PROFILE, "get", {
+    const fetch = axiosConfig(GET_CHAT_INFO, "get", {
       signal: controller.signal,
       params: {
-        uid: uid
+        to_uid: uid
       }
     });
     return { controller, fetch };
@@ -95,7 +96,7 @@ const ProfileScreen = function(props) {
       const p2 = GetListPost();
       Promise.all([p1.fetch, p2.fetch])
         .then(r => {
-          setProfile(r[0].data.data.user_data);
+          setProfile(r[0].data.data);
           const ListPost = [];
           for(const post of r[1].data.data.list_post) {
             const item = post;
@@ -108,13 +109,13 @@ const ProfileScreen = function(props) {
           setPost(ListPost);
         })
         .catch(e => {
-          console.error("E: ", e);
+          console.error("E: ", e.response.data);
         })
       return(() => {
         p1.controller.abort();
         p2.controller.abort();
       })
-    }, [])
+    }, [triggerReRender])
   )
 
   const [openModal, setOpenModal] = useState({
@@ -174,17 +175,47 @@ const ProfileScreen = function(props) {
     })
   }
 
+  const AddFriend = function(uid) {
+    axiosConfig(ADD_FRIEND, "post", {
+      uid: uid
+    })
+      .then(r => {
+        setReRender(!triggerReRender);
+      })
+      .catch(e => console.error(e.response.data));
+  }
+
+  const CancelFriendRequest = function(uid) {
+    axiosConfig(CANCEL_FRIEND, "delete", {
+      data: {
+        uid: uid
+      }
+    })
+      .then(r => {
+        console.log(r);
+        setReRender(!triggerReRender);
+      })
+      .catch(e => console.error(e.response.data));
+  }
+
   return(
     <View style={{height: height, width: width}}>
       <UserProfileScreen>
-        <ForeignBackground link={profileInfo.avatar_link}/>
+        <ForeignBackground link={profileInfo.receiver_avatar_link}/>
         {
-          profileInfo.avatar_link
-            ? <Image source={{uri: DEFAULT_BASE_URL + profileInfo.avatar_link}} style={{width: 120, height: 120, borderRadius: 99999, borderWidth: 3, borderColor: "white"}}/>
-            : <Avatar.Text size={120} label={profileInfo.avatar_text} style={{borderWidth: 3, borderColor: "white"}}/>
+          profileInfo.receiver_avatar_link
+            ? <Image source={{uri: DEFAULT_BASE_URL + profileInfo.receiver_avatar_link}} style={{width: 120, height: 120, borderRadius: 99999, borderWidth: 3, borderColor: "white"}}/>
+            : <Avatar.Text size={120} label={profileInfo.receiver_avatar_text} style={{borderWidth: 3, borderColor: "white"}}/>
         }
-        <UsernameProfile>{profileInfo.first_name} {profileInfo.last_name}</UsernameProfile>
-        {jwtData.uid !== uid && <Button mode={"text"} uppercase={false} style={{backgroundColor: "rgba(192,240,250,0.73)", borderRadius: 10, minWidth: 200, marginTop: 10}} onPress={Go2Chat}>Message</Button>}
+        <UsernameProfile>{profileInfo.receiver_display_name}</UsernameProfile>
+        {jwtData.uid !== uid &&
+          <View style={{display: "flex", flexDirection: "row", marginTop: 10}}>
+            {profileInfo.relations === "NOT_FRIEND" && <Button mode={"text"} uppercase={false} style={{marginRight: 10, backgroundColor: colors.positiveBgColor, borderRadius: 5}} color={colors.positiveTextColor} onPress={() => AddFriend(profileInfo.receiver_uid)}>Add friend</Button>}
+            {profileInfo.relations === "PENDING" && <Button mode={"text"} uppercase={false} style={{marginRight: 10, backgroundColor: colors.negativeBgColor, borderRadius: 5}} color={colors.positiveTextColor} onPress={() => CancelFriendRequest(profileInfo.receiver_uid)}>Cancel request</Button>}
+            {profileInfo.relations === "FRIEND" && <Button mode={"text"} uppercase={false} style={{marginRight: 10, backgroundColor: colors.accent, borderRadius: 5}} color={colors.positiveTextColor} onPress={() => CancelFriendRequest(profileInfo.receiver_uid)}>Unfriend</Button>}
+            <Button mode={"text"} uppercase={false} style={{backgroundColor: "rgba(192,240,250,0.73)", borderRadius: 5}} onPress={Go2Chat}>Message</Button>
+          </View>
+        }
       </UserProfileScreen>
 
       <FlatList

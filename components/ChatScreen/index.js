@@ -1,5 +1,14 @@
 import React, {Fragment, useEffect, useRef, useState} from "react";
-import {View, Text, ScrollView, TextInput, TouchableHighlight, Dimensions, Image} from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TextInput,
+  TouchableHighlight,
+  Dimensions,
+  Image,
+  PermissionsAndroid, ToastAndroid,
+} from "react-native";
 import styled from "styled-components/native";
 import { Avatar, Button, IconButton, withTheme } from "react-native-paper";
 import {useDispatch, useSelector} from "react-redux";
@@ -13,6 +22,7 @@ import jwt_decode from "jwt-decode";
 import { useIsFocused, useNavigation, useRoute } from "@react-navigation/native";
 import Authenticator from "../ReduxSaga/Authenticator/Reducers";
 import { VIDEO_CALL_SCREEN } from "../Definition";
+import { launchImageLibrary } from "react-native-image-picker";
 
 const Theme = {
     primaryColor: "#FFFFFF",
@@ -146,7 +156,6 @@ const ChatScreen = function(props) {
     }
 
     const LoadChatHistory = function() {
-        console.log("F: ", ChatInfo.current);
         conversationAction.current.loading = true;
         const controller = new AbortController();
         const options = {
@@ -172,7 +181,6 @@ const ChatScreen = function(props) {
     }
 
     const HandleChatSocket = function(receiveData) {
-        console.log("R: ", receiveData);
         const newMessage = {
             ...receiveData,
             sender: receiveData.sender_id === jwtInfo.uid
@@ -208,9 +216,9 @@ const ChatScreen = function(props) {
                       color={colors.positiveBgColor}
                     />
                     {
-                        ChatInfo.current?.receiver_avatar === ""
+                        ChatInfo.current?.receiver_avatar_link === ""
                           ? <Avatar.Text size={30} label={ChatInfo.current?.receiver_avatar_text} style={{marginRight: 10}}/>
-                          : <Image source={{uri: DEFAULT_BASE_URL + ChatInfo.current?.receiver_avatar}} style={{width: 30, height: 30, borderRadius: 9999, marginRight: 10}}/>
+                          : <Image source={{uri: DEFAULT_BASE_URL + ChatInfo.current?.receiver_avatar_link}} style={{width: 30, height: 30, borderRadius: 9999, marginRight: 10}}/>
                     }
                 </View>
             </ChatHeadWrapper>
@@ -227,9 +235,9 @@ const ChatScreen = function(props) {
                             <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.sender_id === Conversation[index-1].sender_id)}>
                                 {/*<AvatarMessageUser size={35} label={v.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>*/}
                                 {
-                                    ChatInfo.current?.receiver_avatar === ""
+                                    ChatInfo.current?.receiver_avatar_link === ""
                                         ? <AvatarMessageUser size={35} label={ChatInfo.current?.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>
-                                        : <Image source={{uri: DEFAULT_BASE_URL + ChatInfo.current?.receiver_avatar}} style={{width: 35, height: 35, borderRadius: 9999, marginRight: 10, opacity: (!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id)) ? 1 : 0)}}/>
+                                        : <Image source={{uri: DEFAULT_BASE_URL + ChatInfo.current?.receiver_avatar_link}} style={{width: 35, height: 35, borderRadius: 9999, marginRight: 10, opacity: (!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id)) ? 1 : 0)}}/>
                                 }
                                 <ChatMessage sender={v.sender} onLongPress={() => console.log("Long press")}>
                                     <Text style={{color: "white"}}>{v.msg}</Text>
@@ -244,11 +252,69 @@ const ChatScreen = function(props) {
         );
     }
 
+    const chooseImage = function() {
+      PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,{
+          title: "Get image from library",
+          message:
+            "This app would like to view your photos.",
+          buttonNeutral: "Ask Me Later",
+          buttonNegative: "Cancel",
+          buttonPositive: "Allow"
+        }
+      )
+        .then(async() => {
+          try {
+            const result = await launchImageLibrary({
+              "mediaType": "photo",
+              "cameraType": "front",
+              "quality": 0.3,
+              "includeBase64": true
+            });
+            HandleImage(result);
+          } catch(e) {
+            console.error("Launch library err: ", e);
+          }
+        })
+        .catch(e => console.error(e))
+    }
+
+  const HandleImage = function(result) {
+    if (result.didCancel) {
+      console.info("User canceled");
+    } else if (result.errorCode === "camera_unavailable") {
+      ToastAndroid.show("Camera is not available", ToastAndroid.LONG);
+    } else if (result.errorCode === "permission") {
+      ToastAndroid.show("Please allow us access camera or gallery", ToastAndroid.LONG);
+    } else if (result.errorCode === "others") {
+      ToastAndroid.show(result.errorMessage, ToastAndroid.LONG);
+    } else if ((result.assets[0].fileSize/1000) > 1000 * 10) {
+      ToastAndroid.show("Image file is too large (Max: 10MB)", ToastAndroid.LONG);
+    } else {
+      const avatarBase64 = "data:image/png;base64," + result.assets[0].base64;
+      SendImageMessage(avatarBase64);
+    }
+  }
+
+  const SendImageMessage = function(base64) {
+    const newMessage = {
+      ...ChatInfo.current,
+      sender_id: jwtInfo.uid,
+      msgID   : uuid.v1(),
+      msg     : msg,
+      type    : "IMAGE",
+      sender  : true,
+      state   : MessageState.SENT
+    };
+    setMsg("");
+    setConversation(prevState => [...prevState, newMessage]);
+    socket.emit("emit_private_chat", ChatInfo.current?.room_chat_id, msg,  ChatInfo.current?.receiver_uid, base64, "IMAGE");
+  }
+
     useEffect(function () {
         const p1 = GetChatInfo();
         Promise.all([p1.fetch])
           .then(r => {
-              console.log(r[0].data.data);
               const ConversationInfo = r[0].data.data;
               ChatInfo.current = {
                   ...ChatInfo.current,
@@ -280,6 +346,17 @@ const ChatScreen = function(props) {
             <ChatHeadSection/>
             <ChatSection/>
             <InputMessageWrapper>
+              <IconButton
+                icon="image"
+                style={{
+                  padding: 0,
+                  margin: 0,
+                  marginLeft: 5
+                }}
+                size={30}
+                onPress={chooseImage}
+                animate={true}
+                color={"#626262"}/>
                 <InputMessage placeholderTextColor={"#6e6e6e"} defaultValue={msg} onChangeText={text => setMsg(text)} placeholder="Type your message"/>
                 <IconButton
                     icon="send"

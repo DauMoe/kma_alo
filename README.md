@@ -13,9 +13,9 @@
 - [x] **Create new API get user info and post with UID**
 - [x] **Like and comment**
 - [x] ~~**Confirm delete post modal**~~
-- [x] Đổi mk **(PENDING FOR TEST)**
-- [ ] Tìm bạn bè qua username, sdt, firstname + lastname **(PENDING FOR TEST)**
-- [ ] Hủy kết bạn
+- [x] Đổi mk
+- [x] Tìm bạn bè qua username, sdt, firstname + lastname
+- [x] Hủy kết bạn
 - [ ] Gửi tin nhắn hình ảnh
 
 ## Design  

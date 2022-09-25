@@ -54,7 +54,11 @@ const ChangePassword = function(props) {
             if (navigation.canGoBack()) navigation.goBack();
           }, ToastAndroid.LONG);
         })
-        .catch(e => console.error(e.response.data))
+        .catch(e => {
+          setErr({
+            pos2: e.response.data.description
+          })
+        })
         .finally(() => {
           setLoading(false);
         })

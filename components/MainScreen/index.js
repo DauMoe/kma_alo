@@ -26,7 +26,7 @@ const MainScreen = function (props) {
 
   useEffect(() => {
     const Clone = routes;
-    const newItem = {key: 'chat', title: 'Chat', icon: 'chat', badge: +unread_count};
+    const newItem = {key: 'chat', title: 'Chat', icon: 'chat', badge: unread_count};
     Clone.splice(2, 1, newItem);
     setRoutes(Clone);
   }, [unread_count]);

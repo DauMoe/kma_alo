@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     View,
     ScrollView,
@@ -141,7 +141,7 @@ const ListChatsScreen = function(props) {
   const { loaded, error, error_msg, data }    = useSelector(state => state.Chats);
   const [ListChat, setListChat]               = useState([]);
   const [searchResult, setResult]             = useState([]);
-  const [searchChat, setSearchChat]           = useState(undefined);
+  const [searchChat, setSearchChat]           = useState("");
   const isMount                               = useRef();
   const isFocus                               = useIsFocused();
 
@@ -164,35 +164,16 @@ const ListChatsScreen = function(props) {
       .catch(e => console.log(e.response));
   }
 
+  const _findFriendDebounce = useCallback(lodash.debounce(_findFriend, 500), []);
+
   const SearchChat = function(e) {
     setSearchChat(e??"");
     const query = e  ?? searchChat;
     if (query === "") {
       setResult(data);
-      setSearchChat([]);
     } else {
-      lodash.debounce(() => _findFriend(query), 500);
+      _findFriendDebounce(query);
     }
-    // if (__DEV__) {
-    //   const query = e  ?? "";
-    //   if (query === "") {
-    //     setListChat(data);
-    //     return;
-    //   }
-    //   axiosConfig(SEARCH_FRIEND, "get", {
-    //     params: {
-    //         q: query
-    //     }
-    //   })
-    //     .then(r => {
-    //       console.log(r.data.data);
-    //       setListChat(r.data.data.result);
-    //     })
-    //     .catch(e => console.log(e.response));
-    // } else {
-    //   const FilterChat = lodash.filter(data, chat => chat.display_name.toLowerCase().indexOf(e.toLowerCase()) > -1);
-    //   setListChat(FilterChat);
-    // }
   }
 
   useEffect(function() {
@@ -224,7 +205,7 @@ const ListChatsScreen = function(props) {
             <ChatHeadUsername>Message</ChatHeadUsername>
           </ChatHeadSectionWrapper>
           <SearchChatSectionWrapper>
-            <SearchChatInput placeholderTextColor={"#b4b4b4"} onChangeText={SearchChat} placeholder={"Search chat"}/>
+            <SearchChatInput placeholderTextColor={"#b4b4b4"} onChangeText={SearchChat} placeholder={"Find friends ..."}/>
           </SearchChatSectionWrapper>
         </View>
 

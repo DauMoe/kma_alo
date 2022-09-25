@@ -2,7 +2,7 @@ import axios from "axios";
 import { HOST_TABLE, HOST_TB_CREATE_AT, HOST_TB_VALUE, TOKEN_TABLE, TOKEN_TB_VALUE } from "../Definition";
 import { _db } from '../Utils';
 
-const sv = 2;
+const sv = 1;
 
 const PRODUCTION_URL                = "20.39.198.111";
 const TEST_URL                      = "192.168.1.9";
@@ -44,6 +44,14 @@ export const axiosConfig = function(endpoint, method, config) {
     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIxLCJlbWFpbCI6ImxlaHV5aG9hbmcxMTExOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF1bW9lMSIsImlhdCI6MTY2MDgzNTg3NCwiZXhwIjoxODc2ODM1ODc0fQ.E-whu03YrSH9KOrqxBIP5aoL6bkDxNX6mvv7qe9yeJM";
     const instance = axios.create({
         baseURL: DEFAULT_BASE_URL
+    });
+    instance.interceptors.response.use(response => {
+       const { code, data } = response.data;
+       console.log(code);
+       if (code === 401) {
+
+       }
+       return response;
     });
     // instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     if (TOKEN) {
