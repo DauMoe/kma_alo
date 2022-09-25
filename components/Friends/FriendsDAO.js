@@ -52,7 +52,7 @@ exports.GetListFriendsDAO = async(uid) => {
                 ListFriendsID.push(i.UID_ONE);
                 FriendsInfo.push({
                     uid: i.UID_ONE,
-                    type: i.TYPE,
+                    type: i.TYPE === "PENDING" ? "WAITING" : i.TYPE,
                     created_at: i.CREATED_AT,
                     updated_at: i.UPDATED_AT
                 })
@@ -130,6 +130,20 @@ exports.CancelFriendRequestDAO = async(from_uid, to_uid) => {
     let SQL, SQL_BIND = "";
     try {
         SQL             = "DELETE FROM RELATIONS WHERE (UID_ONE = ? AND UID_TWO = ?) OR (UID_ONE = ? AND UID_TWO = ?)";
+        SQL_BIND        = mysql.format(SQL, [from_uid, to_uid, to_uid, from_uid]);
+        await query(SQL_BIND);
+        return DB_RESP(200);
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
+
+exports.AcceptFriendRequestDAO = async(from_uid, to_uid) => {
+    const FUNC_NAME = `AcceptFriendRequestDAO${FILE_NAME}`;
+    let SQL, SQL_BIND = "";
+    try {
+        SQL             = "UPDATE RELATIONS SET TYPE = 'FRIEND' WHERE (UID_ONE = ? AND UID_TWO = ?) OR (UID_ONE = ? AND UID_TWO = ?)";
         SQL_BIND        = mysql.format(SQL, [from_uid, to_uid, to_uid, from_uid]);
         await query(SQL_BIND);
         return DB_RESP(200);

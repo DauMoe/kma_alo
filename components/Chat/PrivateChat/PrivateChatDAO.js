@@ -143,6 +143,20 @@ exports.GetChatInfoDAO = async(own_uid, to_uid) => {
                 }
             }
         }
+        SQL             = "SELECT * FROM RELATIONS WHERE (UID_ONE = ? AND UID_TWO = ?) OR (UID_ONE = ? AND UID_TWO = ?)";
+        SQL_BIND        = mysql.format(SQL, [own_uid, to_uid, to_uid, own_uid]);
+        const result3   = await query(SQL_BIND);
+        if (result3.length === 0) {
+            respData = {
+                ...respData,
+                RELATIONS: "NOT_FRIEND"
+            }
+        } else {
+            respData = {
+                ...respData,
+                RELATIONS: result3[0].TYPE
+            }
+        }
         return DB_RESP(200, respData);
     } catch (e) {
         DB_ERR(FUNC_NAME, SQL_BIND, e.message);

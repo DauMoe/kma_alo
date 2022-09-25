@@ -153,7 +153,10 @@ exports.GetChatInfo = async(req, resp) => {
                 receiver_last_name  : i.RECEIVER_LAST_NAME      === null ? "" : i.RECEIVER_LAST_NAME,
                 receiver_username   : i.RECEIVER_USERNAME       === null ? "" : i.RECEIVER_USERNAME,
                 receiver_avatar_link: i.RECEIVER_AVATAR_LINK    === null ? "" : `/avatar/${i.RECEIVER_AVATAR_LINK}`,
-                receiver_avatar_text: i.RECEIVER_AVATAR_TEXT    === null ? "" : i.RECEIVER_AVATAR_TEXT
+                receiver_avatar_text: i.RECEIVER_AVATAR_TEXT    === null ? "" : i.RECEIVER_AVATAR_TEXT,
+                receiver_display_name: `${i.RECEIVER_FIRST_NAME} ${i.RECEIVER_LAST_NAME}`,
+                sender_display_name: `${i.SENDER_FIRST_NAME} ${i.SENDER_LAST_NAME}`,
+                relations           : i.RELATIONS
             };
             SuccessResp(resp, respData);
         } else {

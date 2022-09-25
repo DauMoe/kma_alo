@@ -1,7 +1,7 @@
 const {CatchErr, SuccessResp, RespCustomCode, readFile} = require("../../Utils/UtilsFunction");
 const {GetJSONArray, GetString, GetNumber} = require("../../Utils/GetValue");
 const {RecommendNewFriendsDAO, GetListFriendsDAO, SearchFriendDAO, AddFriendDAODAO, AddFriendDAO,
-    CancelFriendRequestDAO
+    CancelFriendRequestDAO, AcceptFriendRequestDAO
 } = require("./FriendsDAO");
 const path = require("path");
 const FILE_NAME = " - FriendsController.js";
@@ -79,8 +79,11 @@ exports.GetListFriends = async(req, resp) => {
                     send_request: i.SEND_REQUEST_AT === null ? "" : i.SEND_REQUEST_AT,
                     accept_at   : i.ACCEPT_AT === null || i.TYPE != 'FRIEND' ? "" : i.ACCEPT_AT
                 };
-                if (i.TYPE === "FRIEND") ListFriends.push(item);
-                if (i.TYPE === "PENDING") ListPendingRequest.push(item);
+                if (i.TYPE === "FRIEND") {
+                    ListFriends.push(item)
+                } else {
+                    ListPendingRequest.push(item);
+                }
             }
             SuccessResp(resp, {
                 list_friends: ListFriends,
@@ -149,6 +152,23 @@ exports.CancelRequest = async(req, resp) => {
     try {
         const target_uid    = GetNumber(reqData, "uid");
         const result        = await CancelFriendRequestDAO(uid, target_uid);
+        if (result.code === 200) {
+            SuccessResp(resp);
+        } else {
+            RespCustomCode(resp, undefined, result.msg, result.code);
+        }
+    } catch(e) {
+        CatchErr(resp, e, FUNC_NAME);
+    }
+}
+
+exports.AcceptFriendRequest = async(req, resp) => {
+    const FUNC_NAME = "AcceptFriendRequest" + FILE_NAME;
+    const uid       = req.app.locals.uid;
+    const reqData   = req.body;
+    try {
+        const target_uid    = GetNumber(reqData, "uid");
+        const result        = await AcceptFriendRequestDAO(uid, target_uid);
         if (result.code === 200) {
             SuccessResp(resp);
         } else {
