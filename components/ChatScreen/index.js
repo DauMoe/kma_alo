@@ -315,7 +315,7 @@ const ChatScreen = function(props) {
     };
     setMsg("");
     setConversation(prevState => [...prevState, newMessage]);
-    // socket.emit("emit_private_chat", ChatInfo.current?.room_chat_id, base64, ChatInfo.current?.receiver_uid, ChatInfo.current, "IMAGE");
+    socket.emit("emit_private_chat", ChatInfo.current?.room_chat_id, base64, ChatInfo.current?.receiver_uid, ChatInfo.current, "IMAGE");
   }
 
   useEffect(function () {
