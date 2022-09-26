@@ -92,15 +92,17 @@ exports.SocketAuthenticate = function(socket, next) {
     const authoHeader = socket.handshake.headers;
     if (authoHeader.authorization && authoHeader.authorization.indexOf("Bearer") > -1) {
         const token = authoHeader.authorization.split(" ")[1];
-        jwt.verify(token, JWT_SECRET_KEY, function(err, decoded) {
-            if (err) {
-                console.log("=== SocketAuthenticate - UtilsFunction.js ===: ", err.message);
-                next(new Error("Token invalid!"));
-            } else {
-                socket.senderInfo = decoded;
-                next();
-            }
-        });
+        if (token) {
+            jwt.verify(token, JWT_SECRET_KEY, function(err, decoded) {
+                if (err) {
+                    console.log("=== SocketAuthenticate - UtilsFunction.js ===: ", err.message);
+                    next(new Error("Token invalid!"));
+                } else {
+                    socket.senderInfo = decoded;
+                    next();
+                }
+            });
+        }
     } else {
         next(new Error("Invalid token"));
     }
@@ -113,8 +115,10 @@ exports.SALT_ROUND      = 5;
 exports.JWT_SECRET_KEY  = JWT_SECRET_KEY;
 exports.readFile        = util.promisify(fs.readFile);
 exports.writeFile       = util.promisify(fs.writeFile);
-exports.UNREAD          = "UNREAD";
+exports.SENT            = "SENT";
 exports.FRIEND          = "FRIEND";
+exports.TEXT            = "TEXT";
+exports.IMAGE           = "IMAGE";
 exports.PENDING         = "PENDING";
 exports.SEEN            = "SEEN";
 exports.CONN            = "connection";

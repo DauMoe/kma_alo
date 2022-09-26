@@ -1,4 +1,4 @@
-const { SocketAuthenticate, ChatEventKey, UNREAD, CONN} = require("../../Utils/UtilsFunction");
+const { SocketAuthenticate, CONN, TEXT, SENT} = require("../../Utils/UtilsFunction");
 const {SavePrivateMessageToDB} = require("./PrivateChat/PrivateChatController");
 
 exports.PrivateChatSocket = function(io) {
@@ -6,11 +6,11 @@ exports.PrivateChatSocket = function(io) {
 
     PrivateChatNSP.use(SocketAuthenticate);
     PrivateChatNSP.adapter.on("create-room", function(room) {
-        console.log(`CHAT: ${room} is created!`);
+        // console.log(`CHAT: ${room} is created!`);
     });
 
     PrivateChatNSP.adapter.on("join-room", function(room, id) {
-        console.log(`CHAT: User ${id} joins room ${room}`);
+        // console.log(`CHAT: User ${id} joins room ${room}`);
     });
 
     PrivateChatNSP.on("connection", function(socket) {
@@ -18,17 +18,19 @@ exports.PrivateChatSocket = function(io) {
             socket.join(room_name);
         })
 
-        socket.on("emit_private_chat", async function(room_name, msg, receiver_id, chatInfo) {
-            const result = await SavePrivateMessageToDB(room_name, socket.senderInfo.uid, receiver_id, msg, UNREAD);
+        socket.on("emit_private_chat", async function(room_name, msg, receiver_id, chatInfo, type = TEXT) {
+            const result = await SavePrivateMessageToDB(room_name, socket.senderInfo.uid, receiver_id, msg, SENT, type);
             if (result.code === 200) {
                 socket.to(room_name).emit("listen_private_chat", {
                     ...chatInfo,
                     msg: msg,
+                    type: type,
                     code: 200
                 });
             } else {
                 socket.to(room_name).emit("listen_private_chat", {
                     ...chatInfo,
+                    type: type,
                     result
                 });
             }
@@ -41,11 +43,11 @@ exports.PrivateCallSocket = function(io) {
 
     PrivateCallNSP.use(SocketAuthenticate);
     PrivateCallNSP.adapter.on("create-room", function(room) {
-        console.log(`CALL: ${room} is created!`);
+        // console.log(`CALL: ${room} is created!`);
     });
 
     PrivateCallNSP.adapter.on("join-room", function(room, id) {
-        console.log(`CALL: User ${id} joins room ${room}`);
+        // console.log(`CALL: User ${id} joins room ${room}`);
     });
 
     PrivateCallNSP.on(CONN, function(socket) {
@@ -54,7 +56,7 @@ exports.PrivateCallSocket = function(io) {
         })
 
         socket.on("user_join_call", async function(room_name, peerID, userInfo) {
-            console.log("Room: ", room_name, " ID: ", peerID);
+            // console.log("Room: ", room_name, " ID: ", peerID);
             socket.to(room_name).emit("new_user_joined", peerID, userInfo);
         });
 

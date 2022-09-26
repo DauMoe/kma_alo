@@ -1,5 +1,5 @@
-const { GetNumber, GetString} = require("../../../Utils/GetValue");
-const { CatchErr, RespCustomCode, SuccessResp, readFile, UNREAD, writeFile} = require("../../../Utils/UtilsFunction");
+const { GetNumber } = require("../../../Utils/GetValue");
+const { CatchErr, RespCustomCode, SuccessResp, writeFile, SENT, IMAGE} = require("../../../Utils/UtilsFunction");
 const { GetAllPrivateChatIDDAO, CreateNewPrivateChatDAO, SavePrivateMessageToDBDAO, GetMessageHistoryDAO,
     GetChatInfoDAO
 } = require("./PrivateChatDAO");
@@ -26,13 +26,13 @@ exports.GetAllPrivateChatID = async(req, resp) => {
                     display_name        : `${i.FIRST_NAME} ${i.LAST_NAME}`,
                     receiver_uid        : (i.UID_ONE !== null &&i.UID_ONE !== uid) ? i.UID_ONE : i.UID_TWO,
                     last_send           : i.CREATED_AT              === null ? "" : i.CREATED_AT,
-                    last_message        : i.CONTENT                 === null ? "" : i.CONTENT,
+                    last_message        : i.TYPE                    === IMAGE ? "<Image>" : i.CONTENT === null ? "" : i.CONTENT,
                     last_message_id     : i.PRIVATE_CHAT_MSG_ID     === null ? "" : i.PRIVATE_CHAT_MSG_ID,
                     message_type        : i.TYPE                    === null ? "" : i.TYPE,
                     sender_id           : (i.UID_ONE !== null &&i.UID_ONE === uid) ? i.UID_ONE : i.UID_TWO,
-                    status              : i.STATUS                  === null ? UNREAD : i.STATUS
+                    status              : i.STATUS                  === null ? SENT : i.STATUS
                 }
-                if (item.status === UNREAD && listUnReadMessage.indexOf(i.receiver_uid) === -1) listUnReadMessage.push(i.receiver_uid);
+                if (item.status === SENT && listUnReadMessage.indexOf(i.receiver_uid) === -1) listUnReadMessage.push(i.receiver_uid);
                 respResult.push(item);
             }
             SuccessResp(resp, {
@@ -73,13 +73,13 @@ const MessageType = {
 
 exports.MessageType = MessageType;
 
-exports.SavePrivateMessageToDB = async(room_name, sender_id, receiver_id, content, status, type = MessageType.TEXT) => {
+exports.SavePrivateMessageToDB = async(room_name, sender_id, receiver_id, content, status, type) => {
     const FUNC_NAME = "SavePrivateMessageToDB" + FILE_NAME;
     try {
-        if (type === MessageType.IMAGE) {
+        if (type === "IMAGE") {
             const avatarBase64  = content;
-            const pathImage     = `_conversation_${room_name}_${new Date().getTime()}.jpg`;
-            await writeFile(path.join(__dirname, "..", "..", "public", "conversation", pathImage), avatarBase64.replace(/^data:image\/png;base64,/, ""), "base64");
+            const pathImage     = `_conversation_${new Date().getTime()}.jpg`;
+            await writeFile(path.join(__dirname, "..", "..", "..", "public", "conversation", pathImage), avatarBase64.replace(/^data:image\/png;base64,/, ""), "base64");
             const result = await SavePrivateMessageToDBDAO(room_name, sender_id, receiver_id, pathImage, status, type);
             return result;
         } else {
@@ -114,7 +114,7 @@ exports.GetMessageHistory = async(req, resp) => {
                     receiver_first_name : i.FIRST_NAME          === null ? "" : i.FIRST_NAME,
                     receiver_last_name  : i.LAST_NAME           === null ? "" : i.LAST_NAME,
                     receiver_avatar     : i.AVATAR              === null ? "" : i.AVATAR,
-                    state               : "SENT",
+                    state               : i.STATUS              === null ? SENT : i.STATUS,
                     receiver_avatar_text: `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`
                 });
             }
