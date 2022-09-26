@@ -92,8 +92,7 @@ const NewsFeedScreen = function(props) {
                 currentState.current.limit  = r.data.data.limit;
             })
             .catch(e => {
-                // console.error(Object.keys(e));
-                console.error(e)
+                console.error(e.response.data);
             })
             .finally(() => {
                 if (refresh) setLoading(false)
@@ -156,7 +155,7 @@ const NewsFeedScreen = function(props) {
       return(() => {
         task.cancel();
       });
-    }, []));
+    }, [isFocus]));
 
     return(
         <>

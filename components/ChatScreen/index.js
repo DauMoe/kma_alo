@@ -64,8 +64,8 @@ const ChatMessageWrapper = styled(View)`
 `;
 
 const ChatMessage = styled(TouchableHighlight)`
-  padding: 8px 10px;
-  background-color: ${props => props.sender ? "blueviolet" : "#b6b6b6"};
+  padding: ${props => props.isImage ? 0 : "8px 10px"};
+  background-color: ${props => props.isImage ? undefined : props.sender ? "blueviolet" : "#b6b6b6"};
   font-size: 16px;
   font-family: "NunitoRegular";
   border-radius: 15px;
@@ -188,69 +188,76 @@ const ChatScreen = function(props) {
         setConversation(prevState => [...prevState, newMessage]);
     }
 
-    const sendMessage = function() {
-        if (msg.trim() === "") return;
-        const newMessage = {
-            ...ChatInfo.current,
-            sender_id: jwtInfo.uid,
-            msgID   : uuid.v1(),
-            msg     : msg,
-            sender  : true,
-            state   : MessageState.SENT
-        };
-        setMsg("");
-        setConversation(prevState => [...prevState, newMessage]);
-        socket.emit("emit_private_chat", ChatInfo.current?.room_chat_id, msg,  ChatInfo.current?.receiver_uid,  ChatInfo.current);
-    }
+  const sendMessage = function() {
+    if (msg.trim() === "") return;
+    const newMessage = {
+      ...ChatInfo.current,
+      sender_id: jwtInfo.uid,
+      msgID   : uuid.v1(),
+      msg     : msg,
+      sender  : true,
+      state   : MessageState.SENT
+    };
+    setMsg("");
+    setConversation(prevState => [...prevState, newMessage]);
+    socket.emit("emit_private_chat", ChatInfo.current?.room_chat_id, msg,  ChatInfo.current?.receiver_uid,  ChatInfo.current, "TEXT");
+  }
 
-    const ChatHeadSection = function() {
-        return(
-            <ChatHeadWrapper>
-                <IconButton icon="chevron-left" size={35} onPress={() => {if (navigation.canGoBack()) navigation.goBack()}} color={Theme.primaryTextColor}/>
-                <ChatHeadUsername>{ChatInfo.current?.receiver_first_name} {ChatInfo.current?.receiver_last_name}</ChatHeadUsername>
-                <View style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
-                    <IconButton
-                      onPress={Go2CallScreen}
-                      style={{marginRight: 10}}
-                      icon={"phone"}
-                      color={colors.positiveBgColor}
-                    />
-                    {
-                        ChatInfo.current?.receiver_avatar_link === ""
-                          ? <Avatar.Text size={30} label={ChatInfo.current?.receiver_avatar_text} style={{marginRight: 10}}/>
-                          : <Image source={{uri: DEFAULT_BASE_URL + ChatInfo.current?.receiver_avatar_link}} style={{width: 30, height: 30, borderRadius: 9999, marginRight: 10}}/>
+  const ChatHeadSection = function() {
+    return(
+      <ChatHeadWrapper>
+        <IconButton icon="chevron-left" size={35} onPress={() => {if (navigation.canGoBack()) navigation.goBack()}} color={Theme.primaryTextColor}/>
+        <ChatHeadUsername>{ChatInfo.current?.receiver_first_name} {ChatInfo.current?.receiver_last_name}</ChatHeadUsername>
+        <View style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+          <IconButton
+            onPress={Go2CallScreen}
+            style={{marginRight: 10}}
+            icon={"phone"}
+            color={colors.positiveBgColor}
+          />
+          {
+            ChatInfo.current?.receiver_avatar_link === ""
+              ? <Avatar.Text size={30} label={ChatInfo.current?.receiver_avatar_text} style={{marginRight: 10}}/>
+              : <Image source={{uri: DEFAULT_BASE_URL + ChatInfo.current?.receiver_avatar_link}} style={{width: 30, height: 30, borderRadius: 9999, marginRight: 10}}/>
+          }
+        </View>
+      </ChatHeadWrapper>
+    );
+  }
+
+  const ChatSection = function() {
+    return(
+      <ChatScreenWrapper>
+          <ScrollView onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })} ref={scrollViewRef}>
+          {/*<ScrollView onScroll={HandleScrollTop}>*/}
+            {Array.isArray(Conversation) && Conversation.map(function(v, index) {
+              return (
+                <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.sender_id === Conversation[index-1].sender_id)}>
+                  {/*<AvatarMessageUser size={35} label={v.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>*/}
+                  {
+                    ChatInfo.current?.receiver_avatar_link === ""
+                      ? <AvatarMessageUser size={35} label={ChatInfo.current?.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>
+                      : <Image source={{uri: DEFAULT_BASE_URL + ChatInfo.current?.receiver_avatar_link}} style={{width: 35, height: 35, borderRadius: 9999, marginRight: 10, opacity: (!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id)) ? 1 : 0)}}/>
+                  }
+                  <ChatMessage isImage={v.type === "IMAGE"} sender={v.sender} onLongPress={() => console.log("Long press")}>
+                    {v.type === "IMAGE"
+                      ? <Image
+                          source={{uri: v.base64 ? v.base64 : `${DEFAULT_BASE_URL}${v.msg}`}}
+                          style={{
+                            width: 150,
+                            height: 200,
+                            borderRadius: 10
+                        }}/>
+                      : <Text style={{color: "white"}}>{v.msg}</Text>
                     }
-                </View>
-            </ChatHeadWrapper>
-        );
-    }
-
-    const ChatSection = function() {
-        return(
-            <ChatScreenWrapper>
-                {/*<ScrollView onScroll={HandleScrollTop} onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })} ref={scrollViewRef}>*/}
-                <ScrollView onScroll={HandleScrollTop}>
-                    {Array.isArray(Conversation) && Conversation.map(function(v, index) {
-                        return (
-                            <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.sender_id === Conversation[index-1].sender_id)}>
-                                {/*<AvatarMessageUser size={35} label={v.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>*/}
-                                {
-                                    ChatInfo.current?.receiver_avatar_link === ""
-                                        ? <AvatarMessageUser size={35} label={ChatInfo.current?.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>
-                                        : <Image source={{uri: DEFAULT_BASE_URL + ChatInfo.current?.receiver_avatar_link}} style={{width: 35, height: 35, borderRadius: 9999, marginRight: 10, opacity: (!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id)) ? 1 : 0)}}/>
-                                }
-                                <ChatMessage sender={v.sender} onLongPress={() => console.log("Long press")}>
-                                    <Text style={{color: "white"}}>{v.msg}</Text>
-                                </ChatMessage>
-                                {/*{v.sender && v.state === MessageState.SENDING && <IconButton icon="check-circle-outline" size={15} color={"gray"} style={{margin: 0}}/>}*/}
-                                {/*{v.sender && v.state === MessageState.SENT && <IconButton icon="checkbox-marked-circle" size={15} color={"gray"} style={{margin: 0}}/>}*/}
-                            </ChatMessageWrapper>
-                        )
-                    })}
-                </ScrollView>
-            </ChatScreenWrapper>
-        );
-    }
+                  </ChatMessage>
+                </ChatMessageWrapper>
+              )
+            })}
+          </ScrollView>
+        </ChatScreenWrapper>
+    );
+  }
 
     const chooseImage = function() {
       PermissionsAndroid.request(
@@ -301,81 +308,84 @@ const ChatScreen = function(props) {
       ...ChatInfo.current,
       sender_id: jwtInfo.uid,
       msgID   : uuid.v1(),
-      msg     : msg,
+      base64  : base64,
       type    : "IMAGE",
       sender  : true,
-      state   : MessageState.SENT
+      state   : "SEEN"
     };
     setMsg("");
     setConversation(prevState => [...prevState, newMessage]);
-    socket.emit("emit_private_chat", ChatInfo.current?.room_chat_id, msg,  ChatInfo.current?.receiver_uid, base64, "IMAGE");
+    // socket.emit("emit_private_chat", ChatInfo.current?.room_chat_id, base64, ChatInfo.current?.receiver_uid, ChatInfo.current, "IMAGE");
   }
 
-    useEffect(function () {
-        const p1 = GetChatInfo();
-        Promise.all([p1.fetch])
-          .then(r => {
-              const ConversationInfo = r[0].data.data;
-              ChatInfo.current = {
-                  ...ChatInfo.current,
-                  ...ConversationInfo
-              };
-              console.log("ROOM CHAT ID: ", ConversationInfo.room_chat_id);
-              const newSocket = io(`${DEFAULT_BASE_URL}/private`, {
-                  extraHeaders: {
-                      Authorization: `Bearer ${token}`
-                  }
-              });
-              newSocket.emit("join_chat", {room_name: ConversationInfo.room_chat_id});
-              newSocket.on("listen_private_chat", HandleChatSocket);
-              setSocket(newSocket);
-              DecodeJWT();
-              const controller = LoadChatHistory();
-              return function() {
-                  newSocket.close();
-                  controller.abort();
-              }
-          })
-          .catch(e => {
-              console.error(e.response.data);
-          });
-    }, [setSocket]);
+  useEffect(function () {
+    const p1 = GetChatInfo();
 
-    return (
-        <>
-            <ChatHeadSection/>
-            <ChatSection/>
-            <InputMessageWrapper>
-              <IconButton
-                icon="image"
-                style={{
-                  padding: 0,
-                  margin: 0,
-                  marginLeft: 5
-                }}
-                size={30}
-                onPress={chooseImage}
-                animate={true}
-                color={"#626262"}/>
-                <InputMessage placeholderTextColor={"#6e6e6e"} defaultValue={msg} onChangeText={text => setMsg(text)} placeholder="Type your message"/>
-                <IconButton
-                    icon="send"
-                    style={{
-                        transform: [{rotate: '-35deg'}],
-                        padding: 0,
-                        margin: 0,
-                        marginLeft: 5,
-                        marginRight: 5,
-                        paddingLeft: 7,
-                        backgroundColor:"#d4fdff"
-                    }}
-                    size={30}
-                    onPress={sendMessage}
-                    animate={true}
-                    color={"#21a3d5"}/>
-            </InputMessageWrapper>
-        </>
-    );
+    let controller;
+    Promise.all([p1.fetch])
+      .then(r => {
+        const ConversationInfo = r[0].data.data;
+        ChatInfo.current = {
+            ...ChatInfo.current,
+            ...ConversationInfo
+        };
+        console.log("ROOM CHAT ID: ", ConversationInfo.room_chat_id);
+        const newSocket = io(`${DEFAULT_BASE_URL}/private`, {
+          extraHeaders: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        newSocket.emit("join_chat", {room_name: ConversationInfo.room_chat_id});
+        newSocket.on("listen_private_chat", HandleChatSocket);
+        setSocket(newSocket);
+        DecodeJWT();
+        controller = LoadChatHistory();
+      })
+      .catch(e => {
+          console.error(e.response.data);
+      });
+    return function() {
+      // newSocket.close();
+      p1.controller.abort();
+      controller?.abort();
+    }
+  }, [setSocket]);
+
+  return (
+    <>
+      <ChatHeadSection/>
+      <ChatSection/>
+      <InputMessageWrapper>
+        <IconButton
+          icon="image"
+          style={{
+            padding: 0,
+            margin: 0,
+            marginLeft: 5
+          }}
+          size={30}
+          onPress={chooseImage}
+          animate={true}
+          color={"#626262"}/>
+          <InputMessage placeholderTextColor={"#6e6e6e"} defaultValue={msg} onChangeText={text => setMsg(text)} placeholder="Type your message"/>
+          <IconButton
+            icon="send"
+            style={{
+              transform: [{rotate: '-35deg'}],
+              padding: 0,
+              margin: 0,
+              marginLeft: 5,
+              marginRight: 5,
+              paddingLeft: 7,
+              backgroundColor:"#d4fdff"
+            }}
+            size={30}
+            onPress={sendMessage}
+            animate={true}
+            color={"#21a3d5"}/>
+      </InputMessageWrapper>
+    </>
+  );
 }
 
 export default withTheme(ChatScreen);
