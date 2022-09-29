@@ -6,7 +6,7 @@ import {GET_USER_PROFILE, UPDATE_AVATAR} from "../API_Definition";
 import {Avatar, Button, FAB, Modal, Portal, Provider} from "react-native-paper";
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import {useIsFocused, useNavigation} from "@react-navigation/native";
-import {EDIT_USER_PROFILE_SCREEN, LOGIN_SCREEN} from "../Definition";
+import {CHANGE_PASS_SCREEN, EDIT_USER_PROFILE_SCREEN, LOGIN_SCREEN} from "../Definition";
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import { useDispatch } from "react-redux";
 import { SignOutAction } from "../ReduxSaga/Authenticator/Actions";
@@ -26,7 +26,7 @@ const UserProfileInfoWrapper = styled(View)`
   margin: 0 10px;
 `;
 
-const UserProfileWrapper = styled(View)`
+const UserProfileWrapper = styled(ScrollView)`
   padding-top: 10px;
   padding-bottom: 10px;
   display: flex;
@@ -75,7 +75,7 @@ const ProfileSkeleton = function({width, height}) {
     )
 }
 
-const ProfileScreen = function(props) {
+const UserProfileScreen = function(props) {
     const navigation                = useNavigation();
     const isFocus                   = useIsFocused();
     const dispatch                  = useDispatch();
@@ -221,24 +221,35 @@ const ProfileScreen = function(props) {
         });
     }
 
+    const ChangePassword = function() {
+        navigation.navigate(CHANGE_PASS_SCREEN);
+    }
+
     const GoToEditProfile = function() {
         navigation.push(EDIT_USER_PROFILE_SCREEN);
     }
 
     useEffect(function() {
         setLoading(true);
-        axiosConfig(GET_USER_PROFILE, "get")
+        const controller = new AbortController();
+        axiosConfig(GET_USER_PROFILE, "get", {
+            signal: controller.signal
+        })
             .then(r => {
-                setProfile(r.data.data.user_data);
+                console.log(r);
                 setAvatar({
                     ready: true,
                     value: DEFAULT_BASE_URL + r.data.data.user_data.avatar_link
                 });
+                setProfile(r.data.data.user_data);
             })
             .catch(e => console.error(e))
             .finally(() => {
                 setLoading(false);
-            })
+            });
+        return(() => {
+           controller.abort();
+        });
     }, [props, isFocus]);
 
     if (isLoading) return (<ProfileSkeleton width={width} height={height}/>);
@@ -311,15 +322,28 @@ const ProfileScreen = function(props) {
                     </UserProfileInfoWrapper>
                 </ScrollView>
                 <View style={{margin: 20}}>
-                    <Button
-                        icon="logout"
-                        color="white"
-                        uppercase={false}
-                        onPress={Logout}
-                        contentStyle={{flexDirection: 'row-reverse', paddingTop: 3, paddingBottom: 3}}
-                        style={{borderRadius: 10, backgroundColor: "#DC0000"}}>
-                        LOGOUT
-                    </Button>
+                    <View>
+                        <Button
+                          icon="key"
+                          color="white"
+                          uppercase={false}
+                          onPress={ChangePassword}
+                          contentStyle={{flexDirection: 'row-reverse', paddingTop: 3, paddingBottom: 3}}
+                          style={{borderRadius: 10, backgroundColor: "#4ec0fc"}}>
+                            CHANGE PASSWORD
+                        </Button>
+                    </View>
+                    <View style={{marginTop: 20}}>
+                        <Button
+                          icon="logout"
+                          color="white"
+                          uppercase={false}
+                          onPress={Logout}
+                          contentStyle={{flexDirection: 'row-reverse', paddingTop: 3, paddingBottom: 3}}
+                          style={{borderRadius: 10, backgroundColor: "#DC0000"}}>
+                            LOGOUT
+                        </Button>
+                    </View>
                 </View>
             </UserProfileWrapper>
             <SelectImageSource/>
@@ -327,4 +351,4 @@ const ProfileScreen = function(props) {
     );
 }
 
-export default ProfileScreen;
+export default UserProfileScreen;

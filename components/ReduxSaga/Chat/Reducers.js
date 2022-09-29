@@ -13,6 +13,7 @@ export const initState = {
     error   : false,
     error_msg: undefined,
     data    : [],
+    unread_count: true,
     chat_history: {
         ready: true,
         3: {
@@ -41,7 +42,8 @@ const Chats = function(state = initState, action) {
                 loaded: true,
                 error: false,
                 error_msg: undefined,
-                data: data
+                data: data.list_chat,
+                unread_count: data.unread
             }
         case LOADED_LIST_CHATS_FAIL:
             return {
@@ -49,7 +51,8 @@ const Chats = function(state = initState, action) {
                 loaded: true,
                 error: true,
                 error_msg: data.message,
-                data: []
+                data: [],
+                unread_count: false
             }
         case LOADING_CHAT_HISTORY:
             return {

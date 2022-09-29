@@ -1,16 +1,40 @@
-## Release History:
-### Aug 07, 2022: Version 1
-- [x] Loading Screen (Check token is valid ? (YES) NewFeed Screen : (NO) LoginScreen)
-- [x] Login Screen (Login)
-- [x] Signup Screen (Create new user)
-- [x] NewFeed Screen (Create post, Delete post)
-- [x] Chat Screen (Chat with other friend) * **MISSING: create new chat with friend who never have chat before** *
-- [x] User Profile Screen (Show user information, update information, update avatar) * **MISSING: update password** *
-- [x] Forget Password Screen (But no API now)
-- [ ] Video Call Screen (DOING in Version 2)
-- [ ] Friend Screen (DOING in Version 2)
-- [ ] Comment Screen (DOING in Version 2)
-- [ ] Reaction
-- [ ] Search All Friends
-- [ ] Profile Screen
-- [ ] Tooltip in bottom navigation when having new message
+## TODO Jun 26 2022:
+- [x] ~~**IMPORTANT! Find a way to update offset without re-render**: (redux JUST SAVE THIS DATA from current call, update to **conversation** state and update **offset**)~~
+- [x] ~~Use local DB stores host IP~~
+- [x] ~~Create chat UI~~
+- [x] ~~Create Profile UI~~
+- [x] ~~Create search friend UI~~
+- [x] Create comments UI
+- [x] ~~Create Profile UI (when user click a name -> Show all post of this person);~~
+- [ ] Call UI
+- [x] ~~Create Signup UI~~
+- [x] ~~**Complete login scenario**~~
+- [ ] Save current offset in new feeds when refresh or load more post
+- [x] **Create new API get user info and post with UID**
+- [x] **Like and comment**
+- [x] ~~**Confirm delete post modal**~~
+- [x] Đổi mk
+- [x] Tìm bạn bè qua username, sdt, firstname + lastname
+- [x] Hủy kết bạn
+- [ ] Gửi tin nhắn hình ảnh
+
+## Design  
+ - [NewsFeed Design](https://dribbble.com/tags/newsfeed)
+ - [Login Screen Design](https://thumbs.dreamstime.com/z/mockup-screen-login-form-welcome-page-your-mobile-app-interface-design-login-page-mockup-screen-login-form-welcome-199562898.jpg)
+ - [Chat Screen Design 1](https://assets.materialup.com/uploads/2c557a48-77e8-4ccc-9573-97a2509f3b07/preview.png)
+ - [Chat Screen Design 2](https://i.pinimg.com/736x/1f/b9/49/1fb94995bae04dc1103c8174956ac70c.jpg)
+ - [Comments Screen Design](https://cdn.dribbble.com/users/1723105/screenshots/14711373/media/46652e6e05f26b43a7c089f6c6e234f5.png?compress=1&resize=1090x1280)
+ - 
+## Documentation
+ - [RN Navigation](https://reactnative.dev/docs/navigation)
+ - [RN Paper Icons](https://materialdesignicons.com/)
+ - [RN Paper Theming](https://callstack.github.io/react-native-paper/theming.html)
+ - [RN Paper FAB](https://callstack.github.io/react-native-paper/animated-fab.html)
+ - [RN Paper Bottom Navigation](https://callstack.github.io/react-native-paper/bottom-navigation.html)
+ - [RN Paper Custom font](https://callstack.github.io/react-native-paper/fonts.html)
+
+## Socket idea:  
+ - [x] **(CURRENT)** Use `rooms` to make private chat
+ - **Password keystone**: 1234567
+ - Build APK: `cd android && ./gradlew assembleRelease`
+ - Kill process at port: `sudo kill -9 $(sudo lsof -t -i:8081)`

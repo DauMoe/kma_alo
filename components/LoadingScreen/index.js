@@ -32,11 +32,14 @@ const LoadingScreen = function(props) {
     useEffect(function() {
         if (authenticator.first_check) {
             dispatch(CheckAllLocalData());
+            console.log("FIRST CHECK");
         } else {
             if (authenticator.token) {
+                console.log("HAVING TOKEN");
                 //Check valid => (YES) Navigate to MAIN SCREEN => (NO) Navigate to LOGIN SCREEN
                 navigation.navigate(MAIN_SCREEN);
             } else {
+                console.log("NO TOKEN");
                 navigation.navigate(LOGIN_SCREEN);
             }
         }

@@ -1,12 +1,15 @@
-import React, {useState} from "react";
-import { View, Text, Image } from "react-native";
+import React, {memo, useState} from "react";
+import {View, Text, Image, TouchableOpacity} from "react-native";
 import {Avatar, Button, IconButton, Modal, Portal, Provider, withTheme} from "react-native-paper";
 import {useDispatch, useSelector} from "react-redux";
 import styled from "styled-components/native";
 import AutoHeightWebView from "react-native-autoheight-webview";
-import {DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
+import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
 import moment from "moment";
 import jwt_decode from "jwt-decode";
+import {REACT_POST} from "../API_Definition";
+import {PROFILE_SCREEN} from "../Definition";
+import {useNavigation} from "@react-navigation/native";
 
 const NewsWrapper = styled(View)`
     padding: 20px;
@@ -67,10 +70,10 @@ const NewsInteractive = styled(View)`
 `;
 
 const ReactionButton = styled(Button)`
-    flex: 1;
-    background-color: white;
-    margin-right: 5px;
-    border-radius: 5px;
+  flex: 1;
+  background-color: ${props => props.liked ? "#77cfff" : "white"};
+  margin-right: 5px;
+  border-radius: 5px;
 `;
 
 const CommentButton = styled(Button)`
@@ -81,19 +84,39 @@ const CommentButton = styled(Button)`
 `;
 
 const SingleNews = function(props) {
-    const { width, height, showComment, data, ConfirmDeletePost, openDeleteModal }  = props;
+    const { width, height, showComment, post_id, data, ConfirmDeletePost, openDeleteModal, reactionPost, disableClickProfile }  = props;
     const { colors }                            = props.theme;
     const dispatch                              = useDispatch();
+    const navigation                            = useNavigation();
     const { token }                             = useSelector(state => state.Authenticator);
     const { uid, email, username }              = jwt_decode(token);
 
     const LoadComments = function(postId) {
         // dispatch(GetComments(postId));
-        showComment(true);
+        showComment(true, postId);
     }
 
     const GenContent = function(content) {
         return `<html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body>${content}</body></html>`
+    }
+
+    const LikePost = function (post_id, type) {
+        axiosConfig(REACT_POST, "post", {
+            data: {
+                post_id, type
+            }
+        })
+            .then(r => {
+
+            })
+            .catch(e => console.log(e));
+    }
+
+    const Go2Profile = function(uid) {
+      if (disableClickProfile) return;
+      navigation.push(PROFILE_SCREEN, {
+        uid: uid
+      })
     }
 
     return(
@@ -102,23 +125,25 @@ const SingleNews = function(props) {
                 <AvatarWrapper theme={colors}>
                     {
                         data.avatar === ""
-                            ? <Avatar.Text size={40} label="DM" style={{marginRight: 10}}/>
+                            ? <Avatar.Text size={40} label={data.avatar_text} style={{marginRight: 10}}/>
                             : <Image source={{uri: DEFAULT_BASE_URL + data.avatar}} style={{width: 40, height: 40, borderRadius: 9999, marginRight: 10}}/>
                     }
                     {/*<ActiveStatusDot active={false}/>*/}
                 </AvatarWrapper>
-                <View style={{flex: 1}}>
+                <TouchableOpacity onPress={() => Go2Profile(data.author_id)}>
+                  <View style={{flex: 1}}>
                     <NewsUsername theme={colors}>{data.display_name}</NewsUsername>
                     {
-                        moment.duration(moment().diff(moment(data.created_at))).asMinutes() < 1
+                      moment.duration(moment().diff(moment(data.created_at))).asMinutes() < 1
                           ? <PostTimestamp>Just now</PostTimestamp>
-                            :moment.duration(moment().diff(moment(data.created_at))).asHours() < 1
-                          ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asMinutes())}m ago</PostTimestamp>
-                            : moment.duration(moment().diff(moment(data.created_at))).asHours() < 24
-                          ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asHours())}h ago</PostTimestamp>
-                            : <PostTimestamp theme={colors}>Posted at {moment(data.created_at).format("MMM DD hh:mm A")}</PostTimestamp>
+                          :moment.duration(moment().diff(moment(data.created_at))).asHours() < 1
+                              ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asMinutes())}m ago</PostTimestamp>
+                              : moment.duration(moment().diff(moment(data.created_at))).asHours() < 24
+                                  ? <PostTimestamp theme={colors}>Posted {Math.round(moment.duration(moment().diff(moment(data.created_at))).asHours())}h ago</PostTimestamp>
+                                  : <PostTimestamp theme={colors}>Posted at {moment(data.created_at).format("MMM DD hh:mm A")}</PostTimestamp>
                     }
-                </View>
+                  </View>
+                </TouchableOpacity>
                 {
                     data.author_id === uid &&
                     <View>
@@ -169,16 +194,20 @@ const SingleNews = function(props) {
                     color: black
                   }
                 `}
-                source={{html: GenContent(data.content)}}
+                source={{html: GenContent(data.title ? `<h3 style="margin-bottom: 2px">${data.title}</h3>${data.content}` : data.content)}}
             />
 
             <NewsInteractive>
-                <ReactionButton onPress={e => console.log("Like")} onLongPress={e => console.log("Hold to choose")} uppercase={false} icon='thumb-up'>{data.reactions.length} {data.reactions.length < 2 ? "like" : "likes"}</ReactionButton>
+                <ReactionButton liked={data.reacted} onPress={() => reactionPost(data.post_id, 3)} color={data.reacted ? "white" : undefined} onLongPress={e => console.log("Hold to choose")} uppercase={false} icon='thumb-up'>
+                    {data.reactions.length} {data.reactions.length < 2 ? "like" : "likes"}
+                </ReactionButton>
                 {/*<CommentButton onPress={_ => LoadComments(1)} uppercase={false} icon='message-reply'>0 comment</CommentButton>*/}
-                <CommentButton onPress={_ => console.log("comment")} uppercase={false} icon='message-reply'>0 comment</CommentButton>
+                <CommentButton onPress={_ => showComment(true, post_id)} uppercase={false} icon='message-reply'>Comments</CommentButton>
             </NewsInteractive>
         </NewsWrapper>
     );
 }
 
-export default withTheme(SingleNews);
+export default withTheme(memo(SingleNews, (prevProps, nextProps) => {
+    return prevProps.reacted !== nextProps.reacted
+}));

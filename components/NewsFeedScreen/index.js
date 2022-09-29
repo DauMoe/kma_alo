@@ -1,15 +1,18 @@
 import React, {useEffect, useRef, useState} from "react";
-import {View, ScrollView, Dimensions, Text, TouchableOpacity, FlatList} from "react-native";
+import {View, ScrollView, Dimensions, Text, TouchableOpacity, FlatList, InteractionManager} from "react-native";
 import SingleNews from "./SingleNews";
 import styled from 'styled-components/native';
 import CommentsScreen from "./CommentScreen";
-import {useIsFocused, useNavigation} from "@react-navigation/native";
+import {useFocusEffect, useIsFocused, useNavigation} from "@react-navigation/native";
 import {CREATE_POST_SCREEN, EDIT_USER_PROFILE_SCREEN, LOGIN_SCREEN} from "../Definition";
 import {Button, FAB, HelperText, Modal, Portal, Provider, withTheme} from "react-native-paper";
 import {WebView} from "react-native-webview";
 import AutoHeightWebView from "react-native-autoheight-webview";
 import {axiosConfig} from "../ReduxSaga/AxiosConfig";
-import {DELETE_POSTS, GET_POSTS} from "../API_Definition";
+import lodash from "lodash";
+import jwt_decode from "jwt-decode";
+import {DELETE_POSTS, GET_POSTS, REACT_POST} from "../API_Definition";
+import {useSelector} from "react-redux";
 
 const NewsFeedWrapper = styled(View)`
     //height: ${props => props.height + "px"};
@@ -26,8 +29,13 @@ const CreatePostWrapper = styled(TouchableOpacity)`
 const NewsFeedScreen = function(props) {
     const { colors }                = props.theme;
     const navigation                = useNavigation();
+    const { token }                 = useSelector(state => state.Authenticator);
+    const jwtData                   = jwt_decode(token);
     const { width, height }         = Dimensions.get("window");
-    const [openComment, setOpen]    = useState(false);
+    const [openComment, setOpen]    = useState({
+        show: false,
+        post_id: -1
+    });
     const [listPost, setPost]       = useState([]);
     const isFocus                   = useIsFocused();
     const [isLoading, setLoading]   = useState(false);
@@ -40,8 +48,11 @@ const NewsFeedScreen = function(props) {
         limit   : 10
     });
 
-    const openCommentScreen = function(show) {
-        setOpen(show);
+    const openCommentScreen = function(show, post_id) {
+        setOpen({
+            post_id: post_id,
+            show: show
+        });
     }
 
     const Go2CreatePost = function() {
@@ -54,28 +65,39 @@ const NewsFeedScreen = function(props) {
 
     const FetchPost = function(refresh = false) {
         if (refresh) setLoading(true);
+        const controller = new AbortController();
         axiosConfig(GET_POSTS, "get", {
+            signal: controller.signal,
             params: {
                 offset  : refresh ? 0 : currentState.current.offset,
                 limit   : refresh ? 10: currentState.current.limit
             }
         })
             .then(r => {
+                const ListPost = [];
+                for(const post of r.data.data.list_post) {
+                    const item = post;
+                    item.reacted = false;
+                    if (lodash.find(post.reactions, v => v.uid === jwtData.uid)) {
+                        item.reacted = true;
+                    }
+                    ListPost.push(item);
+                }
                 if (refresh) {
-                    setPost(r.data.data.list_post);
+                    setPost(ListPost);
                 } else {
-                    setPost([...listPost, ...r.data.data.list_post]);
+                    setPost([...listPost, ...ListPost]);
                 }
                 currentState.current.offset = r.data.data.offset;
                 currentState.current.limit  = r.data.data.limit;
             })
             .catch(e => {
-                // console.error(Object.keys(e));
-                console.error(e.response)
+                console.error(e.response.data);
             })
             .finally(() => {
                 if (refresh) setLoading(false)
             });
+        return controller;
     }
 
     const setModalState = (modalState, postId) => {
@@ -100,9 +122,40 @@ const NewsFeedScreen = function(props) {
             })
     }
 
-    useEffect(function() {
-        FetchPost(true);
-    }, [isFocus]);
+    const reactionPost = function(post_id, type) {
+        axiosConfig(REACT_POST, "post", {
+            post_id, type
+        })
+            .then(r => {
+                const index = lodash.findIndex(listPost, v => v.post_id === post_id);
+                const CloneListPost = [...listPost];
+                const ModifyItem = {...CloneListPost[index]};
+                if (r.data.data.mode === "delete") {
+                    ModifyItem.reacted = false;
+                    lodash.remove(ModifyItem.reactions, v => v.uid === jwtData.uid);
+                    CloneListPost.splice(index, 1, ModifyItem);
+                } else if (r.data.data.mode === "insert") {
+                    ModifyItem.reacted = true;
+                    ModifyItem.reactions.push({
+                       post_id: post_id,
+                       type: type,
+                       uid: jwtData.uid
+                    });
+                    CloneListPost.splice(index, 1, ModifyItem);
+                }
+                setPost(CloneListPost);
+            })
+            .catch(e => console.error(e.response));
+    }
+
+    useFocusEffect(React.useCallback(() => {
+      const task = InteractionManager.runAfterInteractions(() => {
+        const controller = FetchPost(true);
+      });
+      return(() => {
+        task.cancel();
+      });
+    }, [isFocus]));
 
     return(
         <>
@@ -121,12 +174,14 @@ const NewsFeedScreen = function(props) {
                       width={width}
                       height={height}
                       data={item}
+                      post_id={item.post_id}
                       showComment={openCommentScreen}
                       openDeleteModal={setModalState}
+                      reactionPost={reactionPost}
                     />
                   )}
                 />
-                <CommentsScreen show={openComment}/>
+                <CommentsScreen showComment={openCommentScreen} show={openComment.show} post_id={openComment.post_id}/>
                 <FAB
                     small
                     icon="pencil"

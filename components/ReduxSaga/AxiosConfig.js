@@ -1,11 +1,14 @@
 import axios from "axios";
-import { HOST_TABLE, HOST_TB_CREATE_AT, HOST_TB_VALUE, TOKEN_TABLE, TOKEN_TB_VALUE } from "../Definition";
+import { HOST_TABLE, HOST_TB_VALUE, TOKEN_TABLE, TOKEN_TB_VALUE } from "../Definition";
 import { _db } from '../Utils';
 
-const PRODUCTION_URL                = "http://20.89.94.38:8000";
-const TEST_URL                      = "http://192.168.1.36:4000";
-const OTHER_URL                     = "http://192.168.110.41:8000";
-export const DEFAULT_BASE_URL       = PRODUCTION_URL;
+const sv = 2;
+
+const PRODUCTION_URL                = "20.39.198.111";
+const TEST_URL                      = "192.168.1.9";
+export const PORT                   = sv === 1 ? 4000 : 8000;
+export const HOST                   = sv === 1 ? TEST_URL : PRODUCTION_URL;
+export const DEFAULT_BASE_URL       = "http://" + HOST + ":" + PORT;
 
 export const clearToken = function(token) {
     // instance.defaults.headers.common['Authorization'] = undefined;
@@ -22,14 +25,12 @@ export const clearToken = function(token) {
 
 import store from './RootReducer';
 let TOKEN, BASE_URL;
+
 store.subscribe(function() {
     const { token, baseUrl } = store.getState().Authenticator;
-    // console.log("TOKEN: ", token, baseUrl);
+    console.log("TOKEN: ", token);
     if (token)      TOKEN       = token;
     if (baseUrl)    BASE_URL    = baseUrl;
-
-    // if (token)      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    // if (baseUrl)    axios.defaults.baseURL = baseUrl;
 });
 
 export const setBaseUrl = function(baseURL) {
@@ -40,10 +41,18 @@ export const setBaseUrl = function(baseURL) {
 }
 
 export const axiosConfig = function(endpoint, method, config) {
-    // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIsImVtYWlsIjoiaG9hbmduZUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImRhdW1vZSIsImlhdCI6MTY1NjI1NjA5NywiZXhwIjoxODcyMjU2MDk3fQ.cotV9sFZeH5p3w-iu25mE2FGxw2id0VOfEwWCVmNQy4";
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIxLCJlbWFpbCI6ImxlaHV5aG9hbmcxMTExOTk5QGdtYWlsLmNvbSIsInVzZXJuYW1lIjoiZGF1bW9lMSIsImlhdCI6MTY2MDgzNTg3NCwiZXhwIjoxODc2ODM1ODc0fQ.E-whu03YrSH9KOrqxBIP5aoL6bkDxNX6mvv7qe9yeJM";
     const instance = axios.create({
         baseURL: DEFAULT_BASE_URL
     });
+    instance.interceptors.response.use(response => {
+       const { code, data } = response.data;
+       if (code === 401) {
+
+       }
+       return response;
+    });
+    // instance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     if (TOKEN) {
         instance.defaults.headers.common['Authorization'] = `Bearer ${TOKEN}`;
     }

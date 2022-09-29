@@ -22,6 +22,7 @@ const theme = {
         primary   : '#58B7E9',
         accent : '#c74e4e',
         negativeTextColor: '#FFF',
+        acceptRequestColor: '#0cc99e',
         negativeBgColor: '#a9a9a9',
         positiveTextColor: '#FFF',
         positiveBgColor: '#1ea5e1',
