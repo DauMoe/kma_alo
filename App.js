@@ -67,35 +67,58 @@ const App = function(props) {
             <Stack.Screen
                 name={LOADING_SCREEN}
                 component={LoadingScreen}
-
+                options={{
+                  animation: "none"
+                }}
             />
             <Stack.Screen
                 name={LOGIN_SCREEN}
                 component={LoginScreen}
+                options={{
+                  animation: "none"
+                }}
             />
             <Stack.Screen
                 name={FORGET_PASSWORD_SCREEN}
                 component={ForgetPasswordScreen}
+                options={{
+                  animation: "none"
+                }}
             />
             <Stack.Screen
                 name={MAIN_SCREEN}
                 component={MainScreen}
+                options={{
+                  animation: "none"
+                }}
             />
             <Stack.Screen
                 name={CHAT_SCREEN}
                 component={ChatScreen}
+                options={{
+                  animation: "none"
+                }}
             />
             <Stack.Screen
                 name={LIST_CHATS_SCREEN}
                 component={ListChatsScreen}
+                options={{
+                  animation: "none"
+                }}
             />
             <Stack.Screen
                 name={FRIENDS_SCREEN}
                 component={FriendsScreen}
+                options={{
+                  animation: "none"
+                }}
             />
             <Stack.Screen
                 name={USER_PROFILE_SCREEN}
                 component={UserProfileScreen}
+                options={{
+                  animation: "none"
+                }}
             />
             <Stack.Screen
                 name={EDIT_USER_PROFILE_SCREEN}
@@ -121,10 +144,16 @@ const App = function(props) {
           <Stack.Screen
             name={VIDEO_CALL_SCREEN}
             component={VideoCallScreen}
+            options={{
+              animation: "none"
+            }}
           />
           <Stack.Screen
             name={CHANGE_PASS_SCREEN}
             component={ChangePassword}
+            options={{
+              animation: "none"
+            }}
           />
       </Stack.Navigator>
       {/*<SetIPModal/>*/}

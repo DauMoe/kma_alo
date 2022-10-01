@@ -200,7 +200,7 @@ const ChatScreen = function(props) {
     };
     setMsg("");
     setConversation(prevState => [...prevState, newMessage]);
-    socket.emit("emit_private_chat", ChatInfo.current?.room_chat_id, msg,  ChatInfo.current?.receiver_uid,  ChatInfo.current, "TEXT");
+    socket.emit("emit_private_chat", jwtInfo.uid, ChatInfo.current?.room_chat_id, msg,  ChatInfo.current?.receiver_uid,  ChatInfo.current, "TEXT");
   }
 
   const ChatHeadSection = function() {
@@ -315,13 +315,13 @@ const ChatScreen = function(props) {
     };
     setMsg("");
     setConversation(prevState => [...prevState, newMessage]);
-    socket.emit("emit_private_chat", ChatInfo.current?.room_chat_id, base64, ChatInfo.current?.receiver_uid, ChatInfo.current, "IMAGE");
+    socket.emit("emit_private_chat", jwtInfo.uid, ChatInfo.current?.room_chat_id, base64, ChatInfo.current?.receiver_uid, ChatInfo.current, "IMAGE");
   }
 
   useEffect(function () {
     const p1 = GetChatInfo();
 
-    let controller;
+    let controller, newSocket;
     Promise.all([p1.fetch])
       .then(r => {
         const ConversationInfo = r[0].data.data;
@@ -330,7 +330,7 @@ const ChatScreen = function(props) {
             ...ConversationInfo
         };
         console.log("ROOM CHAT ID: ", ConversationInfo.room_chat_id);
-        const newSocket = io(`${DEFAULT_BASE_URL}/private`, {
+        newSocket = io(`${DEFAULT_BASE_URL}/private`, {
           extraHeaders: {
             Authorization: `Bearer ${token}`
           }
@@ -345,16 +345,45 @@ const ChatScreen = function(props) {
           console.error(e.response.data);
       });
     return function() {
-      // newSocket.close();
+      newSocket?.close();
       p1.controller.abort();
-      controller?.abort();
+      controller.abort();
     }
-  }, [setSocket]);
+  }, [setSocket, token]);
 
   return (
     <>
       <ChatHeadSection/>
-      <ChatSection/>
+      {/*<ChatSection/>*/}
+      <ChatScreenWrapper>
+        <ScrollView onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })} ref={scrollViewRef}>
+          {/*<ScrollView onScroll={HandleScrollTop}>*/}
+          {Array.isArray(Conversation) && Conversation.map(function(v, index) {
+            return (
+              <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.sender_id === Conversation[index-1].sender_id)}>
+                {/*<AvatarMessageUser size={35} label={v.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>*/}
+                {
+                  ChatInfo.current?.receiver_avatar_link === ""
+                    ? <AvatarMessageUser size={35} label={ChatInfo.current?.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>
+                    : <Image source={{uri: DEFAULT_BASE_URL + ChatInfo.current?.receiver_avatar_link}} style={{width: 35, height: 35, borderRadius: 9999, marginRight: 10, opacity: (!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id)) ? 1 : 0)}}/>
+                }
+                <ChatMessage isImage={v.type === "IMAGE"} sender={v.sender} onLongPress={() => console.log("Long press")}>
+                  {v.type === "IMAGE"
+                    ? <Image
+                      source={{uri: v.base64 ? v.base64 : `${DEFAULT_BASE_URL}${v.msg}`}}
+                      style={{
+                        width: 150,
+                        height: 200,
+                        borderRadius: 10
+                      }}/>
+                    : <Text style={{color: "white"}}>{v.msg}</Text>
+                  }
+                </ChatMessage>
+              </ChatMessageWrapper>
+            )
+          })}
+        </ScrollView>
+      </ChatScreenWrapper>
       <InputMessageWrapper>
         <IconButton
           icon="image"
