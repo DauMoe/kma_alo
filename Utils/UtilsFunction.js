@@ -93,6 +93,7 @@ exports.SocketAuthenticate = function(socket, next) {
     if (authoHeader.authorization && authoHeader.authorization.indexOf("Bearer") > -1) {
         const token = authoHeader.authorization.split(" ")[1];
         if (token) {
+            console.log("TKO: ", token);
             jwt.verify(token, JWT_SECRET_KEY, function(err, decoded) {
                 if (err) {
                     console.log("=== SocketAuthenticate - UtilsFunction.js ===: ", err.message);

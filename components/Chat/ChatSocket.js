@@ -4,7 +4,7 @@ const {SavePrivateMessageToDB} = require("./PrivateChat/PrivateChatController");
 exports.PrivateChatSocket = function(io) {
     const PrivateChatNSP = io.of("/private");
 
-    PrivateChatNSP.use(SocketAuthenticate);
+    // PrivateChatNSP.use(SocketAuthenticate);
     PrivateChatNSP.adapter.on("create-room", function(room) {
         // console.log(`CHAT: ${room} is created!`);
     });
@@ -18,8 +18,9 @@ exports.PrivateChatSocket = function(io) {
             socket.join(room_name);
         })
 
-        socket.on("emit_private_chat", async function(room_name, msg, receiver_id, chatInfo, type = TEXT) {
-            const result = await SavePrivateMessageToDB(room_name, socket.senderInfo.uid, receiver_id, msg, SENT, type);
+        socket.on("emit_private_chat", async function(sender_id, room_name, msg, receiver_id, chatInfo, type = TEXT) {
+            console.log("SID: ", sender_id);
+            const result = await SavePrivateMessageToDB(room_name, sender_id, receiver_id, msg, SENT, type);
             if (result.code === 200) {
                 socket.to(room_name).emit("listen_private_chat", {
                     ...chatInfo,

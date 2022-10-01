@@ -113,6 +113,7 @@ exports.SearchFriend = async(req, resp) => {
                     last_name      : i.LAST_NAME   === null ? "" : i.LAST_NAME,
                     username       : i.USERNAME    === null ? "" : i.USERNAME,
                     display_name   : `${i.FIRST_NAME} ${i.LAST_NAME}`,
+                    room_chat_id   : i.ROOM_CHAT_ID,
                     avatar_text    : `${i.FIRST_NAME[0]}${i.LAST_NAME[0]}`,
                     avatar_link    : i.AVATAR_LINK === null ? "" : `/avatar/${i.AVATAR_LINK}`,
                     display_name   : `${i.FIRST_NAME} ${i.LAST_NAME}`
