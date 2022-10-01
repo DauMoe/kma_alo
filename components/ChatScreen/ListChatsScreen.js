@@ -145,9 +145,10 @@ const ListChatsScreen = function(props) {
   const isMount                               = useRef();
   const isFocus                               = useIsFocused();
 
-  const GotoChatScreen = function(uid) {
+  const GotoChatScreen = function(uid, room_chat_id) {
       navigation.push(CHAT_SCREEN, {
-          uid: uid
+          uid: uid,
+          room_chat_id: room_chat_id
       });
   }
 
@@ -216,7 +217,7 @@ const ListChatsScreen = function(props) {
             ListEmptyComponent={<View style={{height: 200, display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center"}}><Text style={{color: "black", fontFamily: "NunitoSemiBold", fontSize: 16}}>Ops! No conversations</Text></View>}
             data={ListChat}
             renderItem={({item, index}) => (
-              <TouchableOpacity onPress={() => GotoChatScreen(item.receiver_uid)} key={"__chat_no_" + index}>
+              <TouchableOpacity onPress={() => GotoChatScreen(item.receiver_uid, item.room_chat_id)} key={"__chat_no_" + index}>
                 <PreviewChatWrapper>
                   {item.receiver_avatar === ""
                     ? <Avatar.Text size={50} label={item.receiver_avatar_text} style={{ marginRight: 15 }} />
