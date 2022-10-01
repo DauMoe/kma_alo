@@ -111,7 +111,7 @@ const ChatScreen = function(props) {
     const route                     = useRoute();
     const { colors }                = props.theme;
     const { token }                 = useSelector(state => state.Authenticator);
-    const { uid }                   = route.params;
+    const { uid, room_chat_id }     = route.params;
     const limitMessage              = 20; //Load 20 message each time
     const [socket, setSocket]       = useState(null);
     const [msg, setMsg]             = useState("");
@@ -200,7 +200,7 @@ const ChatScreen = function(props) {
     };
     setMsg("");
     setConversation(prevState => [...prevState, newMessage]);
-    socket.emit("emit_private_chat", jwtInfo.uid, ChatInfo.current?.room_chat_id, msg,  ChatInfo.current?.receiver_uid,  ChatInfo.current, "TEXT");
+    socket.emit("emit_private_chat", jwtInfo.uid, room_chat_id, msg,  ChatInfo.current?.receiver_uid,  ChatInfo.current, "TEXT");
   }
 
   const ChatHeadSection = function() {
@@ -315,7 +315,7 @@ const ChatScreen = function(props) {
     };
     setMsg("");
     setConversation(prevState => [...prevState, newMessage]);
-    socket.emit("emit_private_chat", jwtInfo.uid, ChatInfo.current?.room_chat_id, base64, ChatInfo.current?.receiver_uid, ChatInfo.current, "IMAGE");
+    socket.emit("emit_private_chat", jwtInfo.uid, room_chat_id, base64, ChatInfo.current?.receiver_uid, ChatInfo.current, "IMAGE");
   }
 
   useEffect(function () {
@@ -329,13 +329,13 @@ const ChatScreen = function(props) {
             ...ChatInfo.current,
             ...ConversationInfo
         };
-        console.log("ROOM CHAT ID: ", ConversationInfo.room_chat_id);
+        console.log("ROOM CHAT ID: ", room_chat_id);
         newSocket = io(`${DEFAULT_BASE_URL}/private`, {
           extraHeaders: {
             Authorization: `Bearer ${token}`
           }
         });
-        newSocket.emit("join_chat", {room_name: ConversationInfo.room_chat_id});
+        newSocket.emit("join_chat", {room_name: room_chat_id});
         newSocket.on("listen_private_chat", HandleChatSocket);
         setSocket(newSocket);
         DecodeJWT();
@@ -344,11 +344,11 @@ const ChatScreen = function(props) {
       .catch(e => {
           console.error(e.response.data);
       });
-    return function() {
+    return (() => {
       newSocket?.close();
       p1.controller.abort();
       controller.abort();
-    }
+    })
   }, [setSocket, token]);
 
   return (
