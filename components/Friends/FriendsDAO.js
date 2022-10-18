@@ -97,6 +97,17 @@ exports.SearchFriendDAO = async(uid, q) => {
         SQL             = "SELECT * FROM USERS WHERE UID IN ? AND (FIRST_NAME LIKE ? OR LAST_NAME LIKE ? OR USERNAME LIKE ? OR MOBILE LIKE ?)";
         SQL_BIND        = mysql.format(SQL, [[ListUID], `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`]);
         const result1   = await query(SQL_BIND);
+        SQL             = "SELECT * FROM PRIVATE_CHAT";
+        SQL_BIND        = mysql.format(SQL, []);
+        const result2   = await query(SQL_BIND);
+        for (const i of result1) {
+            for (const j of result2) {
+                if ((j.UID_ONE === uid && j.UID_TWO === i.UID) || (j.UID_TWO === uid && j.UID_ONE === i.UID)) {
+                    i.ROOM_CHAT_ID = j.ROOM_CHAT_ID;
+                    break;
+                }
+            }
+        }
         return DB_RESP(200, result1);
     } catch (e) {
         DB_ERR(FUNC_NAME, SQL_BIND, e.message);
