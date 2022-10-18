@@ -113,7 +113,6 @@ const EditProfileScreen = function(props) {
                 navigation.goBack();
             })
             .catch(e => {
-                console.log(Object.keys(e));
                 console.error(JSON.stringify(e.response.data))
             });
     }

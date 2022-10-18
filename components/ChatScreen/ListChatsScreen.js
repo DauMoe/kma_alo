@@ -159,7 +159,6 @@ const ListChatsScreen = function(props) {
       }
     })
       .then(r => {
-        console.log(r.data.data);
         setResult(r.data.data.result);
       })
       .catch(e => console.log(e.response));

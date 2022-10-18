@@ -192,7 +192,6 @@ const ProfileScreen = function(props) {
       }
     })
       .then(r => {
-        console.log(r);
         setReRender(!triggerReRender);
       })
       .catch(e => console.error(e.response.data));
