@@ -243,7 +243,7 @@ const ListChatsScreen = function(props) {
             ListEmptyComponent={<View style={{height: 200, display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center"}}><Text style={{color: "black", fontFamily: "NunitoSemiBold", fontSize: 16}}>No result</Text></View>}
             data={searchResult}
             renderItem={({item, index}) => (
-              <TouchableOpacity onPress={() => GotoChatScreen(item.uid)} key={"__chat_no_" + index}>
+              <TouchableOpacity onPress={() => GotoChatScreen(item.uid, item.room_chat_id)} key={"__chat_no_" + index}>
                 <PreviewChatWrapper>
                   {item.avatar_link === ""
                     ? <Avatar.Text size={50} label={item.avatar_link} style={{ marginRight: 15 }} />

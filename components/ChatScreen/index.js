@@ -111,7 +111,7 @@ const ChatScreen = function(props) {
     const route                     = useRoute();
     const { colors }                = props.theme;
     const { token }                 = useSelector(state => state.Authenticator);
-    const { uid, room_chat_id }                   = route.params;
+    const { uid, room_chat_id }     = route.params;
     const limitMessage              = 20; //Load 20 message each time
     const [socket, setSocket]       = useState(null);
     const [msg, setMsg]             = useState("");
@@ -344,11 +344,11 @@ const ChatScreen = function(props) {
       .catch(e => {
           console.error(e.response.data);
       });
-    return function() {
+    return (() => {
       newSocket?.close();
       p1.controller.abort();
       controller.abort();
-    }
+    })
   }, [setSocket, token]);
 
   return (
