@@ -1,7 +1,8 @@
-const { GetNumber } = require("../../../Utils/GetValue");
+const { GetNumber, GetString } = require("../../../Utils/GetValue");
 const { CatchErr, RespCustomCode, SuccessResp, writeFile, SENT, IMAGE} = require("../../../Utils/UtilsFunction");
 const { GetAllPrivateChatIDDAO, CreateNewPrivateChatDAO, SavePrivateMessageToDBDAO, GetMessageHistoryDAO,
-    GetChatInfoDAO
+    GetChatInfoDAO,
+    NewMessageDAO
 } = require("./PrivateChatDAO");
 const path = require("path");
 
@@ -163,6 +164,40 @@ exports.GetChatInfo = async(req, resp) => {
             RespCustomCode(resp, undefined, result.msg, result.code);
         }
     } catch(e) {
+        CatchErr(resp, e, FUNC_NAME);
+    }
+}
+
+exports.NewMessage = async(req, resp) => {
+    const FUNC_NAME = "NewMessage" + FILE_NAME;
+    const reqData = req.body;
+    try {
+        const sender_id     = GetNumber(reqData, "sender_id");
+        const receiver_id   = GetNumber(reqData, "receiver_id");
+        const content       = GetString(reqData, "msg");
+        const type          = GetString(reqData, "type");
+        const room_chat_id  = GetString(reqData, "room_chat_id");
+        const status        = GetString(reqData, "status");
+
+        if (type === "IMAGE") {
+            const avatarBase64  = content;
+            const pathImage     = `_conversation_${new Date().getTime()}.jpg`;
+            await writeFile(path.join(__dirname, "..", "..", "..", "public", "conversation", pathImage), avatarBase64.replace(/^data:image\/png;base64,/, ""), "base64");
+            const result = await SavePrivateMessageToDBDAO(room_chat_id, sender_id, receiver_id, pathImage, status, type);
+            if (result.code === 200) {
+                SuccessResp(resp);
+            } else {
+                RespCustomCode(resp, undefined, result.msg, result.code);
+            }
+        } else {
+            const result = await SavePrivateMessageToDBDAO(room_chat_id, sender_id, receiver_id, content, status, type);
+            if (result.code === 200) {
+                SuccessResp(resp);
+            } else {
+                RespCustomCode(resp, undefined, result.msg, result.code);
+            }
+        }
+    }catch(e) {
         CatchErr(resp, e, FUNC_NAME);
     }
 }

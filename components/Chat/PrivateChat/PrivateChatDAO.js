@@ -164,5 +164,16 @@ exports.GetChatInfoDAO = async(own_uid, to_uid) => {
     }
 }
 
+exports.NewMessageDAO = async (sender_id, receiver_id, content, type, room_chat_id) => {
+    const FUNC_NAME = "NewMessageDAO" + FILE_NAME;
+    let SQL, SQL_BIND;
+    try {
+
+    } catch (e) {
+        DB_ERR(FUNC_NAME, SQL_BIND, e.message);
+        return DB_RESP(503, e.message);
+    }
+}
+
 exports.GetAllPrivateChatIDDAO = GetAllPrivateChatIDDAO;
 exports.CreateNewPrivateChatDAO = CreateNewPrivateChatDAO;

@@ -10,26 +10,27 @@ exports.PrivateChatSocket = function(io) {
     });
 
     PrivateChatNSP.adapter.on("join-room", function(room, id) {
-        // console.log(`CHAT: User ${id} joins room ${room}`);
+        console.log(`CHAT: User ${id} joins room ${room}`);
     });
 
     PrivateChatNSP.on("connection", function(socket) {
         socket.on("join_chat", function({room_name}) {
             socket.join(room_name);
+            console.log("User join chat:", room_name);
         })
 
         socket.on("emit_private_chat", async function(sender_id, room_name, msg, receiver_id, chatInfo, type = TEXT) {
             console.log("SID: ", sender_id);
             const result = await SavePrivateMessageToDB(room_name, sender_id, receiver_id, msg, SENT, type);
             if (result.code === 200) {
-                socket.to(room_name).emit("listen_private_chat", {
+                io.to(room_name).emit("listen_private_chat", {
                     ...chatInfo,
                     msg: msg,
                     type: type,
                     code: 200
                 });
             } else {
-                socket.to(room_name).emit("listen_private_chat", {
+                io.to(room_name).emit("listen_private_chat", {
                     ...chatInfo,
                     type: type,
                     result
