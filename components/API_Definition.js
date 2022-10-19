@@ -20,3 +20,4 @@ export const REACT_POST             = "/posts/reaction";
 export const GET_COMMENTS           = "/posts/get_comment";
 export const NEW_COMMENTS           = "/posts/new_comment";
 export const GET_CHAT_INFO          = "/private_chat/chat_info";
+export const NEW_MESSAGE            = "/private_chat/new_message";

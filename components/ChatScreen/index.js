@@ -12,23 +12,20 @@ import {
 import styled from "styled-components/native";
 import { Avatar, Button, IconButton, withTheme } from "react-native-paper";
 import {useDispatch, useSelector} from "react-redux";
-import io from "socket.io-client";
 import uuid from "react-native-uuid";
-import LinearGradient from "react-native-linear-gradient";
 import {axiosConfig, DEFAULT_BASE_URL} from "../ReduxSaga/AxiosConfig";
-import {GetChatHistory} from "../ReduxSaga/Chat/Actions";
-import { GET_CHAT_HISTORY, GET_CHAT_INFO } from "../API_Definition";
+import {GET_CHAT_HISTORY, GET_CHAT_INFO, NEW_MESSAGE} from "../API_Definition";
 import jwt_decode from "jwt-decode";
 import { useIsFocused, useNavigation, useRoute } from "@react-navigation/native";
-import Authenticator from "../ReduxSaga/Authenticator/Reducers";
 import { VIDEO_CALL_SCREEN } from "../Definition";
 import { launchImageLibrary } from "react-native-image-picker";
+import useInterval from "./useInterval";
 
 const Theme = {
-    primaryColor: "#FFFFFF",
-    secondaryColor: "#DCDCDC",
-    primaryTextColor: "#333333",
-    secondaryTextColor: "#878787"
+  primaryColor: "#FFFFFF",
+  secondaryColor: "#DCDCDC",
+  primaryTextColor: "#333333",
+  secondaryTextColor: "#878787"
 }
 
 const ChatHeadWrapper = styled(View)`
@@ -99,113 +96,121 @@ const AvatarMessageUser = styled(Avatar.Text)`
 `;
 
 const MessageState = {
-    SENDING : "SENDING",
-    SENT    : "SENT",
-    RECEIVED: "RECEIVED",
-    SEEN    : "SEEN"
+  SENDING : "SENDING",
+  SENT    : "SENT",
+  RECEIVED: "RECEIVED",
+  SEEN    : "SEEN"
 }
 
 const ChatScreen = function(props) {
-    // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjIsImVtYWlsIjoiaG9hbmduZUBnbWFpbC5jb20iLCJ1c2VybmFtZSI6ImRhdW1vZSIsImlhdCI6MTY1NjI1NjA5NywiZXhwIjoxODcyMjU2MDk3fQ.cotV9sFZeH5p3w-iu25mE2FGxw2id0VOfEwWCVmNQy4";
-    const navigation                = useNavigation();
-    const route                     = useRoute();
-    const { colors }                = props.theme;
-    const { token }                 = useSelector(state => state.Authenticator);
-    const { uid, room_chat_id }     = route.params;
-    const limitMessage              = 20; //Load 20 message each time
-    const [socket, setSocket]       = useState(null);
-    const [msg, setMsg]             = useState("");
-    const [Conversation, setConversation] = useState([]);
-    const isFocus                   = useIsFocused();
-    const ChatInfo                  = useRef({});
-    const conversationAction        = useRef({
-       offset: 0,
-       loading: false
+  const navigation = useNavigation();
+  const route = useRoute();
+  const {colors} = props.theme;
+  const {token} = useSelector(state => state.Authenticator);
+  const {uid, room_chat_id} = route.params;
+  const limitMessage = 80; //Load 20 message each time
+  const [socket, setSocket] = useState(null);
+  const [msg, setMsg] = useState("");
+  const [Conversation, setConversation] = useState({
+    list: [],
+    total: 0
+  });
+  const ChatInfo = useRef({});
+  const conversationAction = useRef({
+    offset: 0,
+    loading: false
+  });
+  const [jwtInfo, setJwtInfo] = useState({
+    uid: -1,
+    username: ""
+  });
+  const scrollViewRef = useRef();
+
+  const DecodeJWT = function () {
+    const jwtData = jwt_decode(token);
+    setJwtInfo(jwtData);
+  }
+
+  const Go2CallScreen = function () {
+    navigation.push(VIDEO_CALL_SCREEN, {
+      chatInfo: ChatInfo.current
     });
-    const [jwtInfo, setJwtInfo] = useState({
-        uid: -1,
-        username: ""
+  }
+
+  const GetChatInfo = () => {
+    const controller = new AbortController();
+    const fetch = axiosConfig(GET_CHAT_INFO, "get", {
+      params: {
+        to_uid: uid
+      },
+      signal: controller.signal
     });
-    const [loading, setLoading] = useState({
-      connectSocket: false,
-      loadedHistory: false
-    })
-    const scrollViewRef = useRef();
-    // const { receiver_avatar, receiver_avatar_text, room_chat_id, receiver_first_name, receiver_last_name, type, receiver_uid, receiver_username } = chatInfo;
+    return {controller, fetch};
+  }
 
-    const HandleScrollTop = function(e) {
-        // if (e.nativeEvent.contentOffset.y === 0 && !conversationAction.current.loading) LoadChatHistory()
+  const LoadChatHistory = function (offset = 0) {
+    if (!ChatInfo.current.receiver_uid) return;
+    const controller = new AbortController();
+    const options = {
+      params: {
+        offset: offset,
+        limit: limitMessage,
+        receiver_id: ChatInfo.current?.receiver_uid
+      },
+      signal: controller.signal
     }
 
-    const DecodeJWT = function() {
-        const jwtData = jwt_decode(token);
-        setJwtInfo(jwtData);
-    }
-
-    const Go2CallScreen = function() {
-        navigation.push(VIDEO_CALL_SCREEN, {
-            chatInfo: ChatInfo.current
-        });
-    }
-
-    const GetChatInfo = () => {
-        const controller = new AbortController();
-        const fetch = axiosConfig(GET_CHAT_INFO, "get", {
-            params: {
-                to_uid: uid
-            },
-            signal: controller.signal
-        });
-        return { controller, fetch };
-    }
-
-    const LoadChatHistory = function() {
-        conversationAction.current.loading = true;
-        const controller = new AbortController();
-        const options = {
-            params: {
-                offset: conversationAction.current.offset,
-                limit: limitMessage,
-                receiver_id: ChatInfo.current?.receiver_uid
-            },
-            signal: controller.signal
+    axiosConfig(GET_CHAT_HISTORY, "get", options)
+      .then(r => {
+        const respData = r.data.data;
+        conversationAction.current.offset = respData.next_offset;
+        const chatHistory = Array.isArray(respData.chat_history) ? respData.chat_history : [];
+        if (Conversation.total<respData.total) {
+          // console.log(chatHistory);
+          // console.log("CU:", Conversation.total, "RE:", respData.total);
+          const NewerMessages = chatHistory.slice(Conversation.total-respData.total);
+          setConversation({
+            total: respData.total,
+            list: [...Conversation.list, ...NewerMessages]
+          })
         }
-        axiosConfig(GET_CHAT_HISTORY, "get", options)
-            .then(r => {
-                const respData = r.data.data;
-                conversationAction.current.offset = respData.next_offset;
-                const chatHistory = Array.isArray(respData.chat_history) ? respData.chat_history : [];
-                setConversation(prevState => chatHistory.concat(prevState));
-            })
-            .catch(e => console.error(e.response.data))
-            .finally(() => {
-                conversationAction.current.loading = false;
-            });
-        return controller;
-    }
+      })
+      .catch(e => console.error(e.message));
+    return controller;
+  }
 
-    const HandleChatSocket = function(receiveData) {
-        const newMessage = {
-            ...receiveData,
-            sender: receiveData.sender_id === jwtInfo.uid
-        };
-        setConversation(prevState => [...prevState, newMessage]);
-    }
-
-  const sendMessage = function() {
+  const sendMessage = function () {
     if (msg.trim() === "") return;
     const newMessage = {
       ...ChatInfo.current,
       sender_id: jwtInfo.uid,
-      msgID   : uuid.v1(),
-      msg     : msg,
-      sender  : true,
-      state   : MessageState.SENT
+      msgID: uuid.v1(),
+      msg: msg,
+      sender: true,
+      state: MessageState.SENT
     };
-    setMsg("");
-    setConversation(prevState => [...prevState, newMessage]);
-    console.log(`socket.emit(emit_private_chat, ${jwtInfo.uid}, ${room_chat_id}, ${msg},  ${ChatInfo.current?.receiver_uid},  ${ChatInfo.current}, TEXT)`)
-    socket.emit("emit_private_chat", jwtInfo.uid, room_chat_id, msg,  ChatInfo.current?.receiver_uid,  ChatInfo.current, "TEXT");
+    UpdateNewMessage(newMessage)
+  }
+
+  const UpdateNewMessage = (newMessage, type = "TEXT") => {
+    axiosConfig(NEW_MESSAGE, "post", {
+      receiver_id: ChatInfo.current?.receiver_uid,
+      msg: newMessage.msg,
+      type: type,
+      room_chat_id: room_chat_id,
+      status: "SENT"
+    })
+      .then(r => {
+        setConversation({
+          list: [...Conversation.list, newMessage],
+          total: Conversation.total + 1
+        });
+        setMsg("");
+      })
+      .catch(e => {
+        ToastAndroid.show(e.response.data, ToastAndroid.LONG);
+        console.error(e.response.data);
+      });
   }
 
   const ChatHeadSection = function() {
@@ -279,86 +284,61 @@ const ChatScreen = function(props) {
       ...ChatInfo.current,
       sender_id: jwtInfo.uid,
       msgID   : uuid.v1(),
-      base64  : base64,
+      msg     : base64,
       type    : "IMAGE",
       sender  : true,
       state   : "SEEN"
     };
-    setMsg("");
-    setConversation(prevState => [...prevState, newMessage]);
-    socket.emit("emit_private_chat", jwtInfo.uid, room_chat_id, base64, ChatInfo.current?.receiver_uid, ChatInfo.current, "IMAGE");
+    UpdateNewMessage(newMessage, "IMAGE");
   }
 
+  const LoadMore = (e) => {
+    // if (e.nativeEvent.contentOffset.y === 0) LoadChatHistory(conversationAction.current.offset);
+  }
+
+  useInterval(() => {
+    const ctrl = LoadChatHistory();
+    return(() => {
+      ctrl.abort();
+    });
+  }, 2000);
+
   useEffect(function () {
-    const p1 = GetChatInfo();
-
-    let controller, newSocket;
-    Promise.all([p1.fetch])
-      .then(r => {
-        const ConversationInfo = r[0].data.data;
-        ChatInfo.current = {
-            ...ChatInfo.current,
-            ...ConversationInfo
-        };
-        console.log("ROOM CHAT ID: ", room_chat_id);
-        newSocket = io(`${DEFAULT_BASE_URL}/private`, {
-          extraHeaders: {
-            Authorization: `Bearer ${token}`
-          },
-          reconnection: true,
-          reconnectionDelay: 1000,
-          reconnectionDelayMax : 5000,
-          reconnectionAttempts: 99999
-        });
-        newSocket.emit("join_chat", {room_name: room_chat_id});
-        console.log(`newSocket.emit("join_chat", {room_name: ${room_chat_id}});`);
-        newSocket.on("join_ok", function(code) {
-          console.log("CODE:", code);
-          if (code === 200) {
-            setLoading({
-              ...loading,
-              connectSocket: true
-            })
-          }
-        })
-        newSocket.on("listen_private_chat", HandleChatSocket);
-        setSocket(newSocket);
-        DecodeJWT();
-        controller = LoadChatHistory();
-      })
-      .catch(e => {
-          console.error(e.response.data);
-      });
-    return (() => {
-      newSocket?.close();
+    const p1 = GetChatInfo()
+    p1.fetch.then(r => {
+      const ConversationInfo = r.data.data;
+      ChatInfo.current = {
+        ...ChatInfo.current,
+        ...ConversationInfo
+      };
+      DecodeJWT();
+      LoadChatHistory();
+    });
+    return(() => {
       p1.controller.abort();
-      controller.abort();
     })
-  }, [setSocket, token]);
+  }, []);
 
-  // if (!loading.connectSocket || !loading.loadedHistory) {
-  //   return(
-  //     <View>
-  //
-  //     </View>
-  //   )
-  // }
 
   return (
     <>
       <ChatHeadSection/>
-      {/*<ChatSection/>*/}
       <ChatScreenWrapper>
-        <ScrollView onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })} ref={scrollViewRef}>
-          {/*<ScrollView onScroll={HandleScrollTop}>*/}
-          {Array.isArray(Conversation) && Conversation.map(function(v, index) {
+        <ScrollView
+          onScroll={LoadMore}
+          showsHorizontalScrollIndicator={false}
+          onContentSizeChange={() => {
+            scrollViewRef.current.scrollToEnd({animated: true})
+          }}
+          ref={scrollViewRef}
+        >
+          {Array.isArray(Conversation.list) && Conversation.list.map(function(v, index) {
             return (
-              <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.sender_id === Conversation[index-1].sender_id)}>
-                {/*<AvatarMessageUser size={35} label={v.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>*/}
+              <ChatMessageWrapper key={index} sender={v.sender} isSameSender={index > 0  && (v.sender_id === Conversation.list[index-1].sender_id)}>
                 {
                   ChatInfo.current?.receiver_avatar_link === ""
-                    ? <AvatarMessageUser size={35} label={ChatInfo.current?.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id))}/>
-                    : <Image source={{uri: DEFAULT_BASE_URL + ChatInfo.current?.receiver_avatar_link}} style={{width: 35, height: 35, borderRadius: 9999, marginRight: 10, opacity: (!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation[index-1].sender_id)) ? 1 : 0)}}/>
+                    ? <AvatarMessageUser size={35} label={ChatInfo.current?.receiver_avatar_text} visible={!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation.list[index-1].sender_id))}/>
+                    : <Image source={{uri: DEFAULT_BASE_URL + ChatInfo.current?.receiver_avatar_link}} style={{width: 35, height: 35, borderRadius: 9999, marginRight: 10, opacity: (!v.sender && (index === 0 || (index > 0 && v.sender_id !== Conversation.list[index-1].sender_id)) ? 1 : 0)}}/>
                 }
                 <ChatMessage isImage={v.type === "IMAGE"} sender={v.sender} onLongPress={() => console.log("Long press")}>
                   {v.type === "IMAGE"
@@ -389,25 +369,27 @@ const ChatScreen = function(props) {
           onPress={chooseImage}
           animate={true}
           color={"#626262"}/>
-          <InputMessage placeholderTextColor={"#6e6e6e"} defaultValue={msg} onChangeText={text => setMsg(text)} placeholder="Type your message"/>
-          <IconButton
-            icon="send"
-            style={{
-              transform: [{rotate: '-35deg'}],
-              padding: 0,
-              margin: 0,
-              marginLeft: 5,
-              marginRight: 5,
-              paddingLeft: 7,
-              backgroundColor:"#d4fdff"
-            }}
-            size={30}
-            onPress={sendMessage}
-            animate={true}
-            color={"#21a3d5"}/>
+        <InputMessage placeholderTextColor={"#6e6e6e"} defaultValue={msg} onChangeText={text => setMsg(text)} placeholder="Type your message"/>
+        <IconButton
+          icon="send"
+          style={{
+            transform: [{rotate: '-35deg'}],
+            padding: 0,
+            margin: 0,
+            marginLeft: 5,
+            marginRight: 5,
+            paddingLeft: 7,
+            backgroundColor:"#d4fdff"
+          }}
+          size={30}
+          onPress={sendMessage}
+          animate={true}
+          color={"#21a3d5"}/>
       </InputMessageWrapper>
     </>
   );
 }
 
-export default withTheme(ChatScreen);
+export default withTheme(React.memo(ChatScreen, (prevProps, nextProps) => {
+  return false;
+}));

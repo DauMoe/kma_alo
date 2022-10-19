@@ -32,6 +32,7 @@
  - [RN Paper FAB](https://callstack.github.io/react-native-paper/animated-fab.html)
  - [RN Paper Bottom Navigation](https://callstack.github.io/react-native-paper/bottom-navigation.html)
  - [RN Paper Custom font](https://callstack.github.io/react-native-paper/fonts.html)
+ - [State doesn't update inside setInterval](https://forum.freecodecamp.org/t/react-state-doesnt-update-in-setinterval/421044)
 
 ## Socket idea:  
  - [x] **(CURRENT)** Use `rooms` to make private chat

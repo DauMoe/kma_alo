@@ -11,6 +11,9 @@ import {name as appName} from './app.json';
 import FontConfig from './components/CustomFont';
 import store from './components/ReduxSaga/RootReducer';
 import { NavigationContainer } from '@react-navigation/native';
+import {axiosConfig} from "./components/ReduxSaga/AxiosConfig";
+import {GET_CHAT_HISTORY} from "./components/API_Definition";
+import { SWRConfig } from "swr";
 
 
 const theme = {
@@ -37,7 +40,17 @@ export default function Main() {
         <StoreProvider store={store}>
             <PaperProvider theme={theme}>
                 <NavigationContainer>
-                    <App/>
+                    <SWRConfig
+                      value={{
+                        provider:() => new Map(),
+                        isOnline() {
+                          return true
+                        },
+                        refreshInterval: 0,
+                        fetcher: (url, method, options) => axiosConfig(url, method, options).then(r => r)
+                      }}>
+                        <App/>
+                    </SWRConfig>
                 </NavigationContainer>
             </PaperProvider>
         </StoreProvider>
