@@ -86,7 +86,13 @@ exports.GetMessageHistoryDAO = async(uid, offset, limit, receiver_id) => {
         SQL         = "SELECT * FROM PRIVATE_CHAT_MESSAGE a JOIN USERS b ON a.RECEIVER_ID = b.UID WHERE (a.SENDER_ID = ? AND a.RECEIVER_ID = ?) OR (a.SENDER_ID = ? AND a.RECEIVER_ID = ?) ORDER BY a.CREATED_AT DESC LIMIT ?,?";
         SQL_BIND    = mysql.format(SQL, [uid, receiver_id, receiver_id, uid, offset, limit]);
         const result = await query(SQL_BIND);
-        return DB_RESP(200, result);
+        SQL          = "SELECT COUNT(*) FROM PRIVATE_CHAT_MESSAGE WHERE (SENDER_ID = ? AND RECEIVER_ID = ?) OR (SENDER_ID = ? AND RECEIVER_ID = ?)";
+        SQL_BIND     = mysql.format(SQL, [uid, receiver_id, receiver_id, uid]);
+        const result1 = await query(SQL_BIND);
+        return DB_RESP(200, {
+            content: result,
+            total: result1[0]['COUNT(*)']
+        });
     } catch (e) {
         DB_ERR(FUNC_NAME, SQL_BIND, e.message);
         return DB_RESP(503, e.message);

@@ -103,7 +103,7 @@ exports.GetMessageHistory = async(req, resp) => {
         const result        = await GetMessageHistoryDAO(uid, offset, limit, receiver_id);
         if (result.code === 200) {
             let respResult = [];
-            for (const i of result.msg) {
+            for (const i of result.msg.content) {
                 respResult.push({
                     private_chat_msg_id : i.PRIVATE_CHAT_MSG_ID === null ? "" : i.PRIVATE_CHAT_MSG_ID,
                     msg                 : i.CONTENT             === null ? "" : i.TYPE === MessageType.IMAGE ? `/conversation/${i.CONTENT}` : i.CONTENT,
@@ -122,7 +122,8 @@ exports.GetMessageHistory = async(req, resp) => {
             SuccessResp(resp, {
                 chat_history: respResult.reverse(),
                 next_offset: offset + respResult.length,
-                limit: limit
+                limit: limit,
+                total: result.msg.total
             });
         } else {
             RespCustomCode(resp, undefined, result.msg, result.code);
@@ -172,7 +173,7 @@ exports.NewMessage = async(req, resp) => {
     const FUNC_NAME = "NewMessage" + FILE_NAME;
     const reqData = req.body;
     try {
-        const sender_id     = GetNumber(reqData, "sender_id");
+        const sender_id     = req.app.locals.uid;
         const receiver_id   = GetNumber(reqData, "receiver_id");
         const content       = GetString(reqData, "msg");
         const type          = GetString(reqData, "type");
