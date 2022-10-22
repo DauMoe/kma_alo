@@ -83,6 +83,10 @@ const FriendsScreen = function(props) {
       color: ${Theme.primaryTextColor};
     `;
 
+    const PreviewChatContent = styled(View)`
+      flex: 1;
+    `;
+
     const PreviewChatWrapper = styled(View)`
       padding: 20px 10px 0 10px;
       background-color: transparent;
@@ -212,9 +216,9 @@ const FriendsScreen = function(props) {
         .catch(e => console.error(e.response.data));
     }
 
-    const Go2Profile = function(friend_data) {
+    const Go2Profile = function(uid) {
       navigation.push(PROFILE_SCREEN, {
-        uid: friend_data.uid
+        uid: uid
       });
     }
 
@@ -223,7 +227,7 @@ const FriendsScreen = function(props) {
     return(
       <>
         <FriendsWrapper>
-          <SearchChatInput placeholderTextColor={"#b4b4b4"} onChangeText={SearchChat} placeholder={"Find friends ..."}/>
+          <SearchChatInput value={searchChat} placeholderTextColor={"#b4b4b4"} onChangeText={SearchChat} placeholder={"Find friends ..."}/>
         </FriendsWrapper>
         {
           (Array.isArray(searchResult) && searchResult.length > 0)
@@ -234,7 +238,7 @@ const FriendsScreen = function(props) {
               ListEmptyComponent={<View style={{height: 200, display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center"}}><Text style={{color: "black", fontFamily: "NunitoSemiBold", fontSize: 16}}>No result</Text></View>}
               data={searchResult}
               renderItem={({item, index}) => (
-                <TouchableOpacity onPress={() => Go2UserProfile()} key={"__chat_no_" + index}>
+                <TouchableOpacity onPress={() => Go2Profile(item.uid)} key={"__chat_no_" + index}>
                   <PreviewChatWrapper>
                     {item.avatar_link === ""
                       ? <Avatar.Text size={50} label={item.avatar_link} style={{ marginRight: 15 }} />
@@ -273,7 +277,7 @@ const FriendsScreen = function(props) {
                           ? <Avatar.Text size={50} label={data.avatar_text} style={{marginRight: 15}}/>
                           : <Image source={{uri: DEFAULT_BASE_URL + data.avatar_link}} style={{width: 50, height: 50, borderRadius: 99999, marginRight: 15}}/>}
                         <View>
-                          <TouchableOpacity onPress={() => Go2Profile(data)}>
+                          <TouchableOpacity onPress={() => Go2Profile(data.uid)}>
                             <View style={{display: "flex", flexDirection: "row", alignItems: "center"}}>
                               <Text style={{fontFamily: "NunitoBold", fontSize: 16, color: colors.text}}>
                                 {data.first_name} {data.last_name}&nbsp;
